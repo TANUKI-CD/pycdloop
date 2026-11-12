@@ -1,0 +1,25 @@
+# Python build, package, test, and environment products
+/.venv/
+/build/
+/dist/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+__pycache__/
+*.egg-info/
+*.py[cod]
+*.so
+*.pyd
+*.whl
+/wheelhouse/
+
+# Editor and operating-system metadata
+.DS_Store
+*.swp
+*~
+
+# Benchmark corpora
+/benchmark-corpora/
+
+# Stability studies: raw results and corpora stay on the machine that ran them
+benchmark-results/stability-*/raw/

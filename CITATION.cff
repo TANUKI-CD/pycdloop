@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use pycdloop in your work, please cite it using this metadata."
+type: software
+title: "pycdloop: arithmetic in Cayley–Dickson loops and their loop algebras"
+abstract: >-
+  A Python package for Cayley–Dickson loops, their central products, and the
+  loop algebras of both over the real numbers, the complex numbers, and
+  finite fields, with quasilinear O(N log N) multiplication built on the
+  Cayley–Dickson arithmetic of fastCD.
+authors:
+  - family-names: Lemley
+    given-names: Harrison
+version: 0.1.0
+license: MIT
+repository-code: "https://git.tanuki-cd.com/algebraity/pycdloop"
+keywords:
+  - Cayley-Dickson loops
+  - loop algebras
+  - central products
+  - nonassociative algebras
+  - Walsh-Hadamard transform
+  - finite fields
+  - fast multiplication
+preferred-citation:
+  type: article
+  title: "Quasilinear multiplication in Cayley-Dickson loop algebras"
+  authors:
+    - family-names: Lemley
+      given-names: Harrison
+  year: 2026

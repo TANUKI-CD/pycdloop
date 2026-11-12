@@ -1,0 +1,119 @@
+# Runs on the canonical repository at git.tanuki-cd.com (Forgejo Actions) and
+# on its GitHub mirror. The *-hosted job needs GitHub's macOS and Windows
+# runners, so it runs only on GitHub and is skipped on Forgejo.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  python:
+    name: Python ${{ matrix.python }} / ${{ matrix.numpy }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, python: "3.10", numpy: "numpy==1.26.*" }
+          - { os: ubuntu-latest, python: "3.12", numpy: "numpy" }
+          - { os: ubuntu-latest, python: "3.14", numpy: "numpy" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ matrix.python }}" }
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "${{ matrix.numpy }}"
+          python -m pip install ".[test,benchmark]"
+      - name: Test
+        run: python -m pytest -q
+      - name: Type-check and lint
+        if: matrix.python == '3.12'
+        run: |
+          python -m pip install mypy ruff
+          python -m mypy
+          python -m mypy tests/typing_checks.py
+          python -m ruff check src tests benchmarks tools scripts setup.py
+          python -m ruff format --check src tests tools scripts setup.py
+
+  # Same install and test steps as python, on GitHub-hosted runners only.
+  python-hosted:
+    name: Python ${{ matrix.python }} (${{ matrix.os }})
+    if: github.server_url == 'https://github.com'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest, python: "3.13" }
+          - { os: windows-latest, python: "3.12" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ matrix.python }}" }
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[test,benchmark]"
+      - name: Test
+        run: python -m pytest -q
+
+  arithmetic:
+    name: Operation counts and archives
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install .
+      - name: Check the operation counts in docs/mathematics.md
+        run: python tools/check_operation_counts.py
+      - name: Check the stability archives
+        run: python tools/check_archives.py
+
+  distributions:
+    name: Source distribution and installed wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Set release paths outside the checkout
+        run: printf 'RELEASE_DIR=%s/pycdloop-release\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Install build tools
+        run: python -m pip install build twine
+      - name: Build source distribution and wheel from it
+        run: |
+          python -m build --outdir "$RELEASE_DIR/dist"
+          python -m twine check --strict "$RELEASE_DIR"/dist/*
+      - name: Extract the source distribution
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import tarfile
+          from pathlib import Path
+
+          release = Path(os.environ["RELEASE_DIR"])
+          with tarfile.open(next((release / "dist").glob("*.tar.gz"))) as archive:
+              prefix = archive.getnames()[0].split("/", 1)[0]
+              names = {member.name for member in archive.getmembers()}
+              # Raw study data stays on the machine that produced it
+              assert not any("/raw/" in name for name in names), "raw data in sdist"
+              for required in ("tests/reference.py", "docs/mathematics.md", "tools/check_archives.py"):
+                  assert f"{prefix}/{required}" in names, required
+              archive.extractall(release / "source", filter="data")
+          with Path(os.environ["GITHUB_ENV"]).open("a") as output:
+              output.write(f"RELEASE_SOURCE={release / 'source' / prefix}\n")
+          PY
+      - name: Install wheel and test outside the checkout
+        shell: bash
+        run: |
+          python -m pip install "$RELEASE_DIR"/dist/*.whl pytest gmpy2 matplotlib
+          cd "$RELEASE_SOURCE" || exit 1
+          python tools/check_archives.py
+          python -m pytest -q
