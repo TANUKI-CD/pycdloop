@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use pycdloop in your work, please cite it using this metadata."
 type: software
-title: "pycdloop: arithmetic in Cayley–Dickson loops and their loop algebras"
+title: "pycdloop: arithmetic in Cayley-Dickson loops and their loop algebras"
 abstract: >-
-  A Python package for Cayley–Dickson loops, their central products, and the
+  A Python package for Cayley-Dickson loops, their central products, and the
   loop algebras of both over the real numbers, the complex numbers, and
   finite fields, with quasilinear O(N log N) multiplication built on the
-  Cayley–Dickson arithmetic of fastCD.
+  Cayley-Dickson arithmetic of fastCD.
 authors:
   - family-names: Lemley
     given-names: Harrison
