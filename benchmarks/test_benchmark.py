@@ -115,7 +115,8 @@ class BenchmarkArgumentsTests(unittest.TestCase):
         self.assertTrue(all("--cpu" in command for command in commands.values()))
         single = protocols.commands(protocols.parse_arguments(
             ["--protocol", "domains", "--output", "out/run.json"]))
-        self.assertEqual(single[0][1][single[0][1].index("--output") + 1], "out/run.json")
+        self.assertEqual(Path(single[0][1][single[0][1].index("--output") + 1]),
+                         Path("out/run.json"))
 
 
 class BenchmarkStatisticsTests(unittest.TestCase):
