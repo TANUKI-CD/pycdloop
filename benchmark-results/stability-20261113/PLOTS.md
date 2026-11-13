@@ -22,5 +22,5 @@ N, the dimension of the loop algebra, is on a base-two logarithmic axis. The rel
 ## Reproduction
 
 ```sh
-python3 benchmarks/stability_plots.py benchmark-results/stability-20261112
+python3 benchmarks/stability_plots.py benchmark-results/stability-20261113
 ```

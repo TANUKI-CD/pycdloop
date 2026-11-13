@@ -1,6 +1,6 @@
 {
   "schema": "pycdloop-stability-study-v1",
-  "date": "2026-11-12",
+  "date": "2026-11-13",
   "profile": "full",
   "seed": 20261111,
   "precision_bits": 256,
@@ -11,7 +11,7 @@
     "real_chains": 8,
     "complex_chains": 6
   },
-  "command": "python3 benchmarks/stability_study.py --profile full --seed 20261111 --jobs 8 --output benchmark-results/stability-20261112",
+  "command": "python3 benchmarks/stability_study.py --profile full --seed 20261111 --jobs 8 --output benchmark-results/stability-20261113",
   "environment": {
     "python": "3.14.8 (main, Oct  2 2026, 10:23:31) [GCC 16.2.1 20260810]",
     "platform": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
@@ -158,9 +158,9 @@
     "chains": 2076
   },
   "steps": {
-    "accuracy": 12.06681834673509,
-    "tables": 0.2222846052609384,
-    "plots": 3.849289270117879
+    "accuracy": 11.971557433251292,
+    "tables": 0.22484348202124238,
+    "plots": 4.044985725078732
   },
   "source": {
     "files_sha256": {
@@ -172,7 +172,7 @@
       "src/pycdloop/_core.cpython-314-x86_64-linux-gnu.so": "ae9ee29f68a222b3353a9f34794d0154d0f2b392812e4d09d0a9aaaefaa0cda5",
       "src/pycdloop/_core.pyi": "3aa1cd6af0448073542d316ff8e5f2d360bf725e7d09662b144a57f01b3fe6de",
       "src/pycdloop/_element.py": "b4c4bd066f3f1f4f9a8313799d85b88b5f24fc7e7f852a871fcbbdc956a54c90",
-      "src/pycdloop/_field.py": "defc3541c3a29346d242731d8ca49595726954d5041dc68f6a68fd909ee9ece0",
+      "src/pycdloop/_field.py": "7960cda73b0394532ee36186d65c8f01c283c92e17790eb2d6b578ef5fef8f1e",
       "src/pycdloop/_kernel.py": "a11850d41a90e3ca715e7c104f75bb829be807877ea6e4d1f63460bb05662f26",
       "src/pycdloop/_lift.py": "b9fe4fa9d3e91866477593bb851b166da9d3cda1fb3722639b9320e337a2c94e",
       "src/pycdloop/_loop.py": "52551811d9801e671d402b23ef76e81b229c7c8758b5b287249201007cf0f2c6",
@@ -196,6 +196,6 @@
   },
   "raw_sha256": {
     "raw/accuracy-corpus.npz": "bbc136683c4fe9deb63371c66b358398e3895e02268c10be8b9cbeed0a90d05f",
-    "raw/accuracy.json": "152d0815f122d8ffd939ae6116215080ab8e5937a3e6c726dcd9f7902e89987c"
+    "raw/accuracy.json": "b7aca6643e5c464c12a38a27c4224b4d40492cde57a1e1e7ed62801d95ad95da"
   }
 }

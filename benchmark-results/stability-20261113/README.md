@@ -1,4 +1,4 @@
-# Stability study, 2026-11-12
+# Stability study, 2026-11-13
 
 This directory holds the measurements behind [docs/stability.md](../../docs/stability.md), which defines the error measures and interprets the results.
 
@@ -28,7 +28,7 @@ The full profile measured 4,764 operand pairs and 2,076 chains. The reference co
 ## How it was produced
 
 ```sh
-python3 benchmarks/stability_study.py --profile full --seed 20261111 --jobs 8 --output benchmark-results/stability-20261112
+python3 benchmarks/stability_study.py --profile full --seed 20261111 --jobs 8 --output benchmark-results/stability-20261113
 ```
 
 | Step | What it does | Duration |

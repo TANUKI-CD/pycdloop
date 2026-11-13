@@ -1,4 +1,4 @@
-# Benchmark run, 2026-11-12
+# Benchmark run, 2026-11-13
 
 This directory holds the measurements behind the archived results in
 [docs/benchmark.md](../../docs/benchmark.md), which describes the protocols
@@ -26,11 +26,11 @@ The three protocols ran one after another, followed by a second run of the
 `domains` protocol over the fields of characteristic 2:
 
 ```sh
-python benchmarks/benchmark.py --output benchmark-results/t440-20261112/real.json --cpu 37
-python benchmarks/domains.py --output benchmark-results/t440-20261112/domains.json --cpu 37
-python benchmarks/central.py --output benchmark-results/t440-20261112/central.json --cpu 37 \
+python benchmarks/benchmark.py --output benchmark-results/t440-20261113/real.json --cpu 37
+python benchmarks/domains.py --output benchmark-results/t440-20261113/domains.json --cpu 37
+python benchmarks/central.py --output benchmark-results/t440-20261113/central.json --cpu 37 \
     --factors 1x4,1x8,2x2,2x4,2x6,3x3,3x5,3x7,4x4,4x6,4x8,5x5,5x7,6x6,7x7
-python benchmarks/domains.py --output benchmark-results/t440-20261112/binary.json --cpu 37 \
+python benchmarks/domains.py --output benchmark-results/t440-20261113/binary.json --cpu 37 \
     --fields 2:1,2:2,2:4,2:6,2:7,2:8,2:12 --levels 1,2,3,4,5,6,7,8
 ```
 

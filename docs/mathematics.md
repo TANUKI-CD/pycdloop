@@ -336,7 +336,9 @@ summands:
 | 4 and above | no | no | no | yes | yes |
 
 **Powers.** Powers of `x` do not depend on bracketing. The spectral part is
-raised to the power coordinatewise. For the signed part, the quadratic
+raised to the power coordinatewise. Over R and C each coordinate is raised
+by binary exponentiation, with `O(log k)` multiplications, so that its power
+is exact whenever it is representable. For the signed part, the quadratic
 relation puts every power of `d` in the span of 1 and `d`: in the quotient
 ring `F[z] / (z^2 - 2 d_0 z + Q(d))`, binary exponentiation gives
 `z^k = u + v z` with `O(log k)` field operations, and then `d^k = u + v d`.

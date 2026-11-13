@@ -386,7 +386,7 @@ is evaluated.
 ## Archive
 
 The study is archived in
-[benchmark-results/stability-20261112/](../benchmark-results/stability-20261112/):
+[benchmark-results/stability-20261113/](../benchmark-results/stability-20261113/):
 its record `study.json`, the summary tables and key figures, the charts in
 PNG, SVG and PDF, and `SHA256SUMS`. The raw per-case results and the
 operand corpus stay on the machine that ran the study and are not

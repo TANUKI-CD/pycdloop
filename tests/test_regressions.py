@@ -35,6 +35,25 @@ def test_integer_powers_are_exact() -> None:
     assert ((batch.split() ** 3).to_loop() == batch**3).all()
 
 
+def test_powers_of_integer_multiples_of_the_identity_are_exact() -> None:
+    """Keep ``**`` exact where the power function of NumPy rounds."""
+
+    algebra = cdl.LoopAlgebra(cdl.CDLoop(0))
+    bases = np.arange(-200, 201)
+    coefficients = np.zeros((bases.size, 2, 1))
+    coefficients[:, 0, 0] = bases
+    batch = algebra.array(coefficients)
+    for exponent in range(7):
+        expected = np.zeros_like(coefficients)
+        expected[:, 0, 0] = [int(base) ** exponent for base in bases]
+        power = batch**exponent
+        np.testing.assert_array_equal(power.coefficients, expected)
+        assert (power == batch.left_power(exponent)).all()
+    # 13^4 is the smallest power that NumPy 1.26 rounds on a CPU with AVX-512
+    x = algebra([[13.0], [0.0]])
+    assert (x**4).coefficients.tolist() == [[28561.0], [0.0]]
+
+
 @pytest.mark.parametrize("selectors", [{"char": 7}, {"char": 7, "deg": 2}])
 def test_division_by_one_field_scalar_keeps_the_element_shape(
     selectors: dict[str, int],

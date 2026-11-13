@@ -329,7 +329,18 @@ class _CoefficientField:
         if self.kind == "finite":
             values = self.field.asarray(np.ascontiguousarray(a))
             return np.asarray((values**exponent).coefficients).reshape(a.shape)
-        return a**exponent
+        # Binary exponentiation by multiplication gives the exact power
+        # whenever that power is representable, which the power function of
+        # NumPy does not
+        result = a.copy() if exponent & 1 else None
+        base = a
+        exponent >>= 1
+        while exponent:
+            base = base * base
+            if exponent & 1:
+                result = base if result is None else result * base
+            exponent >>= 1
+        return np.ones_like(a) if result is None else result
 
     # Predicates
 
