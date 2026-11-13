@@ -2,7 +2,7 @@
 
 # pycdloop - v0.1.0
 
-pycdloop is a Python package for arithmetic in Cayley–Dickson loops, their central products, and the loop algebras of both over the real numbers, the complex numbers, and finite fields. It is built on [pyfastcd](https://pypi.org/project/pyfastcd), the Python interface of [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), and uses its quasilinear Cayley–Dickson multiplication to multiply in a loop algebra of dimension `2N` with `O(N log N)` operations. The algorithms are those of the [accompanying paper](https://arxiv.org/forthcoming) *Quasilinear multiplication in Cayley–Dickson loop algebras* (H. Lemley).
+pycdloop is a Python package for arithmetic in Cayley–Dickson loops, their central products, and the loop algebras of both over the real numbers, the complex numbers, and finite fields. It is built on [pyfastcd](https://pypi.org/project/pyfastcd), the Python interface of [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), and uses its quasilinear Cayley–Dickson multiplication to multiply in a loop algebra of dimension `2N` with `O(N log N)` operations. The algorithms are those of the accompanying paper *Quasilinear multiplication in Cayley–Dickson loop algebras* (H. Lemley), which will be publicly available in the near future.
 
 The canonical source repository is
 [git.tanuki-cd.com/algebraity/pycdloop](https://git.tanuki-cd.com/algebraity/pycdloop).
@@ -17,7 +17,7 @@ The Cayley–Dickson loop `Q_n` consists of the signed basis elements of the Cay
 
 ## Installation
 
-pycdloop requires CPython 3.10 or newer, NumPy 1.26 or newer and pyfastcd 1.4.0 or newer, below 2. To install it from PyPI with `pip`, run:
+pycdloop requires CPython 3.10 or newer, NumPy 1.26 or newer and pyfastcd 1.3.1 or newer, below 2. To install it from PyPI with `pip`, run:
 
 ```sh
 pip install pycdloop
@@ -58,15 +58,15 @@ An `Element` is one immutable element of a loop algebra, an `ElementArray` holds
 
 ## Benchmark
 
-The data in this table contains the mean microseconds per measured product in batches, over real coefficients, measured on 2026-11-13 on one logical CPU of an Intel Xeon Gold 6148. `2N` is the dimension of the loop algebra. `split` is the default algorithm on operands in the loop basis, `split form` is the same product on operands already in the decomposed coordinates, `table` evaluates the definition, and the last column is the pyfastcd product that every loop-algebra product contains. Timing is done in Python and includes the call overhead of the package. The protocol, the single-product and finite-field results, and the central-product results are in [Benchmark](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/benchmark.md).
+The data in this table contains the mean microseconds per measured product in batches, over real coefficients, measured on 2026-11-11 on one logical CPU of an Intel Xeon Gold 6148. `2N` is the dimension of the loop algebra. `split` is the default algorithm on operands in the loop basis, `split form` is the same product on operands already in the decomposed coordinates, `table` evaluates the definition, and the last column is the pyfastcd product that every loop-algebra product contains. Timing is done in Python and includes the call overhead of the package. The protocol, the single-product and finite-field results, and the central-product results are in [Benchmark](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/benchmark.md).
 
 | 2N | split | split form | table | Cayley–Dickson product alone |
 | ---: | ---: | ---: | ---: | ---: |
-| 8 | 0.22 | 0.077 | 0.93 | 0.012 |
-| 32 | 0.30 | 0.13 | 8.88 | 0.062 |
-| 128 | 1.08 | 0.58 | 184.0 | 0.45 |
-| 512 | 5.64 | 3.29 | 3,768 | 2.63 |
-| 2048 | 27.7 | 17.3 | 43,476 | 14.7 |
+| 8 | 0.38 | 0.25 | 0.83 | 0.09 |
+| 32 | 0.49 | 0.32 | 8.80 | 0.14 |
+| 128 | 1.33 | 0.81 | 186.1 | 0.54 |
+| 512 | 6.46 | 4.09 | 3,768 | 2.96 |
+| 2048 | 31.2 | 21.2 | 43,506 | 16.2 |
 
 ## Numerical stability
 
@@ -91,5 +91,5 @@ The error of `split` grows with the logarithm of the dimension, and its largest 
 
 All code is released under the [MIT License](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/LICENSE) and is presented with no warranty or guarantees. To cite the software, use the metadata in [CITATION.cff](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/CITATION.cff). The changelog is in [CHANGELOG.md](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/CHANGELOG.md).
 
-The loop-algebra algorithms are due to Harrison Lemley, *Quasilinear multiplication in Cayley–Dickson loop algebras*. The Cayley–Dickson arithmetic is that of fastCD and its quasilinear algorithm, [*Quasilinear multiplication in the Cayley–Dickson tower*](https://arxiv.org/abs/2609.11588).
+The loop-algebra algorithms are due to Harrison Lemley and will be available in the forthcoming paper *Quasilinear multiplication in Cayley–Dickson loop algebras*. The Cayley–Dickson arithmetic is that of [fastCD](https://git.tanuki-cd.com/algebraity/fastCD) and its quasilinear algorithm, [*Quasilinear multiplication in the Cayley–Dickson tower*](https://arxiv.org/abs/2609.11588).
 
