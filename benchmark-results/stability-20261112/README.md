@@ -1,4 +1,4 @@
-# Stability study, 2026-11-11
+# Stability study, 2026-11-12
 
 This directory holds the measurements behind [docs/stability.md](../../docs/stability.md), which defines the error measures and interprets the results.
 
@@ -20,7 +20,7 @@ The full profile measured 4,764 operand pairs and 2,076 chains. The reference co
 | Operating system | Linux-7.2.11-arch1-1-x86_64-with-glibc2.44 |
 | Python | 3.14.8 |
 | NumPy, gmpy2, MPFR | 2.5.4, 2.3.2, MPFR 4.2.2 |
-| pyfastcd | 1.3.1 |
+| pyfastcd | 1.4.0 |
 | pycdloop | 0.1.0 |
 | Matplotlib | 3.11.2 |
 | Worker processes | 8 |
@@ -28,7 +28,7 @@ The full profile measured 4,764 operand pairs and 2,076 chains. The reference co
 ## How it was produced
 
 ```sh
-python3 benchmarks/stability_study.py --profile full --seed 20261111 --jobs 8 --output benchmark-results/stability-20261111
+python3 benchmarks/stability_study.py --profile full --seed 20261111 --jobs 8 --output benchmark-results/stability-20261112
 ```
 
 | Step | What it does | Duration |

@@ -32,10 +32,11 @@ BINARY_ALGORITHMS = ("auto", "lift", "table")
 # In characteristic 2, "auto" lifts a product instead of multiplying from the
 # table when the quotient order D of the loop is at least the first number
 # and the work of the table product, the number of records times D^2, is at
-# least the second. The pairs are for F_2, which lifts to a prime field; for
-# F_(2^k) with k <= 6, which takes one product over an extension field; and
-# for larger k, which takes three
-LIFT_THRESHOLDS = ((1 << 1, 1 << 13), (1 << 3, 1 << 9), (1 << 4, 1 << 12))
+# least the second; a second number of 0 leaves the first condition alone.
+# The pairs are for F_2, which lifts to a prime field; for F_(2^k) with
+# k <= 6, which takes one product over an extension field; and for larger k,
+# which takes three
+LIFT_THRESHOLDS = ((1 << 1, 1 << 8), (1 << 1, 0), (1 << 4, 1 << 10))
 
 # Largest quotient order for which the tables of the table product are built,
 # and largest dimension for which dense structure constants are returned

@@ -1,7 +1,7 @@
 # Quick start
 
 pycdloop requires CPython 3.10 or newer, NumPy 1.26 or newer and pyfastcd
-1.3.1 or newer, below 2. To install it from PyPI with `pip`, run:
+1.4.0 or newer, below 2. To install it from PyPI with `pip`, run:
 
 ```sh
 pip install pycdloop

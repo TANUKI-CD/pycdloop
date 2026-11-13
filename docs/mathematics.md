@@ -784,9 +784,9 @@ the group algebra `Z[C]`.
 Both `"lift"` and `"table"` are exact, so the choice between them affects
 only the running time, and `"auto"` makes it from the size of the loop and
 the number `R` of products in the call. The table algorithm uses about
-`R D^2` field multiplications. The lifted product costs more for each call
-and for each coefficient, but grows as `R D log D`. `"auto"` selects
-`"lift"` when
+`R D^2` field multiplications. The lifted product grows as `R D log D` but
+costs more for each coefficient, and the fixed cost of a call differs
+between the two. `"auto"` selects `"lift"` when
 
 ```text
 D >= D_0     and     R D^2 >= W,
@@ -797,13 +797,14 @@ lifted:
 
 | Field | Lifted to | `D_0` | `W` | One product is lifted from | A large batch is lifted from |
 | --- | --- | ---: | ---: | --- | --- |
-| F_2 | F_p | 2 | `2^13` | `D = 128` | `D = 2` |
-| F_(2^k), `2 <= k <= 6` | one extension of F_p, one product | 8 | `2^9` | `D = 32` | `D = 8` |
-| F_(2^k), `7 <= k <= 12` | one extension of F_p, three products | 16 | `2^12` | `D = 64` | `D = 16` |
+| F_2 | F_p | 2 | `2^8` | `D = 16` | `D = 2` |
+| F_(2^k), `2 <= k <= 6` | one extension of F_p, one product | 2 | 0 | `D = 2` | `D = 2` |
+| F_(2^k), `7 <= k <= 12` | one extension of F_p, three products | 16 | `2^10` | `D = 32` | `D = 16` |
 
-`default_algorithm` and `default_batch_algorithm` report the choice for one
-product and for a large batch. The [benchmark](benchmark.md) measures both
-algorithms.
+For the degrees 2 through 6 the second condition always holds, so every
+product is lifted when `D >= 2`. `default_algorithm` and
+`default_batch_algorithm` report the choice for one product and for a large
+batch. The [benchmark](benchmark.md) measures both algorithms.
 
 ## Representations
 

@@ -142,7 +142,7 @@ with the raw results of the study.
 ### Host and software
 
 The study ran on an Intel Xeon Gold 6148 under Linux with Python 3.14.8,
-NumPy 2.5.4, pyfastcd 1.3.1 and pycdloop 0.1.0. The record of the study
+NumPy 2.5.4, pyfastcd 1.4.0 and pycdloop 0.1.0. The record of the study
 lists the hash of every measured source file.
 
 ## Accuracy
@@ -386,7 +386,7 @@ is evaluated.
 ## Archive
 
 The study is archived in
-[benchmark-results/stability-20261111/](../benchmark-results/stability-20261111/):
+[benchmark-results/stability-20261112/](../benchmark-results/stability-20261112/):
 its record `study.json`, the summary tables and key figures, the charts in
 PNG, SVG and PDF, and `SHA256SUMS`. The raw per-case results and the
 operand corpus stay on the machine that ran the study and are not

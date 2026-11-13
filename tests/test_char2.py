@@ -127,13 +127,13 @@ def test_a_binary_field_is_passed_on_its_own() -> None:
 def test_algorithm_names_and_automatic_choices() -> None:
     """List ``lift`` in place of ``split`` and pin the automatic thresholds."""
 
-    assert _algebra.LIFT_THRESHOLDS == ((2, 8192), (8, 512), (16, 4096))
+    assert _algebra.LIFT_THRESHOLDS == ((2, 256), (2, 0), (16, 1024))
     real = cdl.LoopAlgebra(cdl.CDLoop(3))
     assert real.algorithms == ("auto", "split", "table")
     assert real.default_algorithm == real.default_batch_algorithm == "split"
     # For each degree: the least level at which one product is lifted, and
     # the least level at which a large batch is
-    choices = {1: (7, 1), 2: (5, 3), 6: (5, 3), 7: (6, 4), 12: (6, 4)}
+    choices = {1: (4, 1), 2: (1, 1), 6: (1, 1), 7: (5, 4), 12: (5, 4)}
     for degree, (single, batch) in choices.items():
         for level in range(9):
             algebra = cdl.LoopAlgebra(cdl.CDLoop(level), char=2, deg=degree)
@@ -143,8 +143,8 @@ def test_algorithm_names_and_automatic_choices() -> None:
             expected = "lift" if level >= batch else "table"
             assert algebra.default_batch_algorithm == expected, (degree, level)
     # Between the two, the choice follows the number of records times D^2
-    algebra = cdl.LoopAlgebra(cdl.CDLoop(4), char=2)
-    assert [algebra._binary_choice(count) for count in (1, 31, 32, 1000)] == [
+    algebra = cdl.LoopAlgebra(cdl.CDLoop(2), char=2)
+    assert [algebra._binary_choice(count) for count in (1, 15, 16, 1000)] == [
         "table",
         "table",
         "lift",
@@ -152,15 +152,18 @@ def test_algorithm_names_and_automatic_choices() -> None:
     ]
     central = cdl.LoopAlgebra(cdl.CentralProduct(2, 3), char=2, deg=4)
     assert [central._binary_choice(count) for count in (1, 2)] == ["lift", "lift"]
-    assert (
-        cdl.LoopAlgebra(cdl.CDLoop(2), char=2, deg=4)._binary_choice(10**6) == "table"
-    )
+    # Below the least order, no number of products selects the lifted product
+    small = cdl.LoopAlgebra(cdl.CDLoop(3), char=2, deg=8)
+    assert small._binary_choice(10**6) == "table"
+    # With a work threshold of 0, the order alone decides
+    one = cdl.LoopAlgebra(cdl.CDLoop(1), char=2, deg=4)
+    assert [one._binary_choice(count) for count in (1, 10**6)] == ["lift", "lift"]
 
 
 def test_automatic_products_use_the_selected_algorithm(monkeypatch) -> None:
     """Call the lifted product exactly when the rule selects it."""
 
-    algebra = cdl.LoopAlgebra(cdl.CDLoop(4), char=2)
+    algebra = cdl.LoopAlgebra(cdl.CDLoop(2), char=2)
     calls = []
     original = _lift._Lift.product
 
@@ -169,7 +172,7 @@ def test_automatic_products_use_the_selected_algorithm(monkeypatch) -> None:
         return original(self, left, right, signed_algorithm)
 
     monkeypatch.setattr(_lift._Lift, "product", product)
-    for count, lifted in ((1, False), (31, False), (32, True), (64, True)):
+    for count, lifted in ((1, False), (15, False), (16, True), (64, True)):
         x = algebra.random(1, batch_shape=(count,))
         y = algebra.random(2, batch_shape=(count,))
         calls.clear()
@@ -308,12 +311,12 @@ def test_lifting_refuses_loops_beyond_the_coefficient_bound(monkeypatch) -> None
     try:
         with pytest.raises(ValueError):
             algebra.multiply(x, x, algorithm="lift")
-        assert algebra.multiply(x, x, algorithm="table") == x.left_power(2)
+        expected = algebra.multiply(x, x, algorithm="table")
     finally:
         # The lifting data built with the small prime must not outlive the test
         algebra._lazy.pop("lift", None)
     monkeypatch.undo()
-    assert algebra.multiply(x, x, algorithm="lift") == x.left_power(2)
+    assert algebra.multiply(x, x, algorithm="lift") == expected == x.left_power(2)
 
 
 # Arithmetic and derived operations
