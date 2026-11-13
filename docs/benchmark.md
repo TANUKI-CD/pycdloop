@@ -32,8 +32,8 @@ are compiled, its Cayley–Dickson products are pyfastcd's, and everything
 that connects them is Python and NumPy. The benchmark times calls to the
 public interface with `time.perf_counter_ns`, with the garbage collector
 disabled inside each timed region. The call overhead of the package, the
-allocation of results and the validation of operands are therefore part of
-every measurement; they are what a caller pays. Verification is not.
+allocation of results, and the validation of operands are therefore part of
+every measurement, as they are what a caller pays.
 
 ### Corpora and verification
 
