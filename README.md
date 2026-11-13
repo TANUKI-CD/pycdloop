@@ -2,7 +2,7 @@
 
 # pycdloop - v0.1.0
 
-pycdloop is a Python package for arithmetic in Cayley–Dickson loops, their central products, and the loop algebras of both over the real numbers, the complex numbers, and finite fields. It is built on [pyfastcd](https://pypi.org/project/pyfastcd), the Python interface of [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), and uses its quasilinear Cayley–Dickson multiplication to multiply in a loop algebra of dimension `2N` with `O(N log N)` operations. The algorithms are those of the [accompanying paper](https://arxiv.org/forthcoming) *Quasilinear multiplication in Cayley–Dickson loop algebras* (H. Lemley).
+pycdloop is a Python package for arithmetic in Cayley–Dickson loops, their central products, and the loop algebras of both over the real numbers, the complex numbers, and finite fields. It is built on [pyfastcd](https://pypi.org/project/pyfastcd), the Python interface of [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), and uses its quasilinear Cayley–Dickson multiplication to multiply in a loop algebra of dimension `2N` with `O(N log N)` operations. The algorithms are those of the accompanying paper *Quasilinear multiplication in Cayley–Dickson loop algebras* (H. Lemley), which will be publicly available in the near future.
 
 The canonical source repository is
 [git.tanuki-cd.com/algebraity/pycdloop](https://git.tanuki-cd.com/algebraity/pycdloop).
@@ -91,5 +91,5 @@ The error of `split` grows with the logarithm of the dimension, and its largest 
 
 All code is released under the [MIT License](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/LICENSE) and is presented with no warranty or guarantees. To cite the software, use the metadata in [CITATION.cff](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/CITATION.cff). The changelog is in [CHANGELOG.md](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/CHANGELOG.md).
 
-The loop-algebra algorithms are due to Harrison Lemley, *Quasilinear multiplication in Cayley–Dickson loop algebras*. The Cayley–Dickson arithmetic is that of fastCD and its quasilinear algorithm, [*Quasilinear multiplication in the Cayley–Dickson tower*](https://arxiv.org/abs/2609.11588).
+The loop-algebra algorithms are due to Harrison Lemley and will be available in the forthcoming paper *Quasilinear multiplication in Cayley–Dickson loop algebras*. The Cayley–Dickson arithmetic is that of [fastCD](https://git.tanuki-cd.com/algebraity/fastCD) and its quasilinear algorithm, [*Quasilinear multiplication in the Cayley–Dickson tower*](https://arxiv.org/abs/2609.11588).
 
