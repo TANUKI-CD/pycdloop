@@ -1,11 +1,6 @@
 # Builds the source distribution and the wheels and uploads them with PyPI
 # trusted publishing. PyPI accepts tokens from GitHub Actions but not from
 # Forgejo, so every job runs only on the GitHub mirror.
-#
-# A pushed version tag publishes to PyPI. A manual run publishes the selected
-# branch or tag to TestPyPI. Neither index accepts a file name twice, so each
-# rehearsal needs its own version in src/pycdloop/_version.py, such as
-# 0.1.0rc1.
 name: Release
 
 on:
