@@ -111,9 +111,8 @@ and regenerates the tables from it.
 ## Release checks
 
 Update the version in `src/pycdloop/_version.py`, the README heading, and
-the version in `CITATION.cff`, where the release date is added as
-`date-released`. Move the pending changelog
-entries into a dated release section.
+the version and release date (`date-released`) in `CITATION.cff`. Move the
+pending changelog entries into a dated release section.
 
 Build and check the distributions in a development environment:
 
@@ -127,3 +126,11 @@ and runs the tests from the extracted source distribution outside the
 checkout, so that the distributed files are what is tested. The release
 workflow builds the wheels for every supported platform with cibuildwheel,
 whose configuration is in `pyproject.toml`.
+
+To publish a release, tag its commit with `v` and the version, such as
+`v0.1.0`, and push the tag to the canonical repository. On the GitHub
+mirror, the tag starts the release workflow, which checks that the tag names
+the packaged version and publishes the source distribution and the wheels
+to PyPI through trusted publishing. A manual run of the workflow publishes
+to TestPyPI instead. Neither index accepts a file name twice, even after the
+file is deleted, so a correction is published under a new version.
