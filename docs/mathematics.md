@@ -4,7 +4,7 @@ This page fixes the conventions pycdloop uses for Cayley–Dickson loops,
 their central products and their loop algebras, and summarizes the
 mathematics behind its algorithms. The decomposition of the loop algebras,
 the split algorithm and the schedule for central products are those of the
-paper *Quasilinear multiplication in Cayley–Dickson loop algebras*
+forthcoming paper *Quasilinear multiplication in Cayley–Dickson loop algebras*
 (H. Lemley). The Cayley–Dickson arithmetic underneath is that of
 [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), whose
 [conventions](https://git.tanuki-cd.com/algebraity/fastCD/src/branch/main/docs/mathematics.md)
