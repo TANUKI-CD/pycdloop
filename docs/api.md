@@ -79,12 +79,12 @@ Below, `L` is a loop, `A` a loop algebra, `x`, `y`, `z` elements, `X` an
 - `wht(a, *, axis=-1, field=None) -> numpy.ndarray`
 
   Return the Walsh–Hadamard transform `H a` along one axis, whose length
-  must be a power of two. The transform is not normalized: applying it twice
+  must be a power of two. The transform is not normalized, so applying it twice
   multiplies by the length. Without `field` the input is converted to
-  `float64`, or `complex128` when complex; with a `pyfastcd.FiniteField` it
+  `float64`, or `complex128` when complex, and with a `pyfastcd.FiniteField` it
   holds residues, with a trailing polynomial axis for an extension field
   that `axis` does not count. A length that is not a power of two or an axis
-  out of range raises `ValueError`; nonnumeric input raises `TypeError`, and
+  out of range raises `ValueError`. Nonnumeric input raises `TypeError`, and
   so does a `BinaryField`, over which the transform is not invertible.
 
 - `dyadic_convolve(a, b, *, field=None) -> numpy.ndarray`
@@ -1284,7 +1284,7 @@ the samples have small integer coefficients, so the checks are exact.
 - **Cancellation.** Over C the quadratic norm `Q(d)` is a sum of squares
   that can cancel. Where the floating-point sum is not well above its
   rounding error, it is formed in rational arithmetic from the stored
-  coefficients and rounded once. So whether it vanishes, in `has_inverse`,
+  coefficients and rounded once. Whether it vanishes, in `has_inverse`,
   `inverse`, `is_nilpotent` and, through level 3, `is_zero_divisor`, is
   decided exactly, and inverses, powers and minimal polynomials use the
   rounded exact value. A complex result is accurate relative to the
