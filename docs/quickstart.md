@@ -189,7 +189,7 @@ they differ in [characteristic 2](#characteristic-2).
 
 ## Explicit coefficient fields
 
-Everything above used real coefficients. Complex coefficients and finite
+Everything above uses real coefficients. Complex coefficients and finite
 fields of odd characteristic are selected as in pyfastcd:
 
 ```python
@@ -238,7 +238,7 @@ A.factor_embedding(0, u)                # the image of u from the first factor
 
 The signed component of a central-product algebra lies in a tensor product
 of Cayley–Dickson algebras, which in general is neither flexible nor
-power-associative; [Conventions and results](mathematics.md#elements-of-the-loop-algebra-of-a-central-product)
+power-associative. [Conventions and results](mathematics.md#elements-of-the-loop-algebra-of-a-central-product)
 lists what follows.
 
 ## Structure
