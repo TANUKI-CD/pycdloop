@@ -5,7 +5,8 @@ of the Cayley--Dickson algebra of dimension ``2**n``, central products of such
 loops, and the loop algebras of both over the real numbers, the complex
 numbers and finite fields. Where 2 is invertible, products in a loop algebra
 are evaluated through its decomposition into a group algebra and a
-Cayley--Dickson algebra, with the Cayley--Dickson arithmetic delegated to
+Cayley--Dickson algebra, or for a central product a tensor product of
+Cayley--Dickson algebras, with the Cayley--Dickson arithmetic delegated to
 :mod:`pyfastcd`. In characteristic 2, where there is no such decomposition,
 they are evaluated from the multiplication table, or by lifting to a field
 in which there is one.

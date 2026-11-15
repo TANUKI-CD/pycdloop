@@ -114,7 +114,8 @@ corpus has 4,764 pairs, 2,440 real from 22 families and 2,324 complex from
 - **Dense:** unit-norm Gaussian coefficients, uniform coefficients in
   `[-1, 1)`, and exactly representable Rademacher coefficients. The dense
   rows of the tables pool the first two.
-- **Sparse:** supports of one, four and `D/8` loop elements.
+- **Sparse:** supports of one, four and `D/8` loop elements, the last of
+  them at least one.
 - **Correlated:** `y = x`, and `y = ±x + 2^-40 noise`.
 - **Magnitude:** alternating magnitudes over exponents `[-24, 24]`.
 - **Component cancellation:** `signed_cancel`, where `b = a + 2^-40 noise`

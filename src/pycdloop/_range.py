@@ -154,6 +154,8 @@ class Wide:
         """Return the numbers as floats, rounded where they are subnormal."""
 
         def part(value: _Part) -> np.ndarray:
+            """Round one part to floats."""
+
             mantissa, exponent = value
             bounded = np.clip(exponent, -_LIMIT, _LIMIT).astype(np.intc)
             rounded: np.ndarray = np.ldexp(mantissa, bounded)
@@ -171,6 +173,8 @@ class Wide:
         """Return the numbers in another shape."""
 
         def part(value: _Part) -> _Part:
+            """Reshape one part."""
+
             mantissa, exponent = np.broadcast_arrays(*value)
             return mantissa.reshape(shape), exponent.reshape(shape)
 
@@ -183,6 +187,8 @@ class Wide:
         """Return one-dimensional arrays of numbers joined end to end."""
 
         def part(values: list[_Part]) -> _Part:
+            """Join the mantissas and the exponents of one part."""
+
             flat = [np.broadcast_arrays(*value) for value in values]
             return (
                 np.concatenate([np.atleast_1d(pair[0]) for pair in flat]),
@@ -203,6 +209,8 @@ class Wide:
         """Return the numbers at an index, as indexing an array does."""
 
         def part(value: _Part) -> _Part:
+            """Index one part."""
+
             mantissa, exponent = np.broadcast_arrays(*value)
             return mantissa[index], exponent[index]
 
@@ -252,6 +260,8 @@ class Wide:
         """Return the numbers with a trailing axis of length 1."""
 
         def part(value: _Part) -> _Part:
+            """Add the axis to one part."""
+
             return value[0][..., None], value[1][..., None]
 
         return Wide(
@@ -262,6 +272,8 @@ class Wide:
         """Return the numbers with those at a Boolean index taken from *other*."""
 
         def part(mine: _Part, theirs: _Part) -> _Part:
+            """Choose one part place by place."""
+
             return (
                 np.where(index, theirs[0], mine[0]),
                 np.where(index, theirs[1], mine[1]),
@@ -398,6 +410,8 @@ def total(values: Wide) -> Wide:
     """Return the sums of wide numbers along the last axis."""
 
     def part(value: _Part) -> _Part:
+        """Sum one part along the last axis."""
+
         mantissa, exponent = np.broadcast_arrays(*value)
         top = exponent.max(axis=-1, keepdims=True)
         down = np.clip(exponent - top, -_LIMIT, 0).astype(np.intc)

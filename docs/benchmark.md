@@ -422,9 +422,9 @@ python benchmarks/protocols.py --protocol all --output results/run.json --cpu 2
 ```
 
 The three protocols write `run.real.json`, `run.domains.json` and
-`run.central.json` with their reports, and take about twelve minutes
+`run.central.json` with their reports, and take about ten minutes
 together on the archive's host; the second `domains` run over the fields of
-characteristic 2 takes about seven minutes more. The archived `central` run
+characteristic 2 takes about six minutes more. The archived `central` run
 was given a longer list of factor pairs with `--factors`; the README of the
 archive records the exact commands. The corpus is written to
 `benchmark-corpora/` on first use. `benchmarks/test_benchmark.py` tests the

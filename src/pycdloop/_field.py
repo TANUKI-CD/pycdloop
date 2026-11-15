@@ -379,9 +379,10 @@ class _CoefficientField:
         if self.kind == "finite":
             values = self.field.asarray(np.ascontiguousarray(a))
             return np.asarray((values**exponent).coefficients).reshape(a.shape)
-        # Binary exponentiation by multiplication gives the exact power
-        # whenever that power is representable, which the power function of
-        # NumPy does not
+        # Over R, binary exponentiation by multiplication gives the exact
+        # power whenever that power is representable, which the power
+        # function of NumPy does not. Over C each part of a product is
+        # rounded, and the power need not be exact
         result = a.copy() if exponent & 1 else None
         base = a
         count = exponent

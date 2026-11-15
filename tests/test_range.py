@@ -1257,3 +1257,40 @@ def test_pickled_split_arrays_and_elements_are_checked() -> None:
     assert bool((pickle.loads(pickle.dumps(values.split())) == values.split()).all())
     with pytest.raises(ValueError, match="dtype and shape"):
         _rebuild_array(real, values.to_numpy().astype(np.float32))
+
+
+def test_unpickled_split_forms_have_the_shape_of_one_element() -> None:
+    """Split-form data of another shape, or for characteristic 2, is rejected."""
+
+    algebra = cdl.LoopAlgebra(cdl.CDLoop(2), char=5)
+    element = algebra.random(6)
+    spectral, signed = (np.array(part) for part in element._data("split"))
+    assert _rebuild(algebra, "split", (spectral, signed)) == element
+    for shape in ((3, 4), (1, 4)):
+        batch = np.zeros(shape, dtype=np.uint32)
+        with pytest.raises(ValueError, match="dtype and shape"):
+            _rebuild(algebra, "split", (batch, batch))
+        with pytest.raises(ValueError, match="dtype and shape"):
+            _rebuild(algebra, "split", (spectral, batch))
+    binary = cdl.LoopAlgebra(cdl.CDLoop(2), char=2)
+    record = np.zeros(4, dtype=np.uint32)
+    with pytest.raises(ValueError, match="no split form"):
+        _rebuild(binary, "split", (record, record))
+    with pytest.raises(ValueError, match="no split form"):
+        _rebuild_split(binary, record[None], record[None])
+    assert _rebuild(binary, "loop", np.zeros((2, 4), dtype=np.uint32)) == 0
+
+
+def test_any_integer_is_an_exponent() -> None:
+    """An exponent beyond every float raises nothing over R and C."""
+
+    loop = cdl.CDLoop(2)
+    for selectors in ({}, {"deg": 2}):
+        algebra = cdl.LoopAlgebra(loop, **selectors)
+        unit = algebra.basis(loop.basis(1))
+        # e_1 has order 4 in the loop, and its cube is the loop element -e_1
+        assert unit ** (10**400 + 3) == algebra.basis(-loop.basis(1))
+        assert algebra.one() ** 10**400 == 1
+        with np.errstate(all="ignore"):
+            grown = (algebra.one() + unit) ** 10**400
+        assert not np.isfinite(grown.to_numpy()).all()

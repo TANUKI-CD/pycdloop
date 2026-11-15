@@ -20,7 +20,8 @@ defined in `src/pycdloop/_version.py`.
   are those of pyfastcd; `char=2` selects F_(2^k) for `k` up to 12.
 - `BinaryField` and `BinaryFieldElement`: the fields F_(2^k) and their
   scalars, with the properties and scalar constructors of
-  `pyfastcd.FiniteField` and Conway polynomials as default moduli.
+  `pyfastcd.FiniteField` and Conway polynomials as default moduli of the
+  extension fields.
 - `Element`, `ElementArray` and `SplitArray`: immutable elements, NumPy-backed
   batches in the loop basis, and batches in the split form in which products
   need no transform.
@@ -49,7 +50,8 @@ defined in `src/pycdloop/_version.py`.
 - The extension module `pycdloop._core`, with compiled kernels for the
   Walsh–Hadamard transform and for the change of coordinates between the
   loop basis and the split form, over R, C and finite fields. Their results
-  are bit-identical to the reference evaluation in `_transform.py`.
+  are bit-identical to the reference evaluations in `_transform.py` and
+  `_field.py`.
 - `pycdloop.linalg` (rank, row reduction and null spaces over the coefficient
   fields), `pycdloop.codes` (translate matrices, generator matrices of left,
   right and two-sided ideals, a test for ideals, and export to GAP and

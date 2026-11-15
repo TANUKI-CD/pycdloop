@@ -2,7 +2,7 @@
 
 # pycdloop - v0.1.0
 
-pycdloop is a Python package for arithmetic in Cayley–Dickson loops, their central products, and the loop algebras of both over the real numbers, the complex numbers, and finite fields. It is built on [pyfastcd](https://pypi.org/project/pyfastcd), the Python interface of [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), and uses its quasilinear Cayley–Dickson multiplication to multiply in a loop algebra of dimension `2N` with `O(N log N)` operations. The algorithms are those of the accompanying paper *Quasilinear multiplication in Cayley–Dickson loop algebras* (H. Lemley), which will be publicly available in the near future.
+pycdloop is a Python package for arithmetic in Cayley–Dickson loops, their central products, and the loop algebras of both over the real numbers, the complex numbers, and finite fields. It is built on [pyfastcd](https://pypi.org/project/pyfastcd), the Python interface of [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), and uses its quasilinear Cayley–Dickson multiplication to multiply in the loop algebra of a Cayley–Dickson loop, of dimension `2N`, with `O(N log N)` operations. The loop algebras of central products are multiplied by the same methods, with a further logarithmic factor for each further factor that grows. The algorithms are those of the accompanying paper *Quasilinear multiplication in Cayley–Dickson loop algebras* (H. Lemley), which will be publicly available in the near future.
 
 The canonical source repository is
 [git.tanuki-cd.com/algebraity/pycdloop](https://git.tanuki-cd.com/algebraity/pycdloop).
@@ -13,7 +13,7 @@ The canonical source repository is
 Q_n := { +e_p, -e_p : 0 <= p < 2^n },     e_p e_q = sigma_n(p, q) e_(p XOR q)
 ```
 
-The Cayley–Dickson loop `Q_n` consists of the signed basis elements of the Cayley–Dickson algebra `A_n` of dimension `N = 2^n`, with the basis and signs of fastCD. Its loop algebra has one basis element `[x]` for each loop element `x`, and an element is stored as an array of shape `(2, N)`: row 0 holds the coefficients of `[e_p]` and row 1 those of `[-e_p]`. Where 2 is invertible in the coefficient field `F`, the algebra decomposes as `F^N ⊕ A_n`, and products are evaluated in that decomposition, so that a Walsh–Hadamard transform turns the first summand into coordinatewise multiplication, and pyfastcd multiplies in the second. Over the fields F_(2^k) there is no such decomposition, and a product is instead lifted to a field of large odd characteristic, computed there in the same way, and reduced. [Conventions and results](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/mathematics.md) gives the details, including central products and characteristic 2.
+The Cayley–Dickson loop `Q_n` consists of the signed basis elements of the Cayley–Dickson algebra `A_n` of dimension `N = 2^n`, with the basis and signs of fastCD. Its loop algebra has one basis element `[x]` for each loop element `x`, and an element is stored as an array of shape `(2, N)`, with a further axis for the polynomial coefficients over an extension field: row 0 holds the coefficients of `[e_p]` and row 1 those of `[-e_p]`. Where 2 is invertible in the coefficient field `F`, the algebra decomposes as `F^N ⊕ A_n`, and products are evaluated in that decomposition, so that a Walsh–Hadamard transform turns the first summand into coordinatewise multiplication, and pyfastcd multiplies in the second. Over the fields F_(2^k) there is no such decomposition, and a product is instead lifted to a field of large odd characteristic, computed there in the same way, and reduced. [Conventions and results](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/mathematics.md) gives the details, including central products and characteristic 2.
 
 ## Installation
 
@@ -54,7 +54,7 @@ B = cdl.LoopAlgebra(cdl.CentralProduct(2, 3), char=13)   # Q_2 * Q_3 over F_13
 C = cdl.LoopAlgebra(Q, char=2, deg=8)                    # Q_3 over F_256
 ```
 
-An `Element` is one immutable element of a loop algebra, an `ElementArray` holds a batch in a NumPy coefficient array of shape `(..., 2, N)`, and a `SplitArray` holds a batch in the decomposed coordinates, where products need no transform. See the [quick start](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/quickstart.md) and the [API reference](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/api.md).
+An `Element` is one immutable element of a loop algebra, an `ElementArray` holds a batch in a NumPy coefficient array of shape `(..., 2, N)`, followed over an extension field by the polynomial axis, and a `SplitArray` holds a batch in the decomposed coordinates, where products need no transform. See the [quick start](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/quickstart.md) and the [API reference](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/api.md).
 
 ## Benchmark
 

@@ -91,7 +91,9 @@ Below, `L` is a loop, `A` a loop algebra, `x`, `y`, `z` elements, `X` an
 
   Return `c[k] = sum(a[i] * b[i ^ k])` along the last coefficient axis, the
   product in the group algebra of the elementary abelian 2-group. Leading
-  axes broadcast. `field` is a `pyfastcd.FiniteField` or a `BinaryField`.
+  axes broadcast. `field` is a `pyfastcd.FiniteField` or a `BinaryField`;
+  without it the operands are real, or complex when either is. Over an
+  extension field the convolved axis is the one before the polynomial axis.
   Operands of different or non-power-of-two length raise `ValueError`.
 
 ---
@@ -437,12 +439,16 @@ coefficient field, so `LoopAlgebra(L, char=2, deg=3)` and
 `LoopAlgebra(L, field=BinaryField(deg=3))` are the same object.
 
 Every loop has a loop algebra in characteristic 2. Over the other fields
-the signed components are held by pyfastcd, whose storage limits apply: a
-factor of level 60 or more raises `OverflowError`, and finite fields reach
-the limit a few levels earlier. For a central product the sign table of the
-factor of smallest level is built when the algebra is created, or in
-characteristic 2 when the algebra to which products are lifted is first
-needed, so its memory grows with the square of that factor's order.
+the signed components are held by pyfastcd, whose storage limits apply:
+over R a factor of level 60 or more raises `OverflowError`, and over C and
+over finite fields the limit is up to a few levels lower, depending on the
+characteristic and the degree. A central product with a factor of level 1
+over R also uses the algebra over C. Creating the algebra of a central
+product allocates one byte for each of the `D` basis indices, and a sign
+table for every factor but one of largest level, whose memory grows with
+the square of that factor's order; a product too large for this raises
+`MemoryError`. In characteristic 2 these are built when the algebra to
+which products are lifted is first needed.
 
 ### Properties
 
@@ -498,8 +504,10 @@ needed, so its memory grows with the square of that factor's order.
 - `default_signed_algorithm: str`
 
   The method that `"auto"` selects for the signed components of a single
-  product. For a Cayley–Dickson loop, a batch follows the batch choice of
-  pyfastcd, `cd_algebra.default_batch_algorithm`.
+  product. For a Cayley–Dickson loop outside characteristic 2, a batch
+  follows the batch choice of pyfastcd,
+  `cd_algebra.default_batch_algorithm`; in characteristic 2 the choice is
+  that of the algebra to which products are lifted.
 
 ### Construction
 
@@ -572,8 +580,9 @@ needed, so its memory grows with the square of that factor's order.
 
 - `array(values) -> ElementArray`
 
-  Copy `values` into a new array: an element, an array of the algebra, or
-  coefficients of shape `batch_shape + coefficient_shape`.
+  Copy `values` into a new array: an element, an `ElementArray` of the
+  algebra, or coefficients of shape `batch_shape + coefficient_shape`. A
+  `SplitArray` raises `TypeError`; convert it with `to_loop()`.
 
 - `asarray(values, *, copy=None) -> ElementArray`
 
@@ -658,30 +667,35 @@ The three methods that return idempotents are not defined in characteristic
 
 - `character_automorphism(a, x)`
 
-  Apply `e_t -> (-1)**popcount(a & t) e_t`: exchange the coefficients of
-  `[e_t]` and `[-e_t]` wherever `popcount(a & t)` is odd. This is an
-  algebra automorphism for every index `a`.
+  Apply `e_t -> (-1)**popcount(a & t) e_t` to an element or
+  `ElementArray`: exchange the coefficients of `[e_t]` and `[-e_t]`
+  wherever `popcount(a & t)` is odd. This is an algebra automorphism for
+  every index `a`.
 
 - `embed(x)`
 
-  For a Cayley–Dickson loop `Q_n`: return the image of an element or array
-  of the loop algebra of `Q_k`, `k <= n`, over the same field.
+  For a Cayley–Dickson loop `Q_n`: return the image of an element or
+  `ElementArray` of the loop algebra of `Q_k`, `k <= n`, over the same
+  field. For a central product it raises `TypeError`.
 
 - `factor_embedding(i, x)`
 
-  For a central product: return the image of an element or array of the
-  loop algebra of factor `i`, over the same field. The map is an injective
-  homomorphism of unital algebras.
+  For a central product: return the image of an element or `ElementArray`
+  of the loop algebra of factor `i`, over the same field. The map is an
+  injective homomorphism of unital algebras. For a Cayley–Dickson loop it
+  raises `TypeError`.
 
 ### Linear algebra
 
 - `left_matrix(x, *, basis="loop")`, `right_matrix(x, *, basis="loop")`
 
   Return the matrix of `y -> x y`, or of `y -> y x`, for one element. With
-  `basis="loop"` the matrix `M` satisfies
-  `(x * y).coefficients.ravel() == M @ y.coefficients.ravel()`: up to
-  rounding over R and C, and exactly, with the right side reduced modulo
-  `char`, over prime fields. With
+  `basis="loop"` the matrix `M` of `y -> x y` satisfies
+  `(x * y).coefficients.ravel() == M @ y.coefficients.ravel()`, and that of
+  `y -> y x` the same with `y * x`: up to rounding over R and C, and exactly
+  over prime fields when the right side is computed in integers that do not
+  overflow and reduced modulo `char`. The entries of `M` are `uint32`
+  there, and their products can exceed that type. With
   `basis="split"` it acts on the spectral coordinates followed by the
   signed coordinates and is block diagonal; this basis is not defined in
   characteristic 2. Over an extension field the matrix has a trailing
@@ -696,8 +710,9 @@ The three methods that return idempotents are not defined in characteristic
 - `subalgebra_generated_by(x) -> GeneratedSubalgebra`
 
   Describe the unital subalgebra generated by one element. Defined where
-  powers do not depend on bracketing: for a Cayley–Dickson loop, and for
-  every loop in characteristic 2.
+  powers are defined: for a Cayley–Dickson loop, and for every loop in
+  characteristic 2. For a central product over another field it raises
+  `TypeError`.
 
 ### GeneratedSubalgebra
 
@@ -851,8 +866,9 @@ Results are new objects, and arrays broadcast their batch axes.
   An integer power, where powers do not depend on bracketing: in the loop
   algebra of a Cayley–Dickson loop, and in every loop algebra of
   characteristic 2. Negative powers use the inverse. Any Python integer is
-  accepted over a finite field; over R and C an exponent too large to
-  convert to a `float` raises `OverflowError`. The cost grows with `log k`,
+  accepted as an exponent; over R and C a power whose value leaves the
+  range of the floats holds infinities, zeros or NaNs. The cost grows with
+  `log k`,
   and in characteristic 2 a power takes at most two products. In the loop
   algebra of a central product over R, C or a field of odd characteristic
   the operator raises `TypeError`. An exponent that is not an integer, or is
@@ -861,7 +877,8 @@ Results are new objects, and arrays broadcast their batch axes.
 - `x == y`, `x != y`
 
   Compare exactly. For an `Element` the result is a `bool`; for an array it
-  is a Boolean array over the broadcast batch shape.
+  is a Boolean array over the broadcast batch shape, which is a NumPy
+  Boolean scalar when that shape is empty.
 
   - An element or record equals a field scalar `r` when it is `r` times the
     identity. Over a finite field, integers are not reduced for comparison,
@@ -934,8 +951,9 @@ In the next three methods `y` stands for the operand `other`.
   defined for a Cayley–Dickson loop, is the pair of the coordinatewise
   reciprocal and `conjugate(d) / Q(d)`, and exists exactly when every
   spectral coordinate is nonzero and the signed component has `Q(d) != 0`.
-  From level 4 on an element can have other two-sided inverses, also where
-  this one does not exist; they are not computed. In
+  From level 4 on an element can have other two-sided inverses, and over C
+  and finite fields also where this one does not exist; they are not
+  computed. In
   characteristic 2 the inverse is defined for every loop, exists when the
   augmentation is nonzero, and equals `x**3 / aug(x)**4`. Where it does not
   exist, `ZeroDivisionError` is raised. A batch checks every record before
@@ -1018,8 +1036,11 @@ The following are methods of `Element` only.
   field coefficients with the constant term first. Where powers are
   defined. Over R and C, coincidences between spectral values are detected
   by exact comparison of floating-point numbers, and whether a spectral
-  value is a root of the polynomial of the signed component is decided for
-  the stored coefficients exactly. In characteristic 2 the polynomial is
+  value is a root of the polynomial of the signed component is decided
+  exactly, for the spectrum and the signed component as they are held. For
+  an element given by loop-basis coefficients these are rounded sums of
+  the coefficients, so a coincidence that holds for the coefficients can
+  be missed. In characteristic 2 the polynomial is
   `(t - aug(x))**j` for some `j` from 1 to 4.
 
 Methods marked "where powers are defined" are available in the loop algebra
@@ -1092,7 +1113,8 @@ trailing polynomial axis for an extension field, and the results are exact.
 
   Return the reduced row echelon form and the pivot column of each nonzero
   row. Over R and C the result is numerical. With `tol`, entries of a
-  pivot column at or below `tol` count as zero. Without it, an entry
+  pivot column at or below `tol` count as zero, in the rows that do not
+  hold a pivot yet. Without it, such an entry
   counts as zero when it is no larger than the rounding that elimination
   can have left in its place: `max(rows, columns)` times the machine
   epsilon times the largest entry of its row, multiplied by the growth of
@@ -1102,7 +1124,9 @@ trailing polynomial axis for an extension field, and the results are exact.
   row that depends on the others, exactly or up to rounding, reduces to a
   row of zeros, and `tol=0` treats every nonzero entry as significant. An
   entry that counts as zero is zero in the elimination too, and is not
-  multiplied by the pivot row.
+  multiplied by the pivot row. The rows that already hold a pivot are
+  always cleared, whatever the size of their entries. NaN and infinite
+  entries raise nothing, and the result is then without meaning.
 
   Elimination uses scaled partial pivoting: of the entries that can be
   pivots it takes the one that is largest relative to the largest entry
@@ -1115,7 +1139,8 @@ trailing polynomial axis for an extension field, and the results are exact.
 - `nullspace(matrix, *, field=None, tol=None) -> numpy.ndarray`
 
   Return an array whose rows are a basis of the vectors `v` with
-  `matrix @ v = 0`. Over R and C the rows are orthonormal.
+  `matrix @ v = 0`. Over R and C the rows are orthonormal, and `tol` is the
+  singular value threshold of `rank`.
 
 A matrix that does not have two index axes raises `ValueError`, and a
 `field` that is not a field object raises `TypeError`.
@@ -1137,7 +1162,8 @@ extension field by the polynomial axis.
 - `generator_matrix(elements, *, side="left", closure=True, tol=None) -> numpy.ndarray`
 
   Return a generator matrix in reduced row echelon form of the code
-  generated by one element or an iterable of elements. `side` is `"left"`,
+  generated by one element or an iterable of elements, of which there has
+  to be at least one, or `ValueError` is raised. `side` is `"left"`,
   `"right"` or `"two-sided"`. With `closure=True` the code is the ideal the
   elements generate on that side: the smallest subspace that contains them
   and is closed under translation by every loop element on the left, on the
@@ -1192,8 +1218,8 @@ extension field by the polynomial axis.
 
 ## pycdloop.testing
 
-Sampled identity checks. Each draws `samples` random elements and returns
-whether the identity held on all of them: `False` exhibits a counterexample
+Sampled identity checks. Each draws `samples` random elements for each
+operand of the identity and returns whether it held on all of them: `False` exhibits a counterexample
 and is conclusive, `True` only reports that none was found. Over R and C
 the samples have small integer coefficients, so the checks are exact.
 
@@ -1201,7 +1227,8 @@ the samples have small integer coefficients, so the checks are exact.
 
   Return `count` random elements. With `exact=True`, coefficients over R,
   and the real and imaginary parts of coefficients over C, are integers
-  between -3 and 3.
+  between -3 and 3. With `exact=False` they are those of
+  `LoopAlgebra.random`. Over a finite field `exact` changes nothing.
 
 - `is_commutative(algebra, samples=32, rng=None)`
 - `is_associative(algebra, samples=32, rng=None)`
@@ -1244,10 +1271,12 @@ the samples have small integer coefficients, so the checks are exact.
   itself out of range is an infinity, a zero or a NaN; over C it is out of
   range when either of its parts is. Sums are plain floating-point sums. A
   product, and the conversion between loop-basis coefficients and split
-  form that every operation on loop-basis coefficients passes through,
-  form sums of up to `2 D` coefficients, and a complex product a
-  difference of two products. They can overflow when coefficients are
-  within a factor `4 D` of the largest float. Accuracy is that of
+  form that products, powers, inverses and the predicates of loop-basis
+  operands pass through, form sums of up to `2 D` coefficients, and a
+  complex product a difference of two products. They can overflow when
+  coefficients are within a factor `4 D` of the largest float, and an
+  infinity in one coordinate of the split form makes every loop-basis
+  coefficient of the record an infinity or a NaN. Accuracy is that of
   floating-point arithmetic: relative to the largest of the terms that
   are added, so a coefficient that is a small difference of large terms
   carries their rounding. A product is accurate relative to the largest
@@ -1260,18 +1289,23 @@ the samples have small integer coefficients, so the checks are exact.
   decided exactly, and inverses, powers and minimal polynomials use the
   rounded exact value. A complex result is accurate relative to the
   modulus of each coefficient.
-- **Validity.** The storage of an `ElementArray` or `SplitArray` is
-  writable. Once it has been handed out, through `coefficients`,
-  `to_numpy(copy=False)`, a NumPy conversion that does not copy, the parts
-  of a `SplitArray`, `asarray` of an ndarray or `out=`, every operation
-  that reads it checks it again, for that array and for every array that
-  shares the storage: storage whose dtype or shape was changed, or that
-  over a finite field holds a value that is not below the characteristic,
-  raises `ValueError`. Copying and pickling read the storage as any
-  operation does, and unpickling checks the data it is given in the same
-  way. An `Element` is immutable: the arrays it returns are read-only and
-  cannot be made writable, and writing to the array it was created from
-  does not change it.
+- **Validity.** The storage of an `ElementArray` or `SplitArray` can be
+  written to from outside once it has been handed out, through
+  `coefficients`, `to_numpy(copy=False)`, a NumPy conversion that does not
+  copy, the parts of a `SplitArray`, `asarray` of an ndarray or `out=`.
+  From then on every arithmetic operation, comparison, predicate and
+  decomposition, and `copy()`, `copy.copy`, `copy.deepcopy` and pickling,
+  check it before they read it, for that array and for every array that
+  shares the storage: storage whose dtype was changed, whose trailing axes
+  are no longer those of the coefficients, or that over a finite field
+  holds a value that is not below the characteristic, raises `ValueError`.
+  `to_numpy()` and the NumPy conversions return the storage as it is,
+  without this check. An `Element` is immutable: the views of its
+  coefficients that it returns, from `coefficients`,
+  `to_numpy(copy=False)` and NumPy conversions that do not copy, are
+  read-only and cannot be made writable, its other methods return
+  independent arrays, and writing to the array it was created from does
+  not change it.
 
 ### NumPy interfaces
 
@@ -1287,9 +1321,10 @@ Pickling, `copy.copy` and `copy.deepcopy` of arrays create independent
 storage. Elements are immutable, so `copy.copy` returns the element itself.
 A pickled element records the form it was created with. Loops and algebras
 pickle to the same cached objects. Data that does not have the dtype and
-shape of the algebra, or that over a finite field holds a value that is
-not below the characteristic, raises `ValueError` when it is unpickled
-into an array or an element.
+shape of the algebra, that over a finite field holds a value that is not
+below the characteristic, or that is in split form for an algebra of
+characteristic 2, raises `ValueError` when it is unpickled into an array
+or an element.
 
 ---
 
@@ -1298,7 +1333,8 @@ into an array or an element.
 - `TypeError`
 
   An unsupported operand or scalar type, including a scalar of another
-  field as an operand; an `ElementArray` combined with a
+  field as an operand, or given to `scalar` or `from_terms`; an
+  `ElementArray` combined with a
   `SplitArray`; direct construction of `Element`, `ElementArray`,
   `SplitArray` or `BinaryFieldElement`; `**`, `inverse`, `has_inverse`,
   `is_nilpotent`, `minimal_polynomial` or `subalgebra_generated_by` in the
@@ -1310,7 +1346,8 @@ into an array or an element.
 - `ValueError`
 
   Mismatched parents; two `BinaryFieldElement` scalars of different fields,
-  or a scalar of another field given as a coefficient; a wrong coefficient
+  or a scalar of another field among coefficients given to a constructor
+  or assigned to an item; a wrong coefficient
   shape; a broadcast failure; an unknown algorithm name, including `"split"`
   in characteristic 2 and `"lift"` elsewhere; a subset that is not a subloop
   where one is required; a map that is not a bijection; a table requested
@@ -1333,8 +1370,7 @@ into an array or an element.
 
   A total doubling level above 62; `len` of a loop of total level 62; a
   loop algebra outside characteristic 2 for a loop beyond the storage
-  limits of pyfastcd; over R and C, an exponent of `**` too large to
-  convert to a `float`.
+  limits of pyfastcd.
 
 - `numpy.linalg.LinAlgError`
 
@@ -1343,14 +1379,18 @@ into an array or an element.
   computes a rank.
 
 Operators and products do not raise on NaN, infinity or overflow of
-coefficients over R and C.
+coefficients over R and C. They follow NumPy's floating-point error state,
+so by default an overflow emits a `RuntimeWarning`. `linalg.row_reduce` and
+`pycdloop.codes` do not raise on NaN or infinite entries either, and their
+results are then without meaning.
 
 ---
 
 ## Threads
 
 Loops, algebras, fields, scalars and loop elements are immutable and can be
-shared between threads. They are cached, and each is built once: threads
+shared between threads. Loops, fields and algebras are cached, and each is
+built once: threads
 that construct the same loop, field or algebra at the same time all receive
 the same object. An `Element` derives its second form, or in
 characteristic 2 the transforms of its lifted coefficients, on first use

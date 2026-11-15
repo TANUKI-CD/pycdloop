@@ -5,8 +5,9 @@ title: "pycdloop: arithmetic in Cayley-Dickson loops and their loop algebras"
 abstract: >-
   A Python package for Cayley-Dickson loops, their central products, and the
   loop algebras of both over the real numbers, the complex numbers, and
-  finite fields, with quasilinear O(N log N) multiplication built on the
-  Cayley-Dickson arithmetic of fastCD.
+  finite fields, with quasilinear multiplication built on the
+  Cayley-Dickson arithmetic of fastCD: O(N log N) operations in the loop
+  algebra of a Cayley-Dickson loop of order 2N.
 authors:
   - family-names: Lemley
     given-names: Harrison

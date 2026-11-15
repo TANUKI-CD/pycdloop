@@ -124,7 +124,7 @@ def wht(a: Any, *, axis: int = -1, field: Any = None) -> np.ndarray:
         If the length of the transformed axis is not a power of two.
     TypeError
         For a :class:`BinaryField`: modulo 2 every entry of the transform
-        matrix is 1, so the transform is not invertible.
+        matrix is 1, so beyond length 1 the transform is not invertible.
 
     Examples
     --------
@@ -177,7 +177,7 @@ def dyadic_convolve(a: Any, b: Any, *, field: Any = None) -> np.ndarray:
     2-group of order ``N``. It is computed from three Walsh--Hadamard
     transforms and ``N`` coordinatewise products.
 
-    In characteristic 2 the transform is not invertible, and the convolution
+    In characteristic 2 the transform cannot be used, and the convolution
     is computed on coefficients read as integers over a large prime field,
     or over an extension of it when the field is not F_2, and then reduced.
 

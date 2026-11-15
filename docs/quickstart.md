@@ -136,8 +136,9 @@ coefficients are read.
 
 ## Batches
 
-For a batch, the last two axes hold the coefficients of each element, and
-the leading axes follow NumPy's broadcasting rules.
+For a batch, the trailing axes hold the coefficients of each element, two
+axes or three over an extension field, and the leading axes follow NumPy's
+broadcasting rules.
 
 ```python
 rng = np.random.default_rng(1234)
@@ -184,8 +185,9 @@ A.signed_algorithms         # ('auto', 'direct', 'cariow_cariowa', 'quasilinear'
 through the decomposition; `"table"` evaluates the definition with
 `O(D^2)` multiplications and is useful as an independent check.
 `signed_algorithm` names the method for the product of signed components.
-`A.algorithms` and `A.signed_algorithms` list the names an algebra accepts;
-they differ in [characteristic 2](#characteristic-2).
+`A.algorithms` and `A.signed_algorithms` list the names an algebra accepts.
+The methods for signed components depend on the loop and on the coefficient
+field, and `algorithms` differs in [characteristic 2](#characteristic-2).
 
 ## Explicit coefficient fields
 
@@ -210,12 +212,12 @@ z = E.scalar(c) + E.basis(Q3.basis(1))
 z.augmentation() == c + 1           # True: a scalar of the field
 ```
 
-Over a finite field, coefficients are integers or scalars of the field,
-`kappa()` and `spectrum()` return pyfastcd arrays of field scalars, and
-`coefficient()` and `augmentation()` return field scalars. The fields
-F_(2^k) are selected in the same way, with `char=2`, but their loop
-algebras behave differently; they have a [section](#characteristic-2) of
-their own below.
+Over a finite field, coefficients are integers or scalars of the field, and
+`coefficient()` and `augmentation()` return field scalars. In odd
+characteristic `kappa()` and `spectrum()` return pyfastcd arrays of field
+scalars. The fields F_(2^k) are selected in the same way, with `char=2`, but
+their loop algebras behave differently; they have a
+[section](#characteristic-2) of their own below.
 
 ## Central-product algebras
 

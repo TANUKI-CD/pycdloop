@@ -374,7 +374,9 @@ def row_reduce(
         The field of exact residues.
     tol : float, optional
         Over R and C, entries of a pivot column at or below this magnitude
-        count as zero, in the choice of a pivot and in the elimination.
+        count as zero, in the choice of a pivot and in the elimination, in
+        the rows that do not hold a pivot yet; the rows that hold one are
+        always cleared.
         Without it, an entry counts as zero when it is no larger than the
         rounding that elimination can have left in its place:
         ``max(rows, columns)`` times the machine epsilon times the largest

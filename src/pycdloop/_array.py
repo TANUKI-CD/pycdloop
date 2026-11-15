@@ -12,6 +12,7 @@ from ._validation import (
     ARRAY_TRUTH_MESSAGE,
     MIXED_BASIS_MESSAGE,
     NO_COPY_MESSAGE,
+    NO_SPLIT_MESSAGE,
     STORAGE_MESSAGE,
     _stored,
 )
@@ -519,7 +520,8 @@ class SplitArray(_Batch):
     signed
         The signed components: a ``pyfastcd.ElementArray`` for a
         Cayley--Dickson loop, an ndarray of shape ``batch_shape + (D,)``
-        for a central product. It shares the array's storage.
+        for a central product, with the polynomial axis of an extension
+        field appended. It shares the array's storage.
 
     Notes
     -----
@@ -798,6 +800,8 @@ def _rebuild_split(
 ) -> SplitArray:
     """Recreate a pickled split array, whose data is checked as storage is."""
 
+    if algebra._field.binary:
+        raise ValueError(NO_SPLIT_MESSAGE)
     record = (algebra._size,) + algebra._field.shape
     parts = _check(algebra, spectral, record), _check(algebra, signed, record)
     if parts[0].shape != parts[1].shape:

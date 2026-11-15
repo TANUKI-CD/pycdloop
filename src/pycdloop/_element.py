@@ -13,7 +13,9 @@ from ._validation import (
     CD_ONLY_MESSAGE,
     DIFFERENT_ALGEBRA_MESSAGE,
     NO_COPY_MESSAGE,
+    NO_SPLIT_MESSAGE,
     POWER_MESSAGE,
+    STORAGE_MESSAGE,
     _exponent,
     _index,
     _stored,
@@ -187,12 +189,12 @@ class _Arithmetic:
         """Return an integer power, where powers do not depend on bracketing.
 
         Negative exponents use the inverse. In the loop algebra of a central
-        product over R, C or a field of odd characteristic, powers depend on
-        bracketing and this operator raises ``TypeError``; use
-        :meth:`left_power` or :meth:`right_power`. In characteristic 2 the
-        square of an element is central for every loop, and every element
-        satisfies ``x**4 == aug(x)**4``, with ``aug(x)`` the sum of its
-        coefficients, so a power needs at most two products.
+        product over R, C or a field of odd characteristic, powers can depend
+        on bracketing, and this operator raises ``TypeError`` for every such
+        algebra; use :meth:`left_power` or :meth:`right_power`. In
+        characteristic 2 the square of an element is central for every loop,
+        and every element satisfies ``x**4 == aug(x)**4``, with ``aug(x)`` the
+        sum of its coefficients, so a power needs at most two products.
         """
 
         if not self._algebra._has_powers:
@@ -273,18 +275,18 @@ class _Arithmetic:
     def inverse(self) -> Any:
         """Return the inverse that is a polynomial in the element.
 
-        It is a two-sided inverse. Over R, C and fields of odd
-        characteristic it is defined for a Cayley--Dickson loop, is the pair
-        of the coordinatewise reciprocal and ``conjugate(d) / Q(d)``, and
-        exists exactly when every spectral coordinate is nonzero and the
-        signed component has nonzero quadratic norm. From level 4 on an
-        element can have other two-sided inverses, also where this one does
-        not exist; they are not computed. In characteristic 2 the inverse is
-        defined for every loop, exists when the augmentation ``aug(x)`` is
-        nonzero, and equals ``x**3 / aug(x)**4``. An element without this
-        inverse raises ``ZeroDivisionError``, and a central product outside
-        characteristic 2 raises ``TypeError``. For an array, every record is
-        checked before any result is produced.
+        It is a two-sided inverse. Over R, C and fields of odd characteristic
+        it is defined for a Cayley--Dickson loop, is the pair of the
+        coordinatewise reciprocal and ``conjugate(d) / Q(d)``, and exists
+        exactly when every spectral coordinate is nonzero and the signed
+        component has nonzero quadratic norm. From level 4 on an element can
+        have other two-sided inverses, and over C and finite fields also where
+        this one does not exist; they are not computed. In characteristic 2 the
+        inverse is defined for every loop, exists when the augmentation
+        ``aug(x)`` is nonzero, and equals ``x**3 / aug(x)**4``. An element
+        without this inverse raises ``ZeroDivisionError``, and a central
+        product outside characteristic 2 raises ``TypeError``. For an array,
+        every record is checked before any result is produced.
         """
 
         return self._run(_kernel.inverse, (self,))
@@ -799,8 +801,8 @@ class Element(_Arithmetic):
         Coordinate ``a`` is the value at this element of the character
         ``e_t -> (-1)**popcount(a & t)``, extended linearly. Products act
         coordinatewise on spectra. The result has the type of
-        :meth:`kappa`. Not defined in characteristic 2, where the transform
-        is not invertible.
+        :meth:`kappa`. Not defined in characteristic 2, where the algebra
+        has no decomposition.
         """
 
         self._algebra._require_split("spectrum()")
@@ -960,6 +962,10 @@ def _rebuild(algebra: Any, mode: str, data: Any) -> Element:
     if mode == "loop":
         values = _stored(field, np.array(data), algebra.coefficient_shape)
         return Element._make(algebra, mode, values)
+    if field.binary:
+        raise ValueError(NO_SPLIT_MESSAGE)
     record = (algebra._size,) + field.shape
     spectral, signed = (_stored(field, np.array(part), record) for part in data)
+    if spectral.shape != record or signed.shape != record:
+        raise ValueError(STORAGE_MESSAGE)
     return Element._make(algebra, mode, (spectral, signed))

@@ -1205,12 +1205,15 @@ class LoopAlgebra:
         """Return the matrix of ``y -> x y``.
 
         With ``basis="loop"`` the matrix ``M`` satisfies
-        ``(x * y).coefficients.ravel() == M @ y.coefficients.ravel()`` over
-        R and C, and modulo the characteristic over prime fields; over an
-        extension field it has a trailing polynomial axis and its entries
-        are field elements. With ``basis="split"`` the matrix acts on the
-        spectral coordinates followed by the signed coordinates and is
-        block diagonal; that basis is not defined in characteristic 2.
+        ``(x * y).coefficients.ravel() == M @ y.coefficients.ravel()`` up to
+        rounding over R and C. Over a prime field its entries are ``uint32``
+        residues, and the identity holds when the right side is computed in
+        integers that do not overflow and reduced modulo the
+        characteristic. Over an extension field it has a trailing
+        polynomial axis and its entries are field elements. With
+        ``basis="split"`` the matrix acts on the spectral coordinates
+        followed by the signed coordinates and is block diagonal; that
+        basis is not defined in characteristic 2.
         """
 
         return self._matrix(x, "left", basis)

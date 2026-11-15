@@ -631,9 +631,10 @@ class _SignedLoop:
     def is_diassociative(self, samples: int | None = None) -> bool:
         """Return whether every two elements generate a group.
 
-        Two basis elements generate the signed basis elements with indices
-        in ``{0, p, q, p ^ q}``, so the test checks that all triples of such
-        indices associate. Sampling follows :meth:`is_moufang`.
+        The subloop that two basis elements generate consists of signed basis
+        elements with indices in ``{0, p, q, p ^ q}``, so the test checks that
+        all triples of such indices associate. Sampling follows
+        :meth:`is_moufang`.
         """
 
         for p, q in self._tuples(2, samples):

@@ -35,6 +35,7 @@ STORAGE_MESSAGE = (
     "the coefficient storage of the array no longer has the dtype and shape "
     "of the algebra"
 )
+NO_SPLIT_MESSAGE = "an algebra of characteristic 2 has no split form"
 RESIDUE_MESSAGE = (
     "the coefficient storage of the array holds values that are not residues "
     "of the field"
