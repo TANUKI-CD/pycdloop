@@ -10,7 +10,9 @@ import sys
 from setuptools import Extension, setup
 
 if sys.platform == "win32":
-    compile_args = ["/O2", "/fp:precise"]
+    # The source is C11; the Microsoft compiler accepts ``restrict`` only when
+    # that standard is requested
+    compile_args = ["/O2", "/fp:precise", "/std:c11"]
 else:
     compile_args = ["-O3", "-fno-fast-math", "-ffp-contract=off"]
 

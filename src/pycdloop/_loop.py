@@ -10,6 +10,7 @@ from typing import Any, final
 import numpy as np
 
 from ._validation import (
+    CACHE_LOCK,
     DIFFERENT_LOOP_MESSAGE,
     _basis_index,
     _choice,
@@ -576,18 +577,27 @@ class _SignedLoop:
 
     # Identity tests
 
-    def _tuples(self, arity: int, samples: int | None) -> tuple[np.ndarray, ...]:
-        """Return index arrays covering all tuples, or a random sample of them."""
+    def _tuples(
+        self, arity: int, samples: int | None
+    ) -> Iterator[tuple[np.ndarray, ...]]:
+        """Yield index arrays covering all tuples, or a random sample of them.
+
+        A sample is drawn in blocks, so that the memory of a test does not
+        grow with the number of samples.
+        """
 
         size = self.quotient_order
         if samples is None and size**arity <= _EXHAUSTIVE_LIMIT:
             grids = np.meshgrid(*[np.arange(size)] * arity, indexing="ij", sparse=True)
-            return tuple(grid.astype(np.int64) for grid in grids)
+            yield tuple(grid.astype(np.int64) for grid in grids)
+            return
         count = _SAMPLE_COUNT if samples is None else _index(samples, "samples")
         if count <= 0:
             raise ValueError("samples must be positive")
         generator = np.random.default_rng(0)
-        return tuple(generator.integers(size, size=count) for _ in range(arity))
+        for start in range(0, count, _SAMPLE_COUNT):
+            block = min(_SAMPLE_COUNT, count - start)
+            yield tuple(generator.integers(size, size=block) for _ in range(arity))
 
     def is_commutative(self) -> bool:
         """Return whether the loop is commutative."""
@@ -611,10 +621,12 @@ class _SignedLoop:
         counterexample.
         """
 
-        x, y, z = self._tuples(3, samples)
-        left = self._twist(x, y) * self._twist(z, x) * self._twist(x ^ y, z ^ x)
-        right = self._twist(y, z) * self._twist(x, y ^ z) * self._twist(x ^ y ^ z, x)
-        return bool((left == right).all())
+        for x, y, z in self._tuples(3, samples):
+            left = self._twist(x, y) * self._twist(z, x) * self._twist(x ^ y, z ^ x)
+            inner = self._twist(y, z) * self._twist(x, y ^ z)
+            if (left != inner * self._twist(x ^ y ^ z, x)).any():
+                return False
+        return True
 
     def is_diassociative(self, samples: int | None = None) -> bool:
         """Return whether every two elements generate a group.
@@ -624,11 +636,11 @@ class _SignedLoop:
         indices associate. Sampling follows :meth:`is_moufang`.
         """
 
-        p, q = self._tuples(2, samples)
-        members = (p, q, p ^ q)
-        for triple in itertools.product(members, repeat=3):
-            if (self._associator(*triple) == -1).any():
-                return False
+        for p, q in self._tuples(2, samples):
+            members = (p, q, p ^ q)
+            for triple in itertools.product(members, repeat=3):
+                if (self._associator(*triple) == -1).any():
+                    return False
         return True
 
     # Export
@@ -695,9 +707,11 @@ class CDLoop(_SignedLoop):
 
         level = _level(n, "n")
         if level not in cls._cache:
-            loop = object.__new__(cls)
-            loop._setup((level,))
-            cls._cache[level] = loop
+            with CACHE_LOCK:
+                if level not in cls._cache:
+                    loop = object.__new__(cls)
+                    loop._setup((level,))
+                    cls._cache[level] = loop
         return cls._cache[level]
 
     def __reduce__(self) -> tuple[Any, ...]:
@@ -773,9 +787,11 @@ class CentralProduct(_SignedLoop):
             raise TypeError("a central product needs at least two factors")
         key = tuple(_level(value, "a factor level", minimum=1) for value in levels)
         if key not in cls._cache:
-            loop = object.__new__(cls)
-            loop._setup(key)
-            cls._cache[key] = loop
+            with CACHE_LOCK:
+                if key not in cls._cache:
+                    loop = object.__new__(cls)
+                    loop._setup(key)
+                    cls._cache[key] = loop
         return cls._cache[key]
 
     def __reduce__(self) -> tuple[Any, ...]:
@@ -851,6 +867,8 @@ class LoopElement:
     def __init__(self, loop: Any, index: Any, sign: Any = 1) -> None:
         """Validate the parent, index and sign."""
 
+        if hasattr(self, "sign"):
+            raise AttributeError("LoopElement objects are immutable")
         if not isinstance(loop, _SignedLoop):
             raise TypeError("loop must be a CDLoop or a CentralProduct")
         object.__setattr__(self, "loop", loop)

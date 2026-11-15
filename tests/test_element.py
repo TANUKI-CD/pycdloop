@@ -592,8 +592,11 @@ class CacheTests(ElementTestCase):
         chained = product * x
         self.assertIsNone(product._loop)
         coefficients = product.coefficients
-        self.assertIsNotNone(product._loop)
-        self.assertIs(product.coefficients, coefficients)
+        derived = product._loop
+        self.assertIsNotNone(derived)
+        # The loop form is derived once; each request gets its own array
+        self.assertTrue(np.array_equal(product.coefficients, coefficients))
+        self.assertIs(product._loop, derived)
         self.assertEqual((x + y)._born, "loop")
         self.assertEqual((x * 2)._born, "loop")
         self.assertEqual((product + x)._born, "split")

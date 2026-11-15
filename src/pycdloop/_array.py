@@ -8,14 +8,35 @@ import numpy as np
 
 from . import _kernel
 from ._element import Element, _Arithmetic
-from ._validation import ARRAY_TRUTH_MESSAGE, MIXED_BASIS_MESSAGE
+from ._validation import (
+    ARRAY_TRUTH_MESSAGE,
+    MIXED_BASIS_MESSAGE,
+    NO_COPY_MESSAGE,
+    STORAGE_MESSAGE,
+    _stored,
+)
 
 
-def _batch_key(key: Any, batch_ndim: int) -> tuple[Any, ...]:
+def _check(algebra: Any, values: np.ndarray, record: tuple[int, ...]) -> np.ndarray:
+    """Return the storage of an array after checking what it holds.
+
+    Storage that has been handed out is writable from outside the array, so
+    its dtype, its shape and, over a finite field, its residues are checked
+    again wherever an operation reads it. Storage that only the package has
+    held needs no check, and an array records which kind it has in a flag
+    that it shares with every array that shares its storage.
+    """
+
+    return _stored(algebra._field, values, record)
+
+
+def _batch_key(key: Any, batch_ndim: int, record_ndim: int) -> tuple[Any, ...]:
     """Restrict an index to the batch axes of an array.
 
-    An ellipsis is expanded so that it cannot reach the coefficient axes,
-    and an index that consumes more axes than the batch has is rejected.
+    An index that consumes more axes than the batch has is rejected. An
+    ellipsis is kept, because where it stands decides how NumPy arranges
+    the axes of advanced indices, and is followed by one full slice for
+    each coefficient axis so that it cannot reach them.
     """
 
     items = key if isinstance(key, tuple) else (key,)
@@ -23,30 +44,28 @@ def _batch_key(key: Any, batch_ndim: int) -> tuple[Any, ...]:
     for item in items:
         if item is None or item is Ellipsis:
             continue
-        if isinstance(item, np.ndarray) and item.dtype == np.bool_:
-            consumed += item.ndim
-        elif (
-            isinstance(item, (list, np.ndarray)) and np.asarray(item).dtype == np.bool_
-        ):
-            consumed += np.asarray(item).ndim
-        else:
+        if isinstance(item, (bool, np.bool_)):
+            # Like None, a Boolean scalar adds an axis and takes none
+            continue
+        if isinstance(item, (slice, int, np.integer)):
             consumed += 1
+            continue
+        # Anything else is read by NumPy as an array: a list, a tuple
+        # inside the index, an array or an object that converts to one. A
+        # Boolean array takes one axis for each of its own
+        try:
+            mask = np.asarray(item)
+        except (TypeError, ValueError):
+            consumed += 1
+            continue
+        consumed += mask.ndim if mask.dtype == np.bool_ else 1
     if consumed > batch_ndim:
         raise IndexError("too many indices for the batch axes of an array of elements")
     if sum(item is Ellipsis for item in items) > 1:
         raise IndexError("an index can only have a single ellipsis")
-    filler = (slice(None),) * (batch_ndim - consumed)
-    result: list[Any] = []
-    seen = False
-    for item in items:
-        if item is Ellipsis:
-            result.extend(filler)
-            seen = True
-        else:
-            result.append(item)
-    if not seen:
-        result.extend(filler)
-    return tuple(result)
+    if any(item is Ellipsis for item in items):
+        return tuple(items) + (slice(None),) * record_ndim
+    return tuple(items)
 
 
 class _Batch(_Arithmetic):
@@ -175,9 +194,12 @@ class ElementArray(_Batch):
     True
     """
 
-    __slots__ = ("_algebra", "_values", "__weakref__")
+    __slots__ = ("_algebra", "_values", "_shown", "__weakref__")
 
     _values: np.ndarray
+    # One flag for all arrays over the same storage: whether it has been
+    # handed out, and so must be checked before it is read
+    _shown: list[bool]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Reject direct construction."""
@@ -187,8 +209,14 @@ class ElementArray(_Batch):
         )
 
     @classmethod
-    def _make(cls, algebra: Any, values: np.ndarray) -> ElementArray:
-        """Wrap coefficient storage without copying it."""
+    def _make(
+        cls, algebra: Any, values: np.ndarray, shown: list[bool] | None = None
+    ) -> ElementArray:
+        """Wrap coefficient storage without copying it.
+
+        *shown* is the flag of the array whose storage this one shares; a
+        new flag is made for storage that nothing else holds.
+        """
 
         record = algebra.coefficient_shape
         if (
@@ -202,12 +230,13 @@ class ElementArray(_Batch):
         self = object.__new__(cls)
         self._algebra = algebra
         self._values = values
+        self._shown = [False] if shown is None else shown
         return self
 
     def __reduce__(self) -> tuple[Any, ...]:
         """Pickle the algebra and a copy of the coefficients."""
 
-        return (_rebuild_array, (self._algebra, np.array(self._values)))
+        return (_rebuild_array, (self._algebra, np.array(self._checked())))
 
     def __copy__(self) -> ElementArray:
         """Return an array with independent storage."""
@@ -236,8 +265,22 @@ class ElementArray(_Batch):
         """Return the coefficients, or a temporary split form."""
 
         if mode == "loop":
-            return self._values
-        return _kernel.to_split(self._algebra, self._values)
+            return self._checked()
+        return _kernel.to_split(self._algebra, self._checked())
+
+    def _checked(self) -> np.ndarray:
+        """Return the storage, checked if it has been handed out."""
+
+        if self._shown[0]:
+            algebra = self._algebra
+            return _check(algebra, self._values, algebra.coefficient_shape)
+        return self._values
+
+    def _expose(self) -> np.ndarray:
+        """Hand out the storage, which every later operation then checks."""
+
+        self._shown[0] = True
+        return self._values
 
     def _result(self, mode: str, data: Any) -> ElementArray:
         """Wrap a raw result, returning it to the loop basis."""
@@ -264,7 +307,7 @@ class ElementArray(_Batch):
             # An array is split into the workspace; an element contributes
             # the split form it already keeps
             pairs = [
-                ("loop", operand._values)
+                ("loop", operand._checked())
                 if isinstance(operand, ElementArray)
                 else ("split", operand._data("split"))
                 for operand in operands
@@ -299,26 +342,28 @@ class ElementArray(_Batch):
     def coefficients(self) -> np.ndarray:
         """The coefficient storage, shared with the array."""
 
-        return self._values
+        return self._expose()
 
     def __array__(self, dtype: Any = None, copy: Any = None) -> np.ndarray:
         """Return the coefficient storage to NumPy."""
 
         if dtype is not None and np.dtype(dtype) != self._values.dtype:
+            if copy is False:
+                raise ValueError(NO_COPY_MESSAGE)
             return self._values.astype(dtype)
-        return self._values.copy() if copy else self._values
+        return self._values.copy() if copy else self._expose()
 
     def to_numpy(self, *, copy: bool = True) -> np.ndarray:
         """Return the coefficients; the storage itself with ``copy=False``."""
 
         if not isinstance(copy, bool):
             raise TypeError("copy must be a bool")
-        return self._values.copy() if copy else self._values
+        return self._values.copy() if copy else self._expose()
 
     def copy(self) -> ElementArray:
         """Return an array with independent storage."""
 
-        return ElementArray._make(self._algebra, self._values.copy())
+        return ElementArray._make(self._algebra, self._checked().copy())
 
     def __pos__(self) -> ElementArray:
         """Return a copy."""
@@ -335,7 +380,7 @@ class ElementArray(_Batch):
         """
 
         self._algebra._require_split("split()")
-        spectral, signed = _kernel.to_split(self._algebra, self._values)
+        spectral, signed = _kernel.to_split(self._algebra, self._checked())
         return SplitArray._make(self._algebra, spectral, signed)
 
     # Indexing
@@ -348,10 +393,14 @@ class ElementArray(_Batch):
         indexing does.
         """
 
-        selected = self._values[_batch_key(key, len(self.batch_shape))]
-        if selected.shape == self._algebra.coefficient_shape:
-            return Element._make(self._algebra, "loop", selected.copy())
-        return ElementArray._make(self._algebra, selected)
+        algebra = self._algebra
+        record_ndim = len(algebra.coefficient_shape)
+        selected = self._values[_batch_key(key, len(self.batch_shape), record_ndim)]
+        if selected.shape == algebra.coefficient_shape:
+            if self._shown[0]:
+                _check(algebra, selected, algebra.coefficient_shape)
+            return Element._make(algebra, "loop", selected.copy())
+        return ElementArray._make(algebra, selected, self._shown)
 
     def __setitem__(self, key: Any, value: Any) -> None:
         """Assign a field scalar, an element, an array or coefficients."""
@@ -368,7 +417,8 @@ class ElementArray(_Batch):
             data = value._data("loop")
         else:
             data = field.coerce(value)
-        self._values[_batch_key(key, len(self.batch_shape))] = data
+        record_ndim = len(algebra.coefficient_shape)
+        self._values[_batch_key(key, len(self.batch_shape), record_ndim)] = data
 
     # Decomposition
 
@@ -376,7 +426,7 @@ class ElementArray(_Batch):
         """Return the group components ``(a_t + b_t)`` of every record."""
 
         field = self._algebra._field
-        plus, minus = _kernel._rows(self._algebra, self._values)
+        plus, minus = _kernel._rows(self._algebra, self._checked())
         return field.view(field.add(plus, minus))
 
     def spectrum(self) -> Any:
@@ -387,7 +437,7 @@ class ElementArray(_Batch):
 
         self._algebra._require_split("spectrum()")
         field = self._algebra._field
-        return field.view(_kernel.to_split(self._algebra, self._values)[0])
+        return field.view(_kernel.to_split(self._algebra, self._checked())[0])
 
     def epsilon(self) -> Any:
         """Return the signed components ``(a_t - b_t)`` of every record.
@@ -399,7 +449,7 @@ class ElementArray(_Batch):
         """
 
         self._algebra._require_split("epsilon()")
-        signed = _kernel.to_split(self._algebra, self._values)[1]
+        signed = _kernel.to_split(self._algebra, self._checked())[1]
         return self._algebra._signed_view(signed)
 
     # Comparison
@@ -431,7 +481,7 @@ class ElementArray(_Batch):
             data = algebra.scalar(other).coefficients
         else:
             return NotImplemented
-        return field.equal(self._values, data).all(axis=(-2, -1))
+        return field.equal(self._checked(), data).all(axis=(-2, -1))
 
     def __repr__(self) -> str:
         """Return the batch shape and the parent."""
@@ -492,10 +542,11 @@ class SplitArray(_Batch):
     True
     """
 
-    __slots__ = ("_algebra", "_spectral", "_signed", "__weakref__")
+    __slots__ = ("_algebra", "_spectral", "_signed", "_shown", "__weakref__")
 
     _spectral: np.ndarray
     _signed: np.ndarray
+    _shown: list[bool]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Reject direct construction."""
@@ -504,9 +555,16 @@ class SplitArray(_Batch):
 
     @classmethod
     def _make(
-        cls, algebra: Any, spectral: np.ndarray, signed: np.ndarray
+        cls,
+        algebra: Any,
+        spectral: np.ndarray,
+        signed: np.ndarray,
+        shown: list[bool] | None = None,
     ) -> SplitArray:
-        """Wrap the two parts, copying them only to broadcast them together."""
+        """Wrap the two parts, copying them only to broadcast them together.
+
+        *shown* is the flag of the array whose storage this one shares.
+        """
 
         record = (algebra._size,) + algebra._field.shape
         for part in (spectral, signed):
@@ -523,13 +581,14 @@ class SplitArray(_Batch):
         self._algebra = algebra
         self._spectral = spectral
         self._signed = signed
+        self._shown = [False] if shown is None else shown
         return self
 
     def __reduce__(self) -> tuple[Any, ...]:
         """Pickle the algebra and copies of both parts."""
 
-        parts = (np.array(self._spectral), np.array(self._signed))
-        return (_rebuild_split, (self._algebra, *parts))
+        spectral, signed = self._checked()
+        return (_rebuild_split, (self._algebra, np.array(spectral), np.array(signed)))
 
     def __copy__(self) -> SplitArray:
         """Return an array with independent storage."""
@@ -553,7 +612,20 @@ class SplitArray(_Batch):
 
         if mode != "split":
             raise TypeError(MIXED_BASIS_MESSAGE)
-        return self._spectral, self._signed
+        return self._checked()
+
+    def _checked(self) -> tuple[np.ndarray, np.ndarray]:
+        """Return the two parts, checked if they have been handed out."""
+
+        if not self._shown[0]:
+            return self._spectral, self._signed
+        algebra = self._algebra
+        record = (algebra._size,) + algebra._field.shape
+        spectral = _check(algebra, self._spectral, record)
+        signed = _check(algebra, self._signed, record)
+        if spectral.shape != signed.shape:
+            raise ValueError(STORAGE_MESSAGE)
+        return spectral, signed
 
     def _result(self, mode: str, data: Any) -> SplitArray:
         """Wrap a raw result."""
@@ -580,20 +652,21 @@ class SplitArray(_Batch):
     def spectral(self) -> Any:
         """The transformed group components, sharing the array's storage."""
 
+        self._shown[0] = True
         return self._algebra._field.view(self._spectral)
 
     @property
     def signed(self) -> Any:
         """The signed components, sharing the array's storage."""
 
+        self._shown[0] = True
         return self._algebra._signed_view(self._signed)
 
     def copy(self) -> SplitArray:
         """Return an array with independent storage."""
 
-        return SplitArray._make(
-            self._algebra, self._spectral.copy(), self._signed.copy()
-        )
+        spectral, signed = self._checked()
+        return SplitArray._make(self._algebra, spectral.copy(), signed.copy())
 
     def __pos__(self) -> SplitArray:
         """Return a copy."""
@@ -603,7 +676,7 @@ class SplitArray(_Batch):
     def to_loop(self) -> ElementArray:
         """Return the array in the loop basis."""
 
-        values = _kernel.from_split(self._algebra, (self._spectral, self._signed))
+        values = _kernel.from_split(self._algebra, self._checked())
         return ElementArray._make(self._algebra, values)
 
     def weight(self) -> Any:
@@ -624,17 +697,17 @@ class SplitArray(_Batch):
 
         field = self._algebra._field
         size = self._algebra._size
-        return field.view(field.divide_int(field.wht(self._spectral), size))
+        return field.view(field.divide_int(field.wht(self._checked()[0]), size))
 
     def spectrum(self) -> Any:
         """Return a copy of the transformed group components."""
 
-        return self._algebra._field.view(self._spectral.copy())
+        return self._algebra._field.view(self._checked()[0].copy())
 
     def epsilon(self) -> Any:
         """Return a copy of the signed components, typed as :attr:`signed`."""
 
-        return self._algebra._signed_view(self._signed.copy())
+        return self._algebra._signed_view(self._checked()[1].copy())
 
     # Indexing
 
@@ -646,13 +719,16 @@ class SplitArray(_Batch):
         indexing does.
         """
 
-        index = _batch_key(key, len(self.batch_shape))
+        algebra = self._algebra
+        index = _batch_key(key, len(self.batch_shape), 1 + algebra._field.tail)
         spectral, signed = self._spectral[index], self._signed[index]
-        if spectral.ndim == 1 + self._algebra._field.tail:
-            return Element._make(
-                self._algebra, "split", (spectral.copy(), signed.copy())
-            )
-        return SplitArray._make(self._algebra, spectral, signed)
+        record = (algebra._size,) + algebra._field.shape
+        if spectral.shape == record and signed.shape == record:
+            if self._shown[0]:
+                _check(algebra, spectral, record)
+                _check(algebra, signed, record)
+            return Element._make(algebra, "split", (spectral.copy(), signed.copy()))
+        return SplitArray._make(algebra, spectral, signed, self._shown)
 
     def __setitem__(self, key: Any, value: Any) -> None:
         """Assign a field scalar, an element or a split array."""
@@ -667,7 +743,7 @@ class SplitArray(_Batch):
         if value._algebra is not algebra:
             raise ValueError("operands belong to different loop algebras")
         spectral, signed = value._data("split")
-        index = _batch_key(key, len(self.batch_shape))
+        index = _batch_key(key, len(self.batch_shape), 1 + algebra._field.tail)
         self._spectral[index] = spectral
         self._signed[index] = signed
 
@@ -699,8 +775,9 @@ class SplitArray(_Batch):
             shape = np.broadcast_shapes(self.batch_shape, partner)
             return np.zeros(shape, dtype=bool)
         spectral, signed = other._data("split")
-        marks = field.equal(self._spectral, spectral).all(axis=-1)
-        return marks & field.equal(self._signed, signed).all(axis=-1)
+        mine = self._checked()
+        marks = field.equal(mine[0], spectral).all(axis=-1)
+        return marks & field.equal(mine[1], signed).all(axis=-1)
 
     def __repr__(self) -> str:
         """Return the batch shape and the parent."""
@@ -709,14 +786,20 @@ class SplitArray(_Batch):
 
 
 def _rebuild_array(algebra: Any, values: np.ndarray) -> ElementArray:
-    """Recreate a pickled loop-basis array."""
+    """Recreate a pickled loop-basis array, whose data is checked as storage is."""
 
-    return ElementArray._make(algebra, values)
+    return ElementArray._make(
+        algebra, _check(algebra, values, algebra.coefficient_shape)
+    )
 
 
 def _rebuild_split(
     algebra: Any, spectral: np.ndarray, signed: np.ndarray
 ) -> SplitArray:
-    """Recreate a pickled split array."""
+    """Recreate a pickled split array, whose data is checked as storage is."""
 
-    return SplitArray._make(algebra, spectral, signed)
+    record = (algebra._size,) + algebra._field.shape
+    parts = _check(algebra, spectral, record), _check(algebra, signed, record)
+    if parts[0].shape != parts[1].shape:
+        raise ValueError(STORAGE_MESSAGE)
+    return SplitArray._make(algebra, *parts)

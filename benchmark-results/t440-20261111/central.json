@@ -1,0 +1,3845 @@
+{
+  "schema": "pycdloop-benchmark-1",
+  "protocol": {
+    "name": "central",
+    "levels": null,
+    "pairs": "1-6:64,7-8:16,9-12:4,13-14:2",
+    "blocks": 24,
+    "warmup": 2,
+    "min_time_ms": 20.0,
+    "seed": 20261111,
+    "timer": "time.perf_counter_ns, garbage collector disabled while timing",
+    "methods": [
+      "native",
+      "rows",
+      "schedule"
+    ],
+    "factors": [
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        8
+      ],
+      [
+        5,
+        5
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        7,
+        7
+      ]
+    ],
+    "max_table_level": 10
+  },
+  "command": [
+    "central.py",
+    "--output",
+    "benchmark-results/t440-20261111/central.json",
+    "--cpu",
+    "37",
+    "--factors",
+    "1x4,1x8,2x2,2x4,2x6,3x3,3x5,3x7,4x4,4x6,4x8,5x5,5x7,6x6,7x7"
+  ],
+  "environment": {
+    "python": "3.14.8",
+    "implementation": "CPython",
+    "numpy": "2.5.4",
+    "pyfastcd": "1.3.1",
+    "pycdloop": "0.1.0",
+    "platform": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
+    "machine": "x86_64",
+    "processor": "Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz",
+    "logical_cpus": 80,
+    "cpu": 37,
+    "affinity": [
+      37
+    ],
+    "load_average": [
+      3.1171875,
+      3.20361328125,
+      3.36669921875
+    ],
+    "thread_limits": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "cpu_state": {
+      "scaling_governor": null,
+      "intel_pstate_no_turbo": null,
+      "cpufreq_boost": null,
+      "smt_control": "on"
+    },
+    "git": {
+      "commit": "d8c2bed8c5bec4ab127a2be8536220409c0c2f44",
+      "dirty": true
+    },
+    "started": "2026-11-11T18:52:17-0500"
+  },
+  "sources_sha256": {
+    "__init__.py": "9423f239c5f1724abe18a9d30328cc95935fe340220e128753c3e7ca8f4e5ce4",
+    "_algebra.py": "86dd16e1c4b0803b34c4a3b01eaa840629222be7d22bfcea76e5e4cce2357ae6",
+    "_array.py": "036043434ae2084157b8204c2923521da96d87afc44a96f833bf75f79a61abaf",
+    "_binary.py": "1966bacc3f43e4ee765d9ba38a55e2c706447d558a38fd822a586c2fcb915a0d",
+    "_core.c": "795b033564fdc818e56d8d509329185918e34cce1bbe63337e76f2927d10cd64",
+    "_core.cpython-314-x86_64-linux-gnu.so": "ae9ee29f68a222b3353a9f34794d0154d0f2b392812e4d09d0a9aaaefaa0cda5",
+    "_core.pyi": "3aa1cd6af0448073542d316ff8e5f2d360bf725e7d09662b144a57f01b3fe6de",
+    "_element.py": "b4c4bd066f3f1f4f9a8313799d85b88b5f24fc7e7f852a871fcbbdc956a54c90",
+    "_field.py": "defc3541c3a29346d242731d8ca49595726954d5041dc68f6a68fd909ee9ece0",
+    "_kernel.py": "a11850d41a90e3ca715e7c104f75bb829be807877ea6e4d1f63460bb05662f26",
+    "_lift.py": "b9fe4fa9d3e91866477593bb851b166da9d3cda1fb3722639b9320e337a2c94e",
+    "_loop.py": "52551811d9801e671d402b23ef76e81b229c7c8758b5b287249201007cf0f2c6",
+    "_schedule.py": "0c7b9bc82656c0eaf630e1130a521de55d3f8061eb5446cb1a4067cb9213ca0d",
+    "_signed.py": "bd2d56215d0fa3b3356e7895008ca1487b7b84500bbe992aca01481a8756eb30",
+    "_structure.py": "d516c0b425253551c843501bcf38482a46982a33ceda762ef67b47ff472119be",
+    "_transform.py": "eca73c859caa24530a29be26e36772b429774d5d7e773d706fb9660d278ac17a",
+    "_validation.py": "263d737787dafe250c3e7db5494e616251e69ab79d4748f6626cbdeeafc07dd0",
+    "_version.py": "72395be70ee133e266a83725204015f8a0044e09cd3d2025cb683bd8125364d7",
+    "codes.py": "cbd3701a66622611e828ce83269f69b2c091e4a6c032dcc4697bb400db63ec37",
+    "linalg.py": "61b30cef45223ce8725d1df8170cc47710867ae86b36c20494526cbdc006cedb",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "testing.py": "a87ee13706be73d49bc8d2069cd51157daf159e0320ea1b7aa27912ea66530f3"
+  },
+  "corpus": {
+    "central-n1-m4.npy": {
+      "bytes": 65664,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n1-m4.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        1,
+        4
+      ],
+      "sha256": "d3d2c37706aa6feed937f0a3a49a989e969065e83c2f570150dcb6cb805af37a",
+      "shape": [
+        2,
+        64,
+        2,
+        32
+      ]
+    },
+    "central-n1-m8.npy": {
+      "bytes": 65664,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n1-m8.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        1,
+        8
+      ],
+      "sha256": "26e672a7463fb80cc3c4ae3a9e9a366da71f8768dd36ed36462390b805a27427",
+      "shape": [
+        2,
+        4,
+        2,
+        512
+      ]
+    },
+    "central-n2-m2.npy": {
+      "bytes": 32896,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n2-m2.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        2,
+        2
+      ],
+      "sha256": "a04f9f4f59580e6e4c8ed04c8de4bde094f7d2ae19718a41a1646ff6d76c42d0",
+      "shape": [
+        2,
+        64,
+        2,
+        16
+      ]
+    },
+    "central-n2-m4.npy": {
+      "bytes": 131200,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n2-m4.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        2,
+        4
+      ],
+      "sha256": "df80accc49d27c6b3844cb4c71786cc23cb341d85a474d81d70c25655f60ac8e",
+      "shape": [
+        2,
+        64,
+        2,
+        64
+      ]
+    },
+    "central-n2-m6.npy": {
+      "bytes": 131200,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n2-m6.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        2,
+        6
+      ],
+      "sha256": "537643b828ad59c68cf01af1b647dabca114574eb414df96d182d8774363df57",
+      "shape": [
+        2,
+        16,
+        2,
+        256
+      ]
+    },
+    "central-n3-m3.npy": {
+      "bytes": 131200,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n3-m3.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        3,
+        3
+      ],
+      "sha256": "5eedcd638177320bf23db33305bf9807d51956b13e7973ff5936e822b4d92998",
+      "shape": [
+        2,
+        64,
+        2,
+        64
+      ]
+    },
+    "central-n3-m5.npy": {
+      "bytes": 131200,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n3-m5.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        3,
+        5
+      ],
+      "sha256": "ecfeb5542bb67bc15e9fa7626fef239d9fddea12062a3e17f00d86d967bc2dc1",
+      "shape": [
+        2,
+        16,
+        2,
+        256
+      ]
+    },
+    "central-n3-m7.npy": {
+      "bytes": 131200,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n3-m7.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        3,
+        7
+      ],
+      "sha256": "d0f55d064edde2eecfd337a11574004b222d4eb93d7cf9856ea3dcf826872e6e",
+      "shape": [
+        2,
+        4,
+        2,
+        1024
+      ]
+    },
+    "central-n4-m4.npy": {
+      "bytes": 131200,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n4-m4.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        4,
+        4
+      ],
+      "sha256": "d53190d110caa499a16dd52f00defdb4702971a2392aae32040e17f316778b9a",
+      "shape": [
+        2,
+        16,
+        2,
+        256
+      ]
+    },
+    "central-n4-m6.npy": {
+      "bytes": 131200,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n4-m6.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        4,
+        6
+      ],
+      "sha256": "231da04cda9734de35b141968ece391485c777c97962da725b22efd601f9f30c",
+      "shape": [
+        2,
+        4,
+        2,
+        1024
+      ]
+    },
+    "central-n4-m8.npy": {
+      "bytes": 524416,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n4-m8.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        4,
+        8
+      ],
+      "sha256": "6e95e36b80933e5b7a8d4888223a5e3622684fadde489d17bd27ff1583c1e27a",
+      "shape": [
+        2,
+        4,
+        2,
+        4096
+      ]
+    },
+    "central-n5-m5.npy": {
+      "bytes": 131200,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n5-m5.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        5,
+        5
+      ],
+      "sha256": "d8f5b2dfa936b6669686cf052e7d4562add57b82b71f9b044eebdb806eebde53",
+      "shape": [
+        2,
+        4,
+        2,
+        1024
+      ]
+    },
+    "central-n5-m7.npy": {
+      "bytes": 524416,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n5-m7.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        5,
+        7
+      ],
+      "sha256": "eb17507d3b2ea6e0b354cc3f955ad77ce1f2cbf87fdf418b87d194586fe1cb05",
+      "shape": [
+        2,
+        4,
+        2,
+        4096
+      ]
+    },
+    "central-n6-m6.npy": {
+      "bytes": 524416,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n6-m6.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        6,
+        6
+      ],
+      "sha256": "b3ea67c6493c772bdf334fba4b987f0b3a67d977f10930d8f082b3c968ebfdf1",
+      "shape": [
+        2,
+        4,
+        2,
+        4096
+      ]
+    },
+    "central-n7-m7.npy": {
+      "bytes": 1048704,
+      "char": 0,
+      "dtype": "float64",
+      "file": "central-n7-m7.npy",
+      "kind": "real",
+      "layout": "[operand=2][pair] + coefficient_shape, C order",
+      "rng": "NumPy Generator(PCG64(SeedSequence(seed)))",
+      "seed": [
+        20261111,
+        7,
+        7
+      ],
+      "sha256": "1286e47e6a62782d28de08561b01af2e5fb9993c71bf8e13e4bdb9ba6fbdda97",
+      "shape": [
+        2,
+        2,
+        2,
+        16384
+      ]
+    }
+  },
+  "results": [
+    {
+      "label": "1 x 4",
+      "factors": [
+        1,
+        4
+      ],
+      "level": 5,
+      "quotient_order": 32,
+      "dimension": 64,
+      "pairs": 64,
+      "signed_algorithms": [
+        "auto",
+        "native",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "native",
+      "tasks": {
+        "native/signed": {
+          "task": "native/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.0002442340296285286
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            2583.847375,
+            2544.246125,
+            2612.738375,
+            3093.17475,
+            2576.673,
+            2480.3645,
+            2613.282,
+            2750.060625,
+            2438.2485,
+            2818.7255,
+            2503.030125,
+            2468.745625,
+            2623.79025,
+            2581.618625,
+            2681.474375,
+            2468.191875,
+            2630.563625,
+            2700.45,
+            2758.835,
+            2460.9495,
+            2491.39675,
+            2695.263875,
+            2685.6075,
+            2788.581625
+          ],
+          "passes": 125,
+          "summary": {
+            "count": 24,
+            "mean": 2627.0774791666668,
+            "sd": 149.14362750198424,
+            "se": 30.44381548063213,
+            "ci95": [
+              2564.099648582435,
+              2690.0553097508987
+            ],
+            "median": 2613.0101875,
+            "min": 2438.2485,
+            "max": 3093.17475
+          }
+        },
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.0002442340296285286
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            3446.584375,
+            4004.4667119565215,
+            3312.4236413043477,
+            3656.138043478261,
+            3327.628260869565,
+            3259.870788043478,
+            3193.8510869565216,
+            3404.916032608696,
+            3486.961956521739,
+            3359.974864130435,
+            3432.379211956522,
+            3403.636684782609,
+            3496.095652173913,
+            3448.4434782608696,
+            3430.5255434782607,
+            3194.658559782609,
+            3601.660190217391,
+            3668.7482336956523,
+            3664.2427989130433,
+            3218.0991847826085,
+            3367.9585597826085,
+            3246.6495923913044,
+            3661.6407608695654,
+            3421.0691576086956
+          ],
+          "passes": 115,
+          "summary": {
+            "count": 24,
+            "mean": 3446.192640398551,
+            "sd": 190.09872628630632,
+            "se": 38.80374001287119,
+            "ci95": [
+              3365.9209883081658,
+              3526.464292488936
+            ],
+            "median": 3425.7973505434784,
+            "min": 3193.8510869565216,
+            "max": 4004.4667119565215
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.0002442340296285286
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            3929.1631610576924,
+            3691.404296875,
+            3756.4115084134614,
+            3776.7228064903848,
+            3774.276592548077,
+            3685.6560997596152,
+            3570.1256009615386,
+            3869.565204326923,
+            4246.659405048077,
+            3682.8592247596152,
+            3880.066706730769,
+            3517.578425480769,
+            3738.0021033653848,
+            3658.5818810096152,
+            3820.8680889423076,
+            3634.502403846154,
+            3861.0123197115386,
+            3815.575871394231,
+            3709.4154146634614,
+            3608.1642127403848,
+            3750.3357872596152,
+            3620.3416466346152,
+            3697.3134014423076,
+            3746.953575721154
+          ],
+          "passes": 104,
+          "summary": {
+            "count": 24,
+            "mean": 3751.731489132612,
+            "sd": 146.6376874307348,
+            "se": 29.93229260558589,
+            "ci95": [
+              3689.811824236748,
+              3813.6511540284755
+            ],
+            "median": 3742.4778395432695,
+            "min": 3517.578425480769,
+            "max": 4246.659405048077
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.0002442340296285286
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            3171.995849609375,
+            2882.57861328125,
+            3204.92138671875,
+            3042.6695556640625,
+            2949.7982177734375,
+            2893.666015625,
+            2904.93212890625,
+            3352.304931640625,
+            2961.4498291015625,
+            2998.54052734375,
+            3229.4154052734375,
+            2964.02783203125,
+            3001.5205078125,
+            3147.417236328125,
+            2985.39990234375,
+            3067.4364013671875,
+            3060.7056884765625,
+            3081.63134765625,
+            2986.61083984375,
+            2894.7213134765625,
+            3080.588623046875,
+            3040.548828125,
+            2908.173828125,
+            3409.4718017578125
+          ],
+          "passes": 128,
+          "summary": {
+            "count": 24,
+            "mean": 3050.8552754720054,
+            "sd": 141.39917646541127,
+            "se": 28.862986032501126,
+            "ci95": [
+              2991.1476397564256,
+              3110.562911187585
+            ],
+            "median": 3021.03466796875,
+            "min": 2882.57861328125,
+            "max": 3409.4718017578125
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            33322.31129807692,
+            29810.978365384617,
+            33035.38341346154,
+            34052.57211538462,
+            31393.068509615383,
+            30125.634615384617,
+            30285.27403846154,
+            32987.49038461538,
+            30572.73798076923,
+            33555.49399038462,
+            35652.54807692308,
+            31166.264423076922,
+            30959.311298076922,
+            31538.646634615383,
+            31692.76201923077,
+            32877.182692307695,
+            31573.608173076922,
+            30957.89783653846,
+            31490.68389423077,
+            29938.96153846154,
+            30627.572115384617,
+            32404.318509615383,
+            30688.60576923077,
+            35922.71274038462
+          ],
+          "passes": 13,
+          "summary": {
+            "count": 24,
+            "mean": 31943.000851362176,
+            "sd": 1682.7329058767232,
+            "se": 343.4864160657304,
+            "ci95": [
+              31232.445062691913,
+              32653.55664003244
+            ],
+            "median": 31514.665264423078,
+            "min": 29810.978365384617,
+            "max": 35922.71274038462
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 1.0894286211210036,
+          "ci95": [
+            1.0634171506752517,
+            1.116076339152494
+          ],
+          "competitor_faster_blocks": 1,
+          "competitor_slower_blocks": 23
+        },
+        "native_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.7622577612799186,
+          "ci95": [
+            0.7419659818102247,
+            0.7831044938392975
+          ],
+          "competitor_faster_blocks": 24,
+          "competitor_slower_blocks": 0
+        },
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 10.467115887011957,
+          "ci95": [
+            10.323615126085423,
+            10.612611343414349
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "native",
+      "fastest_full": "split"
+    },
+    {
+      "label": "1 x 8",
+      "factors": [
+        1,
+        8
+      ],
+      "level": 9,
+      "quotient_order": 512,
+      "dimension": 1024,
+      "pairs": 4,
+      "signed_algorithms": [
+        "auto",
+        "native",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "native",
+      "tasks": {
+        "native/signed": {
+          "task": "native/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 1.2145605932036215e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            44445.362318840576,
+            45745.262681159424,
+            47365.536231884056,
+            44820.407608695656,
+            44728.49275362319,
+            45662.49456521739,
+            46037.37137681159,
+            44262.55253623189,
+            44001.30072463768,
+            45913.27355072464,
+            43958.26992753623,
+            48024.18115942029,
+            46577.01992753623,
+            45690.32971014493,
+            46988.666666666664,
+            44845.315217391304,
+            43359.759057971016,
+            43449.42028985507,
+            52191.22644927536,
+            44601.989130434784,
+            43142.284420289856,
+            43515.936594202896,
+            47211.34782608696,
+            48114.557971014496
+          ],
+          "passes": 138,
+          "summary": {
+            "count": 24,
+            "mean": 45610.51494565217,
+            "sd": 2041.8841003735877,
+            "se": 416.79784665143006,
+            "ci95": [
+              44748.30290817002,
+              46472.726983134315
+            ],
+            "median": 45253.90489130435,
+            "min": 43142.284420289856,
+            "max": 52191.22644927536
+          }
+        },
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 1.1427259958719243e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            55503.5405982906,
+            53932.7905982906,
+            57063.068376068375,
+            53101.78632478633,
+            52209.52564102564,
+            57940.818376068375,
+            54190.67094017094,
+            52961.305555555555,
+            55371.217948717946,
+            52884.87606837607,
+            55974.03846153846,
+            53316.63247863248,
+            57352.74145299145,
+            54207.38888888889,
+            54384.86111111111,
+            53009.51495726496,
+            55997.77564102564,
+            51754.21367521367,
+            59800.95085470085,
+            52516.506410256414,
+            57467.820512820515,
+            54275.517094017094,
+            55454.17094017094,
+            73704.71153846153
+          ],
+          "passes": 117,
+          "summary": {
+            "count": 24,
+            "mean": 55599.01851851852,
+            "sd": 4364.978215433957,
+            "se": 890.9974471814584,
+            "ci95": [
+              53755.8498685418,
+              57442.187168495235
+            ],
+            "median": 54330.1891025641,
+            "min": 51754.21367521367,
+            "max": 73704.71153846153
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 1.1427259958719243e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            68387.71220930232,
+            64541.63372093023,
+            68854.2761627907,
+            65274.92441860465,
+            66423.43604651163,
+            72326.60174418605,
+            69496.16569767441,
+            68487.91860465116,
+            70799.95930232559,
+            65702.67441860466,
+            75166.39244186046,
+            66396.41860465116,
+            67771.80232558139,
+            64782.933139534885,
+            66886.56976744186,
+            64124.0,
+            67645.3546511628,
+            70664.72674418605,
+            77083.04941860466,
+            64439.03488372093,
+            73262.875,
+            64920.29069767442,
+            64573.148255813954,
+            75148.63662790698
+          ],
+          "passes": 86,
+          "summary": {
+            "count": 24,
+            "mean": 68465.02228682171,
+            "sd": 3815.908164307731,
+            "se": 778.9189923228645,
+            "ci95": [
+              66853.70558545234,
+              70076.33898819108
+            ],
+            "median": 67708.57848837209,
+            "min": 64124.0,
+            "max": 77083.04941860466
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 1.2145605932036215e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            54434.762019230766,
+            50925.870192307695,
+            55542.747596153844,
+            53408.362980769234,
+            50290.269230769234,
+            57295.846153846156,
+            54492.966346153844,
+            59630.01442307692,
+            51218.75,
+            50891.713942307695,
+            64849.09375,
+            50823.463942307695,
+            51346.480769230766,
+            59333.223557692305,
+            52725.810096153844,
+            50111.502403846156,
+            53592.02163461538,
+            58465.39182692308,
+            51619.16586538462,
+            52306.95913461538,
+            57433.18028846154,
+            53218.92788461538,
+            52020.07211538462,
+            55147.39903846154
+          ],
+          "passes": 104,
+          "summary": {
+            "count": 24,
+            "mean": 54213.49979967949,
+            "sd": 3680.3414143390655,
+            "se": 751.2465453636397,
+            "ci95": [
+              52659.427916311266,
+              55767.57168304772
+            ],
+            "median": 53313.64543269231,
+            "min": 50111.502403846156,
+            "max": 64849.09375
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            10152184.0,
+            10486190.5,
+            9918308.75,
+            10512829.0,
+            10409309.5,
+            10221243.5,
+            10392079.75,
+            10357270.25,
+            10339518.0,
+            10201328.75,
+            10406736.5,
+            10538741.0,
+            10355284.25,
+            10547379.5,
+            10359758.5,
+            10362158.5,
+            10608867.5,
+            10168465.75,
+            10727873.0,
+            10196342.0,
+            10347962.75,
+            10368057.75,
+            10492406.75,
+            10978157.0
+          ],
+          "passes": 1,
+          "summary": {
+            "count": 24,
+            "mean": 10393685.53125,
+            "sd": 211465.76245477135,
+            "se": 43165.26800689888,
+            "ci95": [
+              10304391.37108171,
+              10482979.69141829
+            ],
+            "median": 10365108.125,
+            "min": 9918308.75,
+            "max": 10978157.0
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 1.2327955920994882,
+          "ci95": [
+            1.203916022885005,
+            1.2623679251796895
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        },
+        "native_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.821703694594453,
+          "ci95": [
+            0.7993815735058541,
+            0.8446491438987734
+          ],
+          "competitor_faster_blocks": 24,
+          "competitor_slower_blocks": 0
+        },
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 192.08498656952048,
+          "ci95": [
+            186.43936016019106,
+            197.90156989227378
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "native",
+      "fastest_full": "split"
+    },
+    {
+      "label": "2 x 2",
+      "factors": [
+        2,
+        2
+      ],
+      "level": 4,
+      "quotient_order": 16,
+      "dimension": 32,
+      "pairs": 64,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.00041791947174493765
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            4361.622395833333,
+            4038.238782051282,
+            4078.4156650641025,
+            4080.4537259615386,
+            4234.1546474358975,
+            5066.821113782052,
+            4093.1276041666665,
+            4825.288461538462,
+            4189.656650641025,
+            4080.238581730769,
+            3937.9192708333335,
+            4011.285657051282,
+            4033.121394230769,
+            4287.375600961538,
+            4215.6390224358975,
+            4357.016025641025,
+            4428.908854166667,
+            4232.564302884615,
+            4285.9437099358975,
+            3948.5899439102564,
+            4034.3311298076924,
+            4211.043870192308,
+            4393.2067307692305,
+            4524.142628205128
+          ],
+          "passes": 78,
+          "summary": {
+            "count": 24,
+            "mean": 4247.879407051282,
+            "sd": 268.2022300694306,
+            "se": 54.74655096222036,
+            "ci95": [
+              4134.627537759039,
+              4361.131276343525
+            ],
+            "median": 4213.3414463141025,
+            "min": 3937.9192708333335,
+            "max": 5066.821113782052
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.00041791947174493765
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            3952.3141351744184,
+            4001.702034883721,
+            3770.5634084302324,
+            3747.4160610465115,
+            4110.5078125,
+            4032.904796511628,
+            3948.7338299418607,
+            4876.884447674419,
+            3872.1359011627906,
+            3916.4958212209303,
+            3610.819222383721,
+            3773.9373183139537,
+            3736.5984738372094,
+            3811.0488735465115,
+            3929.595203488372,
+            4170.052143895349,
+            4045.6825944767443,
+            4220.3105014534885,
+            3951.4536700581393,
+            3675.0090843023254,
+            3667.6378997093025,
+            3825.4142441860463,
+            4180.7011264534885,
+            4033.3897165697676
+          ],
+          "passes": 86,
+          "summary": {
+            "count": 24,
+            "mean": 3952.5545133842056,
+            "sd": 259.405485779368,
+            "se": 52.950923053187466,
+            "ci95": [
+              3843.0171834314656,
+              4062.0918433369457
+            ],
+            "median": 3939.1645167151164,
+            "min": 3610.819222383721,
+            "max": 4876.884447674419
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.00041791947174493765
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            4542.0376506024095,
+            4528.5532756024095,
+            4369.0532756024095,
+            4586.904743975903,
+            4932.53670933735,
+            4835.458207831325,
+            5075.291980421687,
+            4778.824171686747,
+            4407.596385542169,
+            4867.389118975903,
+            4418.297251506024,
+            4317.2257153614455,
+            4430.59563253012,
+            4540.7725903614455,
+            4709.709337349397,
+            4542.666603915663,
+            4876.996611445783,
+            4696.8819653614455,
+            4511.972891566265,
+            4520.746987951808,
+            4357.1632153614455,
+            5165.6174698795185,
+            4703.4316641566265,
+            4548.8830948795185
+          ],
+          "passes": 83,
+          "summary": {
+            "count": 24,
+            "mean": 4636.025272966867,
+            "sd": 229.9428493094881,
+            "se": 46.9368875674941,
+            "ci95": [
+              4538.928923290943,
+              4733.121622642791
+            ],
+            "median": 4545.7748493975905,
+            "min": 4317.2257153614455,
+            "max": 5165.6174698795185
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            5388.364732142857,
+            5244.3171875,
+            5116.499776785714,
+            5197.303794642857,
+            6123.996205357143,
+            5279.982589285714,
+            5387.807142857143,
+            5923.777455357143,
+            5317.294866071428,
+            5158.08125,
+            5018.084375,
+            5137.586160714286,
+            5068.4388392857145,
+            5256.443526785714,
+            5262.699776785715,
+            5453.074107142857,
+            5743.745982142857,
+            5118.210491071429,
+            5361.264955357143,
+            5204.362053571429,
+            4991.8078125,
+            5422.700669642857,
+            5397.977678571428,
+            5986.008705357143
+          ],
+          "passes": 70,
+          "summary": {
+            "count": 24,
+            "mean": 5356.659588913691,
+            "sd": 301.73397483206423,
+            "se": 61.59118970002825,
+            "ci95": [
+              5229.248505605905,
+              5484.070672221476
+            ],
+            "median": 5271.3411830357145,
+            "min": 4991.8078125,
+            "max": 6123.996205357143
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.9303626264168612,
+          "ci95": [
+            0.9118470452635705,
+            0.9492541771444624
+          ],
+          "competitor_faster_blocks": 23,
+          "competitor_slower_blocks": 1
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 1.1550934879958177,
+          "ci95": [
+            1.129305751901652,
+            1.1814700879399571
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "split"
+    },
+    {
+      "label": "2 x 4",
+      "factors": [
+        2,
+        4
+      ],
+      "level": 6,
+      "quotient_order": 64,
+      "dimension": 128,
+      "pairs": 64,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 9.232513470551228e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            6921.325383771929,
+            6430.763432017544,
+            6298.990679824561,
+            6366.512061403509,
+            6408.9358552631575,
+            6983.707236842105,
+            6862.338541666667,
+            6404.196820175439,
+            6564.458059210527,
+            6760.780975877193,
+            6717.768914473684,
+            6548.680372807017,
+            6677.172149122807,
+            6381.520559210527,
+            6673.645559210527,
+            6807.960800438596,
+            6703.587171052632,
+            6501.668311403509,
+            6584.407072368421,
+            6626.658442982456,
+            7011.008223684211,
+            6282.65076754386,
+            6225.68201754386,
+            7339.709978070176
+          ],
+          "passes": 57,
+          "summary": {
+            "count": 24,
+            "mean": 6628.5053910818715,
+            "sd": 269.6748036820085,
+            "se": 55.04713879217892,
+            "ci95": [
+              6514.631708487585,
+              6742.379073676158
+            ],
+            "median": 6605.532757675439,
+            "min": 6225.68201754386,
+            "max": 7339.709978070176
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 9.232513470551228e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            5513.595010080645,
+            5585.524949596775,
+            5318.321320564516,
+            5267.4425403225805,
+            5642.463205645161,
+            5707.945060483871,
+            5398.842489919355,
+            5317.311743951613,
+            5248.142389112903,
+            6278.9614415322585,
+            5737.370967741936,
+            5346.758568548387,
+            5438.599546370968,
+            5513.128024193548,
+            5563.9375,
+            5848.6590221774195,
+            5887.307207661291,
+            6332.709677419355,
+            5568.9168346774195,
+            5540.324344758064,
+            5946.844002016129,
+            5703.388608870968,
+            5474.472782258064,
+            5764.873991935484
+          ],
+          "passes": 62,
+          "summary": {
+            "count": 24,
+            "mean": 5622.743384576613,
+            "sd": 286.00854981602936,
+            "se": 58.3812507602213,
+            "ci95": [
+              5501.972565885642,
+              5743.514203267583
+            ],
+            "median": 5566.42716733871,
+            "min": 5248.142389112903,
+            "max": 6332.709677419355
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 9.232513470551228e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            7143.735259433963,
+            7436.381485849057,
+            7104.948113207547,
+            7083.770341981132,
+            7851.91037735849,
+            7464.056898584906,
+            8403.922464622641,
+            7127.2915683962265,
+            7099.5834316037735,
+            7340.236438679245,
+            7202.015625,
+            7123.153891509434,
+            7421.4826061320755,
+            6854.0053066037735,
+            6942.8298938679245,
+            7645.887676886792,
+            7756.0798938679245,
+            7791.422759433963,
+            7192.623525943396,
+            7433.890919811321,
+            7675.446639150943,
+            7159.410966981132,
+            7306.586674528302,
+            7674.852594339623
+          ],
+          "passes": 53,
+          "summary": {
+            "count": 24,
+            "mean": 7384.813556407233,
+            "sd": 352.5655033121318,
+            "se": 71.96713200185462,
+            "ci95": [
+              7235.938201091495,
+              7533.68891172297
+            ],
+            "median": 7323.4115566037735,
+            "min": 6854.0053066037735,
+            "max": 8403.922464622641
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            112808.55859375,
+            116252.37109375,
+            108173.328125,
+            112946.60546875,
+            112604.4375,
+            113569.0,
+            128001.68359375,
+            107414.828125,
+            117897.0,
+            109222.453125,
+            117669.1953125,
+            112307.265625,
+            113905.125,
+            108650.859375,
+            108296.4296875,
+            125198.9296875,
+            112603.8984375,
+            124271.19140625,
+            113715.07421875,
+            110876.75,
+            113298.9296875,
+            111832.80859375,
+            109665.4609375,
+            115192.2421875
+          ],
+          "passes": 4,
+          "summary": {
+            "count": 24,
+            "mean": 114015.60107421875,
+            "sd": 5383.876040723863,
+            "se": 1098.9790948474345,
+            "ci95": [
+              111742.18960597012,
+              116289.01254246738
+            ],
+            "median": 112877.58203125,
+            "min": 107414.828125,
+            "max": 128001.68359375
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.8479073683099038,
+          "ci95": [
+            0.8295114551478203,
+            0.8667112440371415
+          ],
+          "competitor_faster_blocks": 24,
+          "competitor_slower_blocks": 0
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 15.439671518664822,
+          "ci95": [
+            15.193655129841522,
+            15.68967141659455
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "split"
+    },
+    {
+      "label": "2 x 6",
+      "factors": [
+        2,
+        6
+      ],
+      "level": 8,
+      "quotient_order": 256,
+      "dimension": 512,
+      "pairs": 16,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.4151295744104495e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            23081.695192307692,
+            23826.872115384616,
+            23555.0125,
+            22894.628846153846,
+            23008.845192307694,
+            23448.353846153845,
+            23752.39423076923,
+            22844.72596153846,
+            22959.544230769232,
+            23248.5625,
+            23465.82403846154,
+            22770.140384615384,
+            23259.523076923077,
+            23537.81923076923,
+            23453.57403846154,
+            25464.377884615384,
+            23664.86923076923,
+            23201.0375,
+            22734.61346153846,
+            24747.078846153847,
+            24343.7,
+            23971.48269230769,
+            26891.981730769232,
+            23188.81826923077
+          ],
+          "passes": 65,
+          "summary": {
+            "count": 24,
+            "mean": 23638.144791666666,
+            "sd": 944.8660031768236,
+            "se": 192.8699652571806,
+            "ci95": [
+              23239.162870215958,
+              24037.126713117374
+            ],
+            "median": 23450.96394230769,
+            "min": 22734.61346153846,
+            "max": 26891.981730769232
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.4151295744104495e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            25205.35576923077,
+            26540.55769230769,
+            24150.127884615384,
+            24746.486538461537,
+            24302.81826923077,
+            26100.186538461538,
+            25352.408653846152,
+            23679.422115384616,
+            24956.45,
+            25680.191346153846,
+            24143.53173076923,
+            25794.950961538463,
+            24404.403846153848,
+            24145.241346153845,
+            27084.198076923076,
+            29981.098076923077,
+            24906.972115384615,
+            31107.217307692306,
+            24309.22596153846,
+            29031.835576923077,
+            25242.354807692307,
+            24727.697115384617,
+            26482.22403846154,
+            25937.561538461538
+          ],
+          "passes": 65,
+          "summary": {
+            "count": 24,
+            "mean": 25750.52155448718,
+            "sd": 1894.694837988248,
+            "se": 386.75296427970414,
+            "ci95": [
+              24950.462091577476,
+              26550.581017396882
+            ],
+            "median": 25223.85528846154,
+            "min": 23679.422115384616,
+            "max": 31107.217307692306
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.4151295744104495e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            27172.358333333334,
+            28653.884375,
+            27097.286458333332,
+            26904.458333333332,
+            25975.28125,
+            26964.163541666665,
+            26260.232291666667,
+            25144.333333333332,
+            25540.617708333335,
+            27250.021875,
+            26770.940625,
+            25701.298958333333,
+            25335.184375,
+            26815.138541666667,
+            28193.176041666666,
+            29057.58125,
+            27109.271875,
+            28072.763541666667,
+            27590.666666666668,
+            28205.572916666668,
+            26460.733333333334,
+            25957.466666666667,
+            27765.145833333332,
+            29585.580208333333
+          ],
+          "passes": 60,
+          "summary": {
+            "count": 24,
+            "mean": 27065.964930555554,
+            "sd": 1174.5340599974188,
+            "se": 239.7507610427633,
+            "ci95": [
+              26570.002694120456,
+              27561.927166990652
+            ],
+            "median": 27030.725,
+            "min": 25144.333333333332,
+            "max": 29585.580208333333
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            2781689.4375,
+            2820929.0,
+            2802295.3125,
+            2715225.75,
+            2835713.0625,
+            2795892.875,
+            2797553.375,
+            2739804.3125,
+            2839587.875,
+            2789483.875,
+            2793712.625,
+            2804894.0625,
+            2741945.125,
+            2819095.9375,
+            2775014.25,
+            2908156.5625,
+            2847611.3125,
+            2797455.0625,
+            2708158.625,
+            2815992.25,
+            2814433.625,
+            2839893.1875,
+            2887870.5625,
+            2806289.625
+          ],
+          "passes": 1,
+          "summary": {
+            "count": 24,
+            "mean": 2803279.0703125,
+            "sd": 47066.97554070178,
+            "se": 9607.50615089798,
+            "ci95": [
+              2783404.429596288,
+              2823153.711028712
+            ],
+            "median": 2803594.6875,
+            "min": 2708158.625,
+            "max": 2908156.5625
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 1.0875104957429724,
+          "ci95": [
+            1.0584899037079347,
+            1.1173267446464545
+          ],
+          "competitor_faster_blocks": 1,
+          "competitor_slower_blocks": 23
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 103.65103338247181,
+          "ci95": [
+            101.82452339300735,
+            105.51030697966499
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "rows",
+      "fastest_full": "split"
+    },
+    {
+      "label": "3 x 3",
+      "factors": [
+        3,
+        3
+      ],
+      "level": 6,
+      "quotient_order": 64,
+      "dimension": 128,
+      "pairs": 64,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 9.646694048742367e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            11330.997983870968,
+            13493.837701612903,
+            11080.035282258064,
+            12635.000504032258,
+            11565.38810483871,
+            12607.26814516129,
+            10924.236391129032,
+            14349.823588709678,
+            11067.179939516129,
+            11314.695060483871,
+            12277.281754032258,
+            13420.62197580645,
+            11900.994455645161,
+            11218.60685483871,
+            12263.478326612903,
+            11654.302923387097,
+            12314.804939516129,
+            11271.849294354839,
+            11094.455141129032,
+            11324.220766129032,
+            12261.254032258064,
+            10989.384576612903,
+            11751.131552419354,
+            11865.328125
+          ],
+          "passes": 31,
+          "summary": {
+            "count": 24,
+            "mean": 11915.674059139785,
+            "sd": 892.3450229082887,
+            "se": 182.14916505312277,
+            "ci95": [
+              11538.869802620993,
+              12292.478315658576
+            ],
+            "median": 11702.717237903225,
+            "min": 10924.236391129032,
+            "max": 14349.823588709678
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 9.646694048742367e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            10285.278371710527,
+            10081.578125,
+            10328.506578947368,
+            10851.001644736842,
+            11114.522203947368,
+            10286.408717105263,
+            10109.192434210527,
+            10553.272203947368,
+            11017.72615131579,
+            11376.741365131578,
+            10919.76603618421,
+            10654.438733552632,
+            11260.109375,
+            10345.270559210527,
+            10727.819078947368,
+            10418.869243421053,
+            10697.464638157895,
+            10278.030427631578,
+            10035.111842105263,
+            10805.322779605263,
+            11089.229029605263,
+            12947.872532894737,
+            10691.636924342105,
+            10681.752467105263
+          ],
+          "passes": 38,
+          "summary": {
+            "count": 24,
+            "mean": 10731.538394325658,
+            "sd": 603.2368500007044,
+            "se": 123.13520637879668,
+            "ci95": [
+              10476.813812539523,
+              10986.262976111793
+            ],
+            "median": 10686.694695723683,
+            "min": 10035.111842105263,
+            "max": 12947.872532894737
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 9.646694048742367e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            11755.008272058823,
+            12053.206801470587,
+            13219.903033088236,
+            13366.727481617647,
+            12471.091452205883,
+            12205.236672794117,
+            12293.810202205883,
+            11773.321231617647,
+            12171.59512867647,
+            12855.946231617647,
+            11952.823988970587,
+            13791.277573529413,
+            12889.360294117647,
+            11454.671875,
+            11870.586397058823,
+            12350.831801470587,
+            11849.93244485294,
+            12102.488970588236,
+            11663.46875,
+            12931.21369485294,
+            14348.67325367647,
+            12890.673713235294,
+            11688.672334558823,
+            12754.233455882353
+          ],
+          "passes": 34,
+          "summary": {
+            "count": 24,
+            "mean": 12446.031460631128,
+            "sd": 729.3838692391294,
+            "se": 148.88485885439619,
+            "ci95": [
+              12138.039664285674,
+              12754.023256976581
+            ],
+            "median": 12249.5234375,
+            "min": 11454.671875,
+            "max": 14348.67325367647
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 64,
+          "verification": {
+            "pairs": 64,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            107057.39453125,
+            112878.7890625,
+            107677.33203125,
+            112217.1796875,
+            106711.09765625,
+            113204.73828125,
+            106045.828125,
+            106087.63671875,
+            116720.453125,
+            109907.36328125,
+            108644.0390625,
+            118520.19140625,
+            113100.92578125,
+            114361.328125,
+            113680.75,
+            107766.9921875,
+            106838.9140625,
+            107927.046875,
+            105319.328125,
+            108167.49609375,
+            128549.93359375,
+            108034.46875,
+            108201.328125,
+            111569.546875
+          ],
+          "passes": 4,
+          "summary": {
+            "count": 24,
+            "mean": 110799.58756510417,
+            "sd": 5208.425801110562,
+            "se": 1063.1654646556317,
+            "ci95": [
+              108600.26223550858,
+              112998.91289469977
+            ],
+            "median": 108422.68359375,
+            "min": 105319.328125,
+            "max": 128549.93359375
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.9016573886694454,
+          "ci95": [
+            0.8657187794917129,
+            0.9390879183879199
+          ],
+          "competitor_faster_blocks": 22,
+          "competitor_slower_blocks": 2
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 8.907657104772465,
+          "ci95": [
+            8.723157922404475,
+            9.096058537747087
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "split"
+    },
+    {
+      "label": "3 x 5",
+      "factors": [
+        3,
+        5
+      ],
+      "level": 8,
+      "quotient_order": 256,
+      "dimension": 512,
+      "pairs": 16,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.4585269666874364e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            37416.25,
+            37731.31994047619,
+            36827.693452380954,
+            39657.642857142855,
+            36872.04315476191,
+            35799.958333333336,
+            37138.005952380954,
+            36775.450892857145,
+            38152.724702380954,
+            39921.580357142855,
+            36939.0,
+            37614.08928571428,
+            37558.052083333336,
+            37119.78571428572,
+            37327.55803571428,
+            35997.892857142855,
+            36646.36011904762,
+            38730.263392857145,
+            37057.087797619046,
+            36306.43303571428,
+            35597.74107142857,
+            35892.30952380953,
+            35031.40327380953,
+            38504.04613095238
+          ],
+          "passes": 42,
+          "summary": {
+            "count": 24,
+            "mean": 37192.27883184524,
+            "sd": 1198.840030023069,
+            "se": 244.7121963982821,
+            "ci95": [
+              36686.053084403335,
+              37698.50457928714
+            ],
+            "median": 37088.43675595238,
+            "min": 35031.40327380953,
+            "max": 39921.580357142855
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.4585269666874364e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            46360.37142857143,
+            45240.68571428571,
+            46490.27321428571,
+            58569.87321428571,
+            49430.77678571428,
+            49874.59107142857,
+            45323.642857142855,
+            45053.4,
+            50819.08392857143,
+            46026.65535714286,
+            45192.13035714286,
+            48345.1875,
+            47324.47142857143,
+            46008.15535714286,
+            48622.23035714286,
+            45831.63035714286,
+            46791.301785714284,
+            48012.91785714286,
+            50539.33392857143,
+            44732.267857142855,
+            44355.10357142857,
+            45671.16071428572,
+            44853.55535714285,
+            47246.96428571428
+          ],
+          "passes": 35,
+          "summary": {
+            "count": 24,
+            "mean": 47363.156845238096,
+            "sd": 3043.862838872795,
+            "se": 621.3259001881497,
+            "ci95": [
+              46077.846293262824,
+              48648.46739721337
+            ],
+            "median": 46425.32232142857,
+            "min": 44355.10357142857,
+            "max": 58569.87321428571
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.4585269666874364e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            37831.86348684211,
+            39837.52960526316,
+            41710.36513157895,
+            44627.55098684211,
+            41090.75328947369,
+            41005.03453947369,
+            39168.62664473684,
+            39339.77302631579,
+            39894.22368421053,
+            40126.53289473684,
+            42192.80592105263,
+            40999.32565789474,
+            40768.97039473684,
+            38523.48355263158,
+            39418.79276315789,
+            40039.52138157895,
+            37462.97368421053,
+            41243.29111842105,
+            39866.40460526316,
+            38728.10361842105,
+            40432.12006578947,
+            38811.31085526316,
+            39805.78453947369,
+            40737.50164473684
+          ],
+          "passes": 38,
+          "summary": {
+            "count": 24,
+            "mean": 40152.61012883772,
+            "sd": 1511.966210690794,
+            "se": 308.6288103768208,
+            "ci95": [
+              39514.16279145684,
+              40791.0574662186
+            ],
+            "median": 39966.87253289473,
+            "min": 37462.97368421053,
+            "max": 44627.55098684211
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            2740486.8125,
+            2754578.375,
+            2794360.5,
+            2846574.6875,
+            2783286.6875,
+            2784663.8125,
+            2853521.375,
+            2766994.9375,
+            2773176.3125,
+            2828992.25,
+            2816672.3125,
+            2735559.0625,
+            2821353.0625,
+            2787290.25,
+            2796180.6875,
+            2747289.5,
+            2756384.9375,
+            2880000.0,
+            2759927.8125,
+            2778528.875,
+            2733164.125,
+            2815398.6875,
+            2747661.5,
+            2848817.9375
+          ],
+          "passes": 1,
+          "summary": {
+            "count": 24,
+            "mean": 2789619.3541666665,
+            "sd": 41328.49813241465,
+            "se": 8436.14435499862,
+            "ci95": [
+              2772167.8599440968,
+              2807070.8483892363
+            ],
+            "median": 2783975.25,
+            "min": 2733164.125,
+            "max": 2880000.0
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 1.2717713339996228,
+          "ci95": [
+            1.2438099012624202,
+            1.3003613529218394
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 69.51457124963244,
+          "ci95": [
+            68.52155470541969,
+            70.52197862110123
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "rows",
+      "fastest_full": "split"
+    },
+    {
+      "label": "3 x 7",
+      "factors": [
+        3,
+        7
+      ],
+      "level": 10,
+      "quotient_order": 1024,
+      "dimension": 2048,
+      "pairs": 4,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 5.802352501173704e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            143128.06707317074,
+            158597.33536585365,
+            154429.26829268291,
+            144912.61585365853,
+            147430.1280487805,
+            149005.28048780488,
+            148164.58536585365,
+            150516.75,
+            148834.4756097561,
+            155702.8719512195,
+            153802.04268292684,
+            148059.0243902439,
+            149145.91463414635,
+            156110.90853658537,
+            147363.06097560975,
+            147534.1524390244,
+            147733.00609756098,
+            157034.8963414634,
+            145555.2743902439,
+            155340.76829268291,
+            162146.10975609755,
+            154607.23170731709,
+            149858.3719512195,
+            149107.98170731709
+          ],
+          "passes": 41,
+          "summary": {
+            "count": 24,
+            "mean": 151005.00508130083,
+            "sd": 4797.2616358440555,
+            "se": 979.2369308706054,
+            "ci95": [
+              148979.29915185104,
+              153030.71101075062
+            ],
+            "median": 149126.94817073172,
+            "min": 143128.06707317074,
+            "max": 162146.10975609755
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 5.802352501173704e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            202209.36666666667,
+            206089.14166666666,
+            212173.7,
+            197521.65833333333,
+            215922.11666666667,
+            204985.49166666667,
+            206850.34166666667,
+            208431.44166666668,
+            203758.03333333333,
+            226554.45833333334,
+            216365.81666666668,
+            201196.65833333333,
+            203152.625,
+            213792.475,
+            209211.00833333333,
+            201025.45833333334,
+            207653.025,
+            207372.875,
+            202183.025,
+            224693.83333333334,
+            230351.36666666667,
+            220060.29166666666,
+            206282.45833333334,
+            203137.55833333332
+          ],
+          "passes": 30,
+          "summary": {
+            "count": 24,
+            "mean": 209623.92604166665,
+            "sd": 8709.863517718895,
+            "se": 1777.893445641154,
+            "ci95": [
+              205946.07323482525,
+              213301.77884850805
+            ],
+            "median": 207111.60833333334,
+            "min": 197521.65833333333,
+            "max": 230351.36666666667
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 5.802352501173704e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            165237.825,
+            165837.85625,
+            163075.95,
+            163437.03125,
+            180626.5125,
+            164553.5875,
+            158515.8375,
+            159345.9,
+            165111.1375,
+            168730.96875,
+            169334.7625,
+            160454.525,
+            158121.24375,
+            180884.55625,
+            169702.85,
+            164232.90625,
+            157879.4,
+            161435.75,
+            168343.7625,
+            177910.5125,
+            162234.625,
+            168314.875,
+            158763.5375,
+            161089.1875
+          ],
+          "passes": 40,
+          "summary": {
+            "count": 24,
+            "mean": 165548.9625,
+            "sd": 6619.763906417042,
+            "se": 1351.2536490345706,
+            "ci95": [
+              162753.68135531683,
+              168344.24364468316
+            ],
+            "median": 164393.246875,
+            "min": 157879.4,
+            "max": 180884.55625
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            43266975.0,
+            44181285.5,
+            44234941.75,
+            43497290.0,
+            43257850.5,
+            43914902.0,
+            43876608.25,
+            43349330.25,
+            43617912.75,
+            43404978.5,
+            44544725.75,
+            43529531.5,
+            44094395.75,
+            44115007.75,
+            43965283.0,
+            43709570.25,
+            44182431.75,
+            43733607.0,
+            43869176.5,
+            43765429.75,
+            43173032.0,
+            43841280.5,
+            43959005.25,
+            43810497.0
+          ],
+          "passes": 1,
+          "summary": {
+            "count": 24,
+            "mean": 43787293.677083336,
+            "sd": 351253.54789318715,
+            "se": 71699.33022338015,
+            "ci95": [
+              43638972.31195472,
+              43935615.04221195
+            ],
+            "median": 43825888.75,
+            "min": 43173032.0,
+            "max": 44544725.75
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 1.387735225557123,
+          "ci95": [
+            1.3712341901930147,
+            1.4044348296048557
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 264.6869286151982,
+          "ci95": [
+            260.2244495500212,
+            269.22593284717476
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "rows",
+      "fastest_full": "split"
+    },
+    {
+      "label": "4 x 4",
+      "factors": [
+        4,
+        4
+      ],
+      "level": 8,
+      "quotient_order": 256,
+      "dimension": 512,
+      "pairs": 16,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.6487561402953723e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            72524.11363636363,
+            69832.44602272728,
+            73317.09375,
+            81791.84090909091,
+            73595.69034090909,
+            74558.01420454546,
+            73443.51420454546,
+            74301.44602272728,
+            74955.51704545454,
+            86586.22443181818,
+            72172.69886363637,
+            76487.20454545454,
+            76627.67045454546,
+            73474.14488636363,
+            73237.40340909091,
+            70876.34375,
+            72166.49431818182,
+            72024.74431818182,
+            77393.75,
+            75762.41477272728,
+            71204.53409090909,
+            72667.47443181818,
+            72967.70454545454,
+            82469.93181818182
+          ],
+          "passes": 22,
+          "summary": {
+            "count": 24,
+            "mean": 74768.26728219698,
+            "sd": 3945.7712176821055,
+            "se": 805.4271770901174,
+            "ci95": [
+              73102.11422267041,
+              76434.42034172354
+            ],
+            "median": 73458.82954545454,
+            "min": 69832.44602272728,
+            "max": 86586.22443181818
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.6487561402953723e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            67380.53804347826,
+            67844.93478260869,
+            68060.55163043478,
+            77073.02717391304,
+            66848.46195652174,
+            71689.30163043478,
+            68240.63315217392,
+            69909.45652173914,
+            70775.75271739131,
+            66742.96739130435,
+            66898.50271739131,
+            70694.00815217392,
+            78116.82608695653,
+            68088.41032608696,
+            68121.29347826086,
+            67135.95923913043,
+            67150.76902173914,
+            71781.51358695653,
+            72484.38586956522,
+            69256.72554347826,
+            67877.89673913043,
+            70998.61141304347,
+            74690.46739130435,
+            72908.08152173914
+          ],
+          "passes": 23,
+          "summary": {
+            "count": 24,
+            "mean": 70032.04483695653,
+            "sd": 3214.8752063790907,
+            "se": 656.2336535294613,
+            "ci95": [
+              68674.52209536909,
+              71389.56757854397
+            ],
+            "median": 68748.67934782608,
+            "min": 66742.96739130435,
+            "max": 78116.82608695653
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 2.6487561402953723e-05
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            74410.890625,
+            78603.10546875,
+            73163.03515625,
+            81697.16015625,
+            75928.9765625,
+            82203.1875,
+            74745.1875,
+            78686.8828125,
+            74710.25390625,
+            72610.8046875,
+            81634.19140625,
+            78216.78515625,
+            81427.19140625,
+            72917.34375,
+            76144.59765625,
+            74200.3046875,
+            74611.30859375,
+            73722.48828125,
+            74537.1171875,
+            73825.17578125,
+            74918.01953125,
+            77442.203125,
+            82188.25390625,
+            76339.234375
+          ],
+          "passes": 16,
+          "summary": {
+            "count": 24,
+            "mean": 76620.15413411458,
+            "sd": 3200.0451791470223,
+            "se": 653.2064868969491,
+            "ci95": [
+              75268.8935638195,
+              77971.41470440966
+            ],
+            "median": 75423.498046875,
+            "min": 72610.8046875,
+            "max": 82203.1875
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 16,
+          "verification": {
+            "pairs": 16,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            2700987.875,
+            2681123.125,
+            2686728.9375,
+            2788407.5625,
+            2780276.75,
+            2752618.3125,
+            2753692.0,
+            2648679.1875,
+            2686850.9375,
+            2667372.6875,
+            2696842.6875,
+            2708093.3125,
+            2703232.4375,
+            2734786.3125,
+            2802826.4375,
+            2649451.875,
+            2779634.125,
+            2701237.9375,
+            2784466.8125,
+            2677920.375,
+            2774247.0,
+            2675249.875,
+            2757246.3125,
+            2820371.6875
+          ],
+          "passes": 1,
+          "summary": {
+            "count": 24,
+            "mean": 2725514.3567708335,
+            "sd": 51488.38440786648,
+            "se": 10510.022456628856,
+            "ci95": [
+              2703772.718830243,
+              2747255.9947114238
+            ],
+            "median": 2705662.875,
+            "min": 2648679.1875,
+            "max": 2820371.6875
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.9369268601918881,
+          "ci95": [
+            0.9158445639809643,
+            0.958494460602897
+          ],
+          "competitor_faster_blocks": 22,
+          "competitor_slower_blocks": 2
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 35.59496889067203,
+          "ci95": [
+            34.951744074455426,
+            36.2500311180151
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "split"
+    },
+    {
+      "label": "4 x 6",
+      "factors": [
+        4,
+        6
+      ],
+      "level": 10,
+      "quotient_order": 1024,
+      "dimension": 2048,
+      "pairs": 4,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.541222353592069e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            248465.38461538462,
+            261114.96153846153,
+            243959.27884615384,
+            248307.61538461538,
+            249300.07692307694,
+            240432.36538461538,
+            250394.73076923078,
+            263736.125,
+            269904.9903846154,
+            254670.20192307694,
+            275095.58653846156,
+            255154.99038461538,
+            268210.8846153846,
+            241603.38461538462,
+            247032.17307692306,
+            252597.24038461538,
+            260454.46153846153,
+            235746.17307692306,
+            239236.17307692306,
+            249026.25,
+            246107.4326923077,
+            255259.9326923077,
+            249546.89423076922,
+            251694.74038461538
+          ],
+          "passes": 26,
+          "summary": {
+            "count": 24,
+            "mean": 252377.16866987178,
+            "sd": 9951.49734692731,
+            "se": 2031.3408897193715,
+            "ci95": [
+              248175.01987899648,
+              256579.3174607471
+            ],
+            "median": 249970.8125,
+            "min": 235746.17307692306,
+            "max": 275095.58653846156
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.298954859014585e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            313374.84523809527,
+            314650.8214285714,
+            304678.0714285714,
+            298292.75,
+            313000.8095238095,
+            319570.35714285716,
+            313684.5,
+            344085.1785714286,
+            345941.9166666667,
+            320755.0833333333,
+            317462.13095238095,
+            344674.03571428574,
+            328246.2261904762,
+            313120.34523809527,
+            305951.15476190473,
+            315422.11904761905,
+            365032.7738095238,
+            394649.9285714286,
+            302828.86904761905,
+            333546.86904761905,
+            336440.4761904762,
+            339671.3333333333,
+            334007.34523809527,
+            301806.5714285714
+          ],
+          "passes": 21,
+          "summary": {
+            "count": 24,
+            "mean": 325870.6046626984,
+            "sd": 22366.83814042081,
+            "se": 4565.611716954362,
+            "ci95": [
+              316425.91723819805,
+              335315.29208719876
+            ],
+            "median": 318516.24404761905,
+            "min": 298292.75,
+            "max": 394649.9285714286
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.541222353592069e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            267098.41,
+            252803.23,
+            254040.81,
+            259692.11,
+            265285.15,
+            260907.85,
+            252082.18,
+            276830.62,
+            275640.55,
+            270743.65,
+            266860.54,
+            268269.95,
+            277341.54,
+            264699.94,
+            254817.56,
+            260856.22,
+            293079.07,
+            287100.6,
+            270268.86,
+            261789.5,
+            277796.06,
+            275149.72,
+            266736.7,
+            254924.41
+          ],
+          "passes": 25,
+          "summary": {
+            "count": 24,
+            "mean": 267283.96791666665,
+            "sd": 10672.509635868411,
+            "se": 2178.516906901192,
+            "ci95": [
+              262777.36233777687,
+              271790.5734955564
+            ],
+            "median": 266798.62,
+            "min": 252082.18,
+            "max": 293079.07
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            44098053.0,
+            44471220.25,
+            43323998.0,
+            43891420.0,
+            43643173.0,
+            43325612.25,
+            43704278.75,
+            43002351.0,
+            44396283.5,
+            43534208.5,
+            44101843.0,
+            43269543.25,
+            43723316.0,
+            43507537.0,
+            42743918.0,
+            43955062.5,
+            44698867.5,
+            42918317.25,
+            42780013.0,
+            43478983.5,
+            43183594.25,
+            42954896.75,
+            42748858.75,
+            44474447.5
+          ],
+          "passes": 1,
+          "summary": {
+            "count": 24,
+            "mean": 43580408.1875,
+            "sd": 586967.3596477159,
+            "se": 119814.21056713375,
+            "ci95": [
+              43332553.60897383,
+              43828262.76602617
+            ],
+            "median": 43520872.75,
+            "min": 42743918.0,
+            "max": 44698867.5
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 1.2893864792548178,
+          "ci95": [
+            1.25031590839393,
+            1.3296779491678152
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 163.15799898594207,
+          "ci95": [
+            160.2493418821445,
+            166.1194506038893
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "rows",
+      "fastest_full": "split"
+    },
+    {
+      "label": "4 x 8",
+      "factors": [
+        4,
+        8
+      ],
+      "level": 12,
+      "quotient_order": 4096,
+      "dimension": 8192,
+      "pairs": 4,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "rows",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.353011077614302e-07
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            981054.7142857143,
+            959397.6071428572,
+            933910.8214285715,
+            945098.9285714285,
+            930634.9285714285,
+            944602.9285714285,
+            922418.5,
+            980007.3571428572,
+            965733.1785714285,
+            972493.8571428572,
+            903703.9285714285,
+            919866.0357142857,
+            932104.1428571428,
+            954828.5357142857,
+            963974.25,
+            954325.0357142857,
+            903313.4285714285,
+            927607.1071428572,
+            929687.2142857143,
+            979880.6428571428,
+            983670.0357142857,
+            980584.9285714285,
+            928547.25,
+            938172.8928571428
+          ],
+          "passes": 7,
+          "summary": {
+            "count": 24,
+            "mean": 947317.4270833334,
+            "sd": 24887.9219200967,
+            "se": 5080.225788538792,
+            "ci95": [
+              936808.1793432207,
+              957826.6748234461
+            ],
+            "median": 944850.9285714285,
+            "min": 903313.4285714285,
+            "max": 983670.0357142857
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.504273246128928e-07
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            857941.75,
+            849889.78125,
+            800423.875,
+            801996.84375,
+            816343.1875,
+            825656.84375,
+            809388.03125,
+            840202.28125,
+            806879.375,
+            803774.59375,
+            798623.40625,
+            799782.34375,
+            810632.75,
+            802734.28125,
+            878153.65625,
+            856312.78125,
+            812127.75,
+            799708.84375,
+            829455.875,
+            812924.25,
+            854098.21875,
+            863465.28125,
+            810769.5625,
+            839298.0625
+          ],
+          "passes": 8,
+          "summary": {
+            "count": 24,
+            "mean": 824190.984375,
+            "sd": 24401.576299297863,
+            "se": 4980.950904405935,
+            "ci95": [
+              813887.1023794722,
+              834494.8663705278
+            ],
+            "median": 812526.0,
+            "min": 798623.40625,
+            "max": 878153.65625
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.8699536469800261,
+          "ci95": [
+            0.8605217549849127,
+            0.8794889187980112
+          ],
+          "competitor_faster_blocks": 24,
+          "competitor_slower_blocks": 0
+        },
+        "native_over_rows": null,
+        "table_over_split": null
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "none verified"
+    },
+    {
+      "label": "5 x 5",
+      "factors": [
+        5,
+        5
+      ],
+      "level": 10,
+      "quotient_order": 1024,
+      "dimension": 2048,
+      "pairs": 4,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "schedule",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 5.477597060702589e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            463580.0714285714,
+            434835.375,
+            447424.21428571426,
+            433003.16071428574,
+            442815.9285714286,
+            445432.4285714286,
+            483559.51785714284,
+            443248.83928571426,
+            473326.60714285716,
+            458399.78571428574,
+            440898.14285714284,
+            475180.58928571426,
+            485545.25,
+            481938.8214285714,
+            454876.41071428574,
+            479231.5535714286,
+            462395.23214285716,
+            456236.26785714284,
+            441204.03571428574,
+            441551.5,
+            433565.53571428574,
+            466653.6964285714,
+            435788.76785714284,
+            439572.33928571426
+          ],
+          "passes": 14,
+          "summary": {
+            "count": 24,
+            "mean": 455011.0029761905,
+            "sd": 17500.7841977956,
+            "se": 3572.332615263522,
+            "ci95": [
+              447621.069924674,
+              462400.93602770695
+            ],
+            "median": 451150.3125,
+            "min": 433003.16071428574,
+            "max": 485545.25
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 5.72657874527998e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            442368.0833333333,
+            467851.51666666666,
+            392026.51666666666,
+            397130.7,
+            403589.98333333334,
+            432312.31666666665,
+            472014.56666666665,
+            405360.9166666667,
+            435092.4666666667,
+            417750.88333333336,
+            417355.1666666667,
+            482320.15,
+            445456.63333333336,
+            418366.93333333335,
+            401475.25,
+            460591.65,
+            416116.3,
+            439233.13333333336,
+            384985.05,
+            388491.65,
+            393589.25,
+            413734.85,
+            389579.48333333334,
+            389654.51666666666
+          ],
+          "passes": 15,
+          "summary": {
+            "count": 24,
+            "mean": 421101.99861111114,
+            "sd": 29012.15767561809,
+            "se": 5922.081886869564,
+            "ci95": [
+              408851.23884630797,
+              433352.7583759143
+            ],
+            "median": 416735.73333333334,
+            "min": 384985.05,
+            "max": 482320.15
+          }
+        },
+        "split/batch": {
+          "task": "split/batch",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 5.72657874527998e-06
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            440962.9375,
+            480409.671875,
+            397559.859375,
+            404978.375,
+            408496.109375,
+            419917.671875,
+            394979.09375,
+            431293.96875,
+            468974.53125,
+            422911.234375,
+            416409.75,
+            477305.203125,
+            422419.53125,
+            420337.078125,
+            423718.796875,
+            423936.890625,
+            450334.140625,
+            414801.265625,
+            430260.21875,
+            405096.03125,
+            418338.671875,
+            412584.046875,
+            418338.546875,
+            402755.453125
+          ],
+          "passes": 16,
+          "summary": {
+            "count": 24,
+            "mean": 425296.6282552083,
+            "sd": 23221.20151277318,
+            "se": 4740.00791005326,
+            "ci95": [
+              415491.1748186256,
+              435102.081691791
+            ],
+            "median": 420127.375,
+            "min": 394979.09375,
+            "max": 480409.671875
+          }
+        },
+        "table/batch": {
+          "task": "table/batch",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 0.0
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            43442158.75,
+            43802019.25,
+            43034520.75,
+            42806539.5,
+            43145916.5,
+            43205460.5,
+            44409111.75,
+            42215849.0,
+            43260200.5,
+            43448534.5,
+            42816832.25,
+            43503945.25,
+            43310272.5,
+            44159209.0,
+            42542678.5,
+            43911141.25,
+            43643460.5,
+            43528532.75,
+            42652046.75,
+            42555007.25,
+            43627253.5,
+            43433169.75,
+            43071627.0,
+            42002784.75
+          ],
+          "passes": 1,
+          "summary": {
+            "count": 24,
+            "mean": 43230344.666666664,
+            "sd": 585952.5441531945,
+            "se": 119607.06222174646,
+            "ci95": [
+              42982918.60714167,
+              43477770.726191655
+            ],
+            "median": 43285236.5,
+            "min": 42002784.75,
+            "max": 44409111.75
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.9240707084782507,
+          "ci95": [
+            0.9038835272446459,
+            0.9447087467900904
+          ],
+          "competitor_faster_blocks": 22,
+          "competitor_slower_blocks": 2
+        },
+        "native_over_rows": null,
+        "table_over_split": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 101.77856597519131,
+          "ci95": [
+            99.56446794296603,
+            104.04190075017819
+          ],
+          "competitor_faster_blocks": 0,
+          "competitor_slower_blocks": 24
+        }
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "split"
+    },
+    {
+      "label": "5 x 7",
+      "factors": [
+        5,
+        7
+      ],
+      "level": 12,
+      "quotient_order": 4096,
+      "dimension": 8192,
+      "pairs": 4,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "schedule",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.082646105220074e-07
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            1644373.25,
+            1786119.875,
+            1735174.8125,
+            1651097.0,
+            1609346.4375,
+            1728033.875,
+            1765219.1875,
+            1767420.75,
+            1757150.875,
+            1669691.125,
+            1738802.3125,
+            1668817.375,
+            1729728.5,
+            1754808.5,
+            1642661.125,
+            1619939.75,
+            1707275.3125,
+            1650266.5,
+            1658901.5,
+            1816367.3125,
+            1649139.5,
+            1635794.75,
+            1643408.6875,
+            1739311.375
+          ],
+          "passes": 4,
+          "summary": {
+            "count": 24,
+            "mean": 1698702.0703125,
+            "sd": 59477.50796529437,
+            "se": 12140.795473941113,
+            "ci95": [
+              1673586.921358779,
+              1723817.219266221
+            ],
+            "median": 1688483.21875,
+            "min": 1609346.4375,
+            "max": 1816367.3125
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.663964912783096e-07
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            1043465.1071428572,
+            1017133.5357142857,
+            1163644.2857142857,
+            1062495.6785714286,
+            1032371.7857142857,
+            1007690.6071428572,
+            1080538.75,
+            1072312.392857143,
+            1064471.5357142857,
+            1025121.7857142857,
+            1145520.6785714286,
+            1014687.2142857143,
+            1068559.107142857,
+            1073800.9285714286,
+            1014631.4285714285,
+            995288.7142857143,
+            1129108.4285714286,
+            1043085.0714285715,
+            1070805.4285714286,
+            1126295.2857142857,
+            1023341.3571428572,
+            1017047.2857142857,
+            1008429.2857142857,
+            998769.2857142857
+          ],
+          "passes": 7,
+          "summary": {
+            "count": 24,
+            "mean": 1054108.956845238,
+            "sd": 47723.828403940155,
+            "se": 9741.58568014966,
+            "ci95": [
+              1033956.9514904381,
+              1074260.9622000381
+            ],
+            "median": 1043275.0892857143,
+            "min": 995288.7142857143,
+            "max": 1163644.2857142857
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.6203049669117175,
+          "ci95": [
+            0.609749649916532,
+            0.6310430059746962
+          ],
+          "competitor_faster_blocks": 24,
+          "competitor_slower_blocks": 0
+        },
+        "native_over_rows": null,
+        "table_over_split": null
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "none verified"
+    },
+    {
+      "label": "6 x 6",
+      "factors": [
+        6,
+        6
+      ],
+      "level": 12,
+      "quotient_order": 4096,
+      "dimension": 8192,
+      "pairs": 4,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "schedule",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.684347766310963e-07
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            4345359.75,
+            3969035.625,
+            4047810.5,
+            4026707.5,
+            4177952.25,
+            4239531.25,
+            3983097.75,
+            4566553.25,
+            4217494.75,
+            4203606.25,
+            4430767.375,
+            3928038.5,
+            3965741.0,
+            4217579.375,
+            3993398.625,
+            4020323.375,
+            4096717.75,
+            4192149.0,
+            4261924.25,
+            3962797.625,
+            4045492.375,
+            4108738.625,
+            4385661.125,
+            4035961.0
+          ],
+          "passes": 2,
+          "summary": {
+            "count": 24,
+            "mean": 4142601.6197916665,
+            "sd": 168645.65690665608,
+            "se": 34424.65056314876,
+            "ci95": [
+              4071388.8044181596,
+              4213814.435165173
+            ],
+            "median": 4102728.1875,
+            "min": 3928038.5,
+            "max": 4566553.25
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 4,
+          "verification": {
+            "pairs": 4,
+            "passed": true,
+            "worst_error_over_bound": 6.759452797393109e-07
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            1367956.0,
+            1306601.4583333333,
+            1198502.4583333333,
+            1218928.6666666667,
+            1252514.5416666667,
+            1313686.7916666667,
+            1256072.875,
+            1245250.0833333333,
+            1198876.625,
+            1236717.75,
+            1340524.8333333333,
+            1229435.4166666667,
+            1208059.5833333333,
+            1225063.5416666667,
+            1205228.1666666667,
+            1214059.5,
+            1181632.1666666667,
+            1271604.875,
+            1281809.125,
+            1204922.2916666667,
+            1213256.9166666667,
+            1234138.625,
+            1250998.0,
+            1193976.625
+          ],
+          "passes": 6,
+          "summary": {
+            "count": 24,
+            "mean": 1243742.3715277778,
+            "sd": 48421.824134106326,
+            "se": 9884.063461945367,
+            "ci95": [
+              1223295.6284253502,
+              1264189.1146302053
+            ],
+            "median": 1231787.0208333335,
+            "min": 1181632.1666666667,
+            "max": 1367956.0
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.3002533827479123,
+          "ci95": [
+            0.29535250895795234,
+            0.3052355782235755
+          ],
+          "competitor_faster_blocks": 24,
+          "competitor_slower_blocks": 0
+        },
+        "native_over_rows": null,
+        "table_over_split": null
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "none verified"
+    },
+    {
+      "label": "7 x 7",
+      "factors": [
+        7,
+        7
+      ],
+      "level": 14,
+      "quotient_order": 16384,
+      "dimension": 32768,
+      "pairs": 2,
+      "signed_algorithms": [
+        "auto",
+        "rows",
+        "schedule"
+      ],
+      "default_signed_algorithm": "schedule",
+      "tasks": {
+        "rows/signed": {
+          "task": "rows/signed",
+          "products_per_pass": 2,
+          "verification": {
+            "pairs": 2,
+            "passed": true,
+            "worst_error_over_bound": 4.480908161113168e-08
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            36731680.0,
+            36097271.0,
+            37035734.0,
+            37093095.5,
+            37039613.0,
+            36384533.5,
+            36391728.0,
+            37368266.5,
+            35712571.5,
+            36120281.0,
+            37759374.5,
+            36231959.5,
+            36655443.0,
+            36837541.5,
+            35900449.0,
+            36810492.0,
+            35919016.5,
+            36411241.0,
+            37012579.0,
+            36330902.0,
+            36511988.0,
+            36894901.0,
+            37336261.0,
+            35892416.5
+          ],
+          "passes": 1,
+          "summary": {
+            "count": 24,
+            "mean": 36603305.770833336,
+            "sd": 533488.488101705,
+            "se": 108897.881624836,
+            "ci95": [
+              36378033.3392515,
+              36828578.20241517
+            ],
+            "median": 36583715.5,
+            "min": 35712571.5,
+            "max": 37759374.5
+          }
+        },
+        "schedule/signed": {
+          "task": "schedule/signed",
+          "products_per_pass": 2,
+          "verification": {
+            "pairs": 2,
+            "passed": true,
+            "worst_error_over_bound": 4.480908161113168e-08
+          },
+          "status": "ok",
+          "observations_ns_per_product": [
+            5934656.666666667,
+            6187117.5,
+            5847065.333333333,
+            6003838.666666667,
+            6174653.166666667,
+            6384999.166666667,
+            5783779.5,
+            6231914.666666667,
+            5996342.166666667,
+            6271611.833333333,
+            6104482.333333333,
+            5988963.833333333,
+            5852778.666666667,
+            5908621.5,
+            5880485.333333333,
+            6237625.0,
+            6066682.0,
+            6269667.666666667,
+            5955924.833333333,
+            6284015.5,
+            6163622.166666667,
+            6056821.333333333,
+            5932702.666666667,
+            5969345.333333333
+          ],
+          "passes": 3,
+          "summary": {
+            "count": 24,
+            "mean": 6061988.201388889,
+            "sd": 165578.2650136555,
+            "se": 33798.52181489866,
+            "ci95": [
+              5992070.632015552,
+              6131905.770762226
+            ],
+            "median": 6030330.0,
+            "min": 5783779.5,
+            "max": 6384999.166666667
+          }
+        }
+      },
+      "ratios": {
+        "schedule_over_rows": {
+          "definition": "competitor_ns / baseline_ns per block, geometric mean",
+          "paired_blocks": 24,
+          "geometric_mean": 0.165570932861559,
+          "ci95": [
+            0.16339606815063182,
+            0.16777474586092647
+          ],
+          "competitor_faster_blocks": 24,
+          "competitor_slower_blocks": 0
+        },
+        "native_over_rows": null,
+        "table_over_split": null
+      },
+      "fastest_signed": "schedule",
+      "fastest_full": "none verified"
+    }
+  ],
+  "verification": {
+    "products_checked": 1376,
+    "failed_tasks": 0
+  }
+}

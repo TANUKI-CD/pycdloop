@@ -12,8 +12,11 @@ import unittest
 from fractions import Fraction
 from itertools import product
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
+
+import pycdloop as cdl
 
 try:
     from . import stability, stability_report, stability_study
@@ -336,6 +339,31 @@ class DocumentSectionTests(unittest.TestCase):
             self.assertEqual(plain.read_text(), "text\n")
 
 
+class ProvenanceTests(unittest.TestCase):
+    def test_source_record_describes_the_imported_package(self) -> None:
+        """Hash the files of whichever package the study would measure."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            package = Path(temporary) / "site" / "pycdloop"
+            (package / "__pycache__").mkdir(parents=True)
+            (package / "__init__.py").write_text("one\n")
+            (package / "_core.so").write_bytes(b"\x00binary")
+            (package / "__pycache__" / "skipped.pyc").write_bytes(b"cache")
+            with mock.patch.object(stability_study, "measured_package", lambda: package):
+                record = stability_study.source_record()
+        self.assertEqual(record["package"], "installed")
+        self.assertEqual(
+            record["files_sha256"],
+            {
+                "src/pycdloop/__init__.py": hashlib.sha256(b"one\n").hexdigest(),
+                "src/pycdloop/_core.so": hashlib.sha256(b"\x00binary").hexdigest(),
+            },
+        )
+        checkout = stability_study.ROOT / "src" / "pycdloop"
+        with mock.patch.object(stability_study, "measured_package", lambda: checkout):
+            self.assertEqual(stability_study.source_record()["package"], "checkout")
+
+
 class SmokeStudyTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -384,7 +412,23 @@ class SmokeStudyTests(unittest.TestCase):
         self.assertEqual((study["profile"], study["seed"]), ("smoke", 20261111))
         for key in ("python", "numpy", "gmpy2", "pyfastcd", "pycdloop", "platform", "cpu_model"):
             self.assertIn(key, study["environment"])
-        self.assertIn("src/pycdloop/_kernel.py", study["source"]["files_sha256"])
+        recorded = study["source"]["files_sha256"]
+        self.assertIn("src/pycdloop/_kernel.py", recorded)
+        # The hashes are those of the package that was imported and measured
+        package = stability_study.measured_package()
+        self.assertEqual(package, Path(cdl.__file__).resolve().parent)
+        present = {
+            f"src/pycdloop/{p.relative_to(package).as_posix()}"
+            for p in package.rglob("*")
+            if p.is_file() and "__pycache__" not in p.parts
+        }
+        self.assertEqual(set(recorded), present)
+        for name, digest in recorded.items():
+            path = package / name.removeprefix("src/pycdloop/")
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest)
+        checkout = stability_study.ROOT / "src" / "pycdloop"
+        origin = "checkout" if package == checkout else "installed"
+        self.assertEqual(study["source"]["package"], origin)
         self.assertEqual(set(study["raw_sha256"]), {"raw/accuracy.json", "raw/accuracy-corpus.npz"})
         self.assertNotIn(str(self.results), study["command"])
         self.assertIn("benchmark-results/stability-20260101", study["command"])

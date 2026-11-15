@@ -19,6 +19,7 @@ from ._loop import CDLoop, CentralProduct, LoopElement, _loop_from
 from ._signed import _signed_algebra
 from ._validation import (
     BINARY_MESSAGE,
+    CACHE_LOCK,
     DIFFERENT_ALGEBRA_MESSAGE,
     MIXED_BASIS_MESSAGE,
     _basis_index,
@@ -190,19 +191,27 @@ class LoopAlgebra:
         domain = _coefficient_field(char=char, deg=deg, field=field)
         key = (parent, domain)
         if key not in cls._cache:
-            self = object.__new__(cls)
-            store = object.__setattr__
-            store(self, "loop", parent)
-            store(self, "dimension", parent.order)
-            store(self, "coefficient_shape", (2, parent.quotient_order) + domain.shape)
-            store(self, "_field", domain)
-            # In characteristic 2 the algebra has no signed component
-            signed = None if domain.binary else _signed_algebra(parent.levels, domain)
-            store(self, "_signed", signed)
-            store(self, "_size", parent.quotient_order)
-            store(self, "_lazy", {})
-            cls._cache[key] = self
+            with CACHE_LOCK:
+                if key not in cls._cache:
+                    cls._cache[key] = cls._build(parent, domain)
         return cls._cache[key]
+
+    @classmethod
+    def _build(cls, parent: Any, domain: _CoefficientField) -> LoopAlgebra:
+        """Create the algebra of a loop over a field, which the caller caches."""
+
+        self = object.__new__(cls)
+        store = object.__setattr__
+        store(self, "loop", parent)
+        store(self, "dimension", parent.order)
+        store(self, "coefficient_shape", (2, parent.quotient_order) + domain.shape)
+        store(self, "_field", domain)
+        # In characteristic 2 the algebra has no signed component
+        signed = None if domain.binary else _signed_algebra(parent.levels, domain)
+        store(self, "_signed", signed)
+        store(self, "_size", parent.quotient_order)
+        store(self, "_lazy", {})
+        return self
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         """Reject subclasses so cached identity remains unambiguous."""
@@ -381,7 +390,11 @@ class LoopAlgebra:
         """Build a derived table once and keep it."""
 
         if name not in self._lazy:
-            self._lazy[name] = build()
+            # Under the lock, so that threads share one table, and one of
+            # everything that building it creates
+            with CACHE_LOCK:
+                if name not in self._lazy:
+                    self._lazy[name] = build()
         return self._lazy[name]
 
     @property
@@ -436,10 +449,14 @@ class LoopAlgebra:
 
         return Element._make(self, mode, data)
 
-    def _wrap_array(self, values: np.ndarray) -> ElementArray:
-        """Wrap loop-basis coefficients as an array."""
+    def _wrap_array(self, values: np.ndarray, *, shared: bool = False) -> ElementArray:
+        """Wrap loop-basis coefficients as an array.
 
-        return ElementArray._make(self, values)
+        *shared* marks storage that the caller also holds, which is then
+        checked before every use.
+        """
+
+        return ElementArray._make(self, values, [True] if shared else None)
 
     def _signed_view(self, signed: np.ndarray) -> Any:
         """Return signed components as their public type."""
@@ -532,7 +549,9 @@ class LoopAlgebra:
         if isinstance(epsilon, (fcd.Element, fcd.ElementArray)):
             if epsilon.algebra is not self._signed.cd:
                 raise ValueError("the signed component belongs to a different algebra")
-            return np.array(epsilon.coefficients, dtype=field.dtype)
+            # The storage of a pyfastcd array is writable, so its
+            # coefficients are read as any other coefficients are
+            return field.coerce(np.asarray(epsilon.coefficients))
         values = field.coerce(epsilon)
         if self._signed.cd is None:
             # A central product also accepts one axis for each factor
@@ -625,7 +644,9 @@ class LoopAlgebra:
 
         *spectral* holds the Walsh--Hadamard transforms of the group
         components and *signed* the signed components, as described for
-        :meth:`from_components`. Leading batch axes broadcast.
+        :meth:`from_components`. Over a finite field integers are reduced
+        modulo the characteristic, also those of a pyfastcd object. Leading
+        batch axes broadcast.
         """
 
         self._require_split("split_array()")
@@ -711,11 +732,16 @@ class LoopAlgebra:
     def from_bytes(self, data: Any) -> Element:
         """Return the element encoded by :meth:`Element.to_bytes`.
 
-        Raises ``ValueError`` if the length is wrong or, over a finite
+        *data* is a bytes-like object. Raises ``TypeError`` for anything
+        else, and ``ValueError`` if the length is wrong or, over a finite
         field, a residue is not below the characteristic.
         """
 
-        raw = bytes(data)
+        # bytes() would read an integer as a length and a list as octets
+        try:
+            raw = memoryview(data).tobytes()
+        except TypeError:
+            raise TypeError("data must be a bytes-like object") from None
         count = int(np.prod(self.coefficient_shape))
         if self._field.kind == "real":
             expected, kind = 8 * count, "<f8"
@@ -781,7 +807,7 @@ class LoopAlgebra:
         if shareable and self._field.exact and values.size:
             shareable = int(values.max()) < self.char
         if shareable:
-            return self._wrap_array(values)
+            return self._wrap_array(values, shared=True)
         if copy is False:
             raise ValueError("the values cannot be shared without a copy")
         return self.array(values)
@@ -915,7 +941,10 @@ class LoopAlgebra:
         if field.is_scalar(x) or field.is_scalar(y):
             if field.is_scalar(x) and field.is_scalar(y):
                 raise TypeError("at least one operand must belong to the algebra")
-            result = x * y
+            other = self._own(y, "y") if field.is_scalar(x) else self._own(x, "x")
+            if name == "table" and isinstance(other, SplitArray):
+                raise TypeError("the table algorithm works in the loop basis")
+            result = x * other if field.is_scalar(x) else other * y
         else:
             left, right = self._own(x, "x"), self._own(y, "y")
             receiver = left if not isinstance(left, Element) else right
@@ -957,7 +986,9 @@ class LoopAlgebra:
         if not target.flags.writeable:
             raise ValueError("out must be writable")
         target[...] = values
-        return out if isinstance(out, ElementArray) else self._wrap_array(target)
+        if isinstance(out, ElementArray):
+            return out
+        return self._wrap_array(target, shared=True)
 
     def _operator(self, implementation: Any, a: Any, b: Any, x: Any) -> Any:
         """Evaluate an operator commutator on three operands of one kind."""

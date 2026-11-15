@@ -10,10 +10,10 @@ from typing import Any
 import numpy as np
 import pyfastcd as fcd
 
-from . import _core
+from . import _core, _range
 from ._binary import BinaryField, BinaryFieldElement
 from ._transform import _hadamard, _hadamard_mod
-from ._validation import BINARY_MESSAGE
+from ._validation import BINARY_MESSAGE, CACHE_LOCK
 
 _CACHE: dict[tuple[int, int, Any], _CoefficientField] = {}
 
@@ -52,15 +52,64 @@ def _coefficient_field(
     if binary is not None:
         binary_key = (2, binary.deg, binary)
         if binary_key not in _CACHE:
-            _CACHE[binary_key] = _BinaryCoefficientField(binary)
+            with CACHE_LOCK:
+                if binary_key not in _CACHE:
+                    _CACHE[binary_key] = _BinaryCoefficientField(binary)
         return _CACHE[binary_key]
     # pyfastcd owns the selector rules of every other field, so a level-zero
-    # algebra validates them
-    parent = fcd.Algebra(level=0, char=char, deg=deg, field=field)
-    key = (parent.char, parent.deg, parent.field)
-    if key not in _CACHE:
-        _CACHE[key] = _CoefficientField(parent)
-    return _CACHE[key]
+    # algebra validates them. It is created under the lock: two threads that
+    # ask pyfastcd for a field for the first time at once can be given two
+    # field objects, which would be the keys of two parents
+    with CACHE_LOCK:
+        parent = fcd.Algebra(level=0, char=char, deg=deg, field=field)
+        key = (parent.char, parent.deg, parent.field)
+        if key not in _CACHE:
+            _CACHE[key] = _CoefficientField(parent)
+        return _CACHE[key]
+
+
+def _reduce_integers(values: np.ndarray, char: int) -> np.ndarray:
+    """Return an integer array reduced modulo the characteristic, as ``uint32``."""
+
+    # An unsigned value of 2^63 or more does not fit the signed type that the
+    # other integers are reduced in
+    if values.dtype.kind == "u":
+        reduced = np.remainder(values.astype(np.uint64, copy=False), np.uint64(char))
+    else:
+        reduced = np.remainder(values.astype(np.int64, copy=False), char)
+    result: np.ndarray = reduced.astype(np.uint32)
+    return result
+
+
+def _is_integer(value: Any) -> bool:
+    """Return whether a value is a Python or NumPy integer, and not a Boolean."""
+
+    if isinstance(value, (bool, np.bool_)):
+        return False
+    return isinstance(value, (int, np.integer))
+
+
+def _booleans(values: Any) -> bool:
+    """Return whether values are an array or a nested sequence of Booleans."""
+
+    # A Boolean is not a scalar of a finite field, so Booleans are not taken
+    # for its coefficients either, although pyfastcd reads them as 0 and 1
+    if not isinstance(values, np.ndarray):
+        try:
+            values = np.asarray(values)
+        except (TypeError, ValueError):
+            return False
+    return bool(values.dtype.kind == "b")
+
+
+def _kernel_input(values: np.ndarray, dtype: Any) -> np.ndarray:
+    """Return an array as the compiled kernels read it: contiguous and aligned."""
+
+    result = np.ascontiguousarray(values, dtype=dtype)
+    if result.flags.aligned:
+        return result
+    # Storage at an unaligned address is copied to memory that is aligned
+    return np.require(result, requirements=["C", "A"])
 
 
 class _CoefficientField:
@@ -118,8 +167,9 @@ class _CoefficientField:
 
         if self.kind == "finite":
             if isinstance(values, np.ndarray) and values.dtype.kind in "ui":
-                reduced = np.remainder(values.astype(np.int64, copy=False), self.char)
-                result = reduced.astype(np.uint32)
+                result = _reduce_integers(values, self.char)
+            elif _booleans(values):
+                raise TypeError("coefficients over a finite field must be integers")
             else:
                 result = np.array(self.field.array(values).coefficients, copy=True)
             if result.ndim < self.tail or result.shape[result.ndim - self.tail :] != (
@@ -321,7 +371,7 @@ class _CoefficientField:
         if self.kind == "finite":
             values = self.field.asarray(np.ascontiguousarray(a))
             return np.asarray(values.reciprocal().coefficients).reshape(a.shape)
-        return 1.0 / a
+        return _range.quotient(np.ones((), dtype=a.dtype), a)
 
     def power(self, a: np.ndarray, exponent: int) -> np.ndarray:
         """Raise coefficients to a nonnegative integer power."""
@@ -334,13 +384,23 @@ class _CoefficientField:
         # NumPy does not
         result = a.copy() if exponent & 1 else None
         base = a
+        count = exponent
         exponent >>= 1
         while exponent:
             base = base * base
             if exponent & 1:
                 result = base if result is None else result * base
             exponent >>= 1
-        return np.ones_like(a) if result is None else result
+        if result is None:
+            return np.ones_like(a)
+        if self.kind == "complex" and count > 1:
+            # A part of a complex product is a difference of two products,
+            # which can overflow although the part does not. A power that
+            # is not finite is formed again where that cannot happen
+            lost = ~np.isfinite(result) & np.isfinite(a)
+            if lost.any():
+                result[lost] = _range.power(a[lost], count)
+        return result
 
     # Predicates
 
@@ -393,7 +453,7 @@ class _CoefficientField:
         """
 
         lead = coefficients.shape[: coefficients.ndim - self.tail - 2]
-        source = np.ascontiguousarray(coefficients, dtype=self.dtype)
+        source = _kernel_input(coefficients, self.dtype)
         if out is None:
             spectral = np.empty(lead + (size,) + self.shape, dtype=self.dtype)
             signed = np.empty(spectral.shape, dtype=self.dtype)
@@ -415,8 +475,8 @@ class _CoefficientField:
             shape = np.broadcast_shapes(spectral.shape, signed.shape)
             spectral = np.broadcast_to(spectral, shape)
             signed = np.broadcast_to(signed, shape)
-        first = np.ascontiguousarray(spectral, dtype=self.dtype)
-        second = np.ascontiguousarray(signed, dtype=self.dtype)
+        first = _kernel_input(spectral, self.dtype)
+        second = _kernel_input(signed, self.dtype)
         lead = first.shape[: first.ndim - self.tail - 1]
         coefficients = np.empty(lead + (2, size) + self.shape, dtype=self.dtype)
         if coefficients.size:
@@ -515,10 +575,21 @@ class _BinaryCoefficientField(_CoefficientField):
     def coerce(self, values: Any) -> np.ndarray:
         """Copy coefficients into a new array, reducing integers modulo 2."""
 
-        array = np.asarray(self._nested(values))
+        nested = self._nested(values)
+        array = np.asarray(nested)
+        if array.dtype.kind == "f" and not isinstance(nested, np.ndarray):
+            # NumPy reads integers of mixed sign beyond the range of int64 as
+            # floats; the entries themselves decide whether they are integers
+            array = np.array(nested, dtype=object)
+        if array.dtype.kind == "O":
+            # Python integers beyond the range of the NumPy types
+            entries = array.ravel().tolist()
+            if all(_is_integer(entry) for entry in entries):
+                parities = [int(entry) % 2 for entry in entries]
+                array = np.array(parities, dtype=np.uint32).reshape(array.shape)
         if array.dtype.kind not in "iu":
             raise TypeError("coefficients over a finite field must be integers")
-        result = np.remainder(array.astype(np.int64), 2).astype(np.uint32)
+        result = _reduce_integers(array, 2)
         if result.ndim < self.tail or result.shape[result.ndim - self.tail :] != (
             self.shape
         ):

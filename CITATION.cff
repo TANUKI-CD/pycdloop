@@ -11,7 +11,7 @@ authors:
   - family-names: Lemley
     given-names: Harrison
 version: 0.1.0
-date-released: 2026-11-13
+date-released: 2026-11-14
 license: MIT
 repository-code: "https://git.tanuki-cd.com/algebraity/pycdloop"
 keywords:

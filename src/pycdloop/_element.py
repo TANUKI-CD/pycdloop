@@ -12,9 +12,11 @@ from ._loop import LoopElement
 from ._validation import (
     CD_ONLY_MESSAGE,
     DIFFERENT_ALGEBRA_MESSAGE,
+    NO_COPY_MESSAGE,
     POWER_MESSAGE,
     _exponent,
     _index,
+    _stored,
 )
 
 _Implementation = Callable[..., Any]
@@ -269,17 +271,20 @@ class _Arithmetic:
         return self._bracketed_power(_kernel.right_power, exponent)
 
     def inverse(self) -> Any:
-        """Return the two-sided inverse.
+        """Return the inverse that is a polynomial in the element.
 
-        Over R, C and fields of odd characteristic the inverse is defined
-        for a Cayley--Dickson loop, and exists when every spectral
-        coordinate is nonzero and the signed component has nonzero quadratic
-        norm. In characteristic 2 it is defined for every loop, exists when
-        the augmentation ``aug(x)`` is nonzero, and equals
-        ``x**3 / aug(x)**4``. An element without an inverse raises
-        ``ZeroDivisionError``, and a central product outside characteristic
-        2 raises ``TypeError``. For an array, every record is checked before
-        any result is produced.
+        It is a two-sided inverse. Over R, C and fields of odd
+        characteristic it is defined for a Cayley--Dickson loop, is the pair
+        of the coordinatewise reciprocal and ``conjugate(d) / Q(d)``, and
+        exists exactly when every spectral coordinate is nonzero and the
+        signed component has nonzero quadratic norm. From level 4 on an
+        element can have other two-sided inverses, also where this one does
+        not exist; they are not computed. In characteristic 2 the inverse is
+        defined for every loop, exists when the augmentation ``aug(x)`` is
+        nonzero, and equals ``x**3 / aug(x)**4``. An element without this
+        inverse raises ``ZeroDivisionError``, and a central product outside
+        characteristic 2 raises ``TypeError``. For an array, every record is
+        checked before any result is produced.
         """
 
         return self._run(_kernel.inverse, (self,))
@@ -313,7 +318,7 @@ class _Arithmetic:
             return self._truth(self._augmentation_marks())
         spectral, d = self._data("split")
         marks = field.nonzero(spectral).all(axis=-1)
-        return self._truth(marks & field.nonzero(signed.quadratic_norm(d)))
+        return self._truth(marks & signed.has_norm(d))
 
     def is_idempotent(self) -> Any:
         """Return whether ``x x == x``, compared exactly.
@@ -352,7 +357,7 @@ class _Arithmetic:
         first = (Ellipsis, 0) + (slice(None),) * field.tail
         marks = ~field.nonzero(spectral).any(axis=-1)
         marks &= ~field.nonzero(d[first])
-        return self._truth(marks & ~field.nonzero(signed.quadratic_norm(d)))
+        return self._truth(marks & ~signed.has_norm(d))
 
     def is_central(self) -> Any:
         """Return whether the element commutes and associates with every element.
@@ -421,6 +426,22 @@ def _freeze(array: np.ndarray) -> np.ndarray:
     return array
 
 
+def _immutable(array: np.ndarray) -> np.ndarray:
+    """Return a copy of an array that cannot be made writable."""
+
+    # A read-only array that owns its memory can be made writable again. A
+    # view of a bytes object cannot, so this is the form in which an element
+    # hands out its data, while its own arrays stay private
+    return _over(array.tobytes(), array.dtype, array.shape)
+
+
+def _over(data: bytes, dtype: Any, shape: tuple[int, ...]) -> np.ndarray:
+    """Return a new read-only array over a bytes object."""
+
+    array: np.ndarray = np.frombuffer(data, dtype=dtype)
+    return array.reshape(shape)
+
+
 @final
 class Element(_Arithmetic):
     """One immutable element of a loop algebra.
@@ -484,6 +505,7 @@ class Element(_Arithmetic):
         "_hash",
         "_native",
         "_lift",
+        "_shown",
         "__weakref__",
     )
 
@@ -493,6 +515,10 @@ class Element(_Arithmetic):
     _hash: int | None
     _native: Any
     _lift: Any
+    # The bytes of the coefficients that have been handed out. Each request
+    # gets a new array over them, so that nothing a caller does to the shape
+    # or type of one array reaches the next
+    _shown: bytes | None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Reject direct construction."""
@@ -510,6 +536,7 @@ class Element(_Arithmetic):
         store(self, "_hash", None)
         store(self, "_native", None)
         store(self, "_lift", None)
+        store(self, "_shown", None)
         if mode == "loop":
             if data.shape != algebra.coefficient_shape:
                 raise ValueError("coefficients do not have the shape of one element")
@@ -538,7 +565,12 @@ class Element(_Arithmetic):
     def __reduce__(self) -> tuple[Any, ...]:
         """Pickle the algebra and the form the element was created with."""
 
-        data: Any = self._loop if self._born == "loop" else self._split
+        data: Any
+        if self._born == "loop":
+            data = _immutable(self._data("loop"))
+        else:
+            assert self._split is not None
+            data = (_immutable(self._split[0]), _immutable(self._split[1]))
         return (_rebuild, (self._algebra, self._born, data))
 
     def __copy__(self) -> Element:
@@ -653,23 +685,28 @@ class Element(_Arithmetic):
     def coefficients(self) -> np.ndarray:
         """A read-only array of the loop-basis coefficients."""
 
-        coefficients: np.ndarray = self._data("loop")
-        return coefficients
+        if self._shown is None:
+            object.__setattr__(self, "_shown", self._data("loop").tobytes())
+        assert self._shown is not None
+        algebra = self._algebra
+        return _over(self._shown, algebra.dtype, algebra.coefficient_shape)
 
     def __array__(self, dtype: Any = None, copy: Any = None) -> np.ndarray:
         """Return the loop-basis coefficients to NumPy."""
 
-        coefficients = self.coefficients
+        coefficients: np.ndarray = self._data("loop")
         if dtype is not None and np.dtype(dtype) != coefficients.dtype:
+            if copy is False:
+                raise ValueError(NO_COPY_MESSAGE)
             return coefficients.astype(dtype)
-        return coefficients.copy() if copy else coefficients
+        return coefficients.copy() if copy else self.coefficients
 
     def to_numpy(self, *, copy: bool = True) -> np.ndarray:
         """Return the loop-basis coefficients; a read-only view with ``copy=False``."""
 
         if not isinstance(copy, bool):
             raise TypeError("copy must be a bool")
-        return self.coefficients.copy() if copy else self.coefficients
+        return self._data("loop").copy() if copy else self.coefficients
 
     def copy(self) -> Element:
         """Return an equal element with independent storage."""
@@ -702,13 +739,13 @@ class Element(_Arithmetic):
         """
 
         field = self._algebra._field
-        return field.python(self.coefficients[self._location(x)])
+        return field.python(self._data("loop")[self._location(x)])
 
     def terms(self) -> dict[LoopElement, Any]:
         """Return the nonzero coefficients, keyed by loop element."""
 
         field = self._algebra._field
-        coefficients = self.coefficients
+        coefficients = self._data("loop")
         loop = self._algebra.loop
         marks = field.nonzero(coefficients)
         result = {}
@@ -733,7 +770,7 @@ class Element(_Arithmetic):
         encoding back.
         """
 
-        result: bytes = self._algebra._encode(self.coefficients)
+        result: bytes = self._algebra._encode(self._data("loop"))
         return result
 
     # Decomposition
@@ -789,7 +826,10 @@ class Element(_Arithmetic):
             if self._native is None:
                 object.__setattr__(self, "_native", algebra._signed.cd(signed))
             return self._native
-        return signed.reshape(algebra._signed.sizes + algebra._field.shape)
+        if self._native is None:
+            object.__setattr__(self, "_native", signed.tobytes())
+        shape = algebra._signed.sizes + algebra._field.shape
+        return _over(self._native, algebra.dtype, shape)
 
     def augmentation(self) -> Any:
         """Return the sum of all coefficients, a scalar of the field.
@@ -848,7 +888,7 @@ class Element(_Arithmetic):
         """Return the scalar this element equals, or ``None`` if it is not one."""
 
         field = self._algebra._field
-        coefficients = self.coefficients
+        coefficients = self._data("loop")
         marks = field.nonzero(coefficients)
         marks[0, 0] = False
         if marks.any():
@@ -867,7 +907,7 @@ class Element(_Arithmetic):
         if isinstance(other, Element):
             if other._algebra is not self._algebra:
                 return False
-            return bool(np.array_equal(self.coefficients, other.coefficients))
+            return bool(np.array_equal(self._data("loop"), other._data("loop")))
         field = self._algebra._field
         if field.is_scalar(other):
             value = self._scalar_value()
@@ -888,7 +928,7 @@ class Element(_Arithmetic):
             if value is not None:
                 result = hash(value)
             else:
-                coefficients = self.coefficients
+                coefficients = self._data("loop")
                 if not self._algebra._field.exact:
                     # Adding zero maps -0.0 to +0.0, which compare equal
                     coefficients = coefficients + 0.0
@@ -908,14 +948,18 @@ class Element(_Arithmetic):
     def __repr__(self) -> str:
         """Return the coefficients and the parent."""
 
-        body = np.array2string(self.coefficients, separator=", ", threshold=16)
+        body = np.array2string(self._data("loop"), separator=", ", threshold=16)
         body = " ".join(body.split())
         return f"Element({body}, algebra={self._algebra!r})"
 
 
 def _rebuild(algebra: Any, mode: str, data: Any) -> Element:
-    """Recreate a pickled element."""
+    """Recreate a pickled element, whose data is checked as storage is."""
 
+    field = algebra._field
     if mode == "loop":
-        return Element._make(algebra, mode, np.array(data))
-    return Element._make(algebra, mode, (np.array(data[0]), np.array(data[1])))
+        values = _stored(field, np.array(data), algebra.coefficient_shape)
+        return Element._make(algebra, mode, values)
+    record = (algebra._size,) + field.shape
+    spectral, signed = (_stored(field, np.array(part), record) for part in data)
+    return Element._make(algebra, mode, (spectral, signed))

@@ -329,10 +329,11 @@ def zero_divisor() -> tuple[np.ndarray, np.ndarray]:
 
 
 def euclidean_norm(values: np.ndarray) -> float:
-    """Correctly rounded Euclidean norm of the binary64 coefficients.
+    """Euclidean norm of the binary64 coefficients.
 
-    The squares are summed with math.fsum, so the result is the same on every
-    platform and does not depend on the BLAS library NumPy uses.
+    Each square is rounded, the squares are summed exactly with math.fsum, and
+    the square root of the rounded sum is rounded. The result does not depend
+    on the BLAS library NumPy uses.
     """
     parts = np.concatenate([values.real.ravel(), values.imag.ravel()]) if np.iscomplexobj(values) else values.ravel()
     return math.sqrt(math.fsum((parts * parts).tolist()))

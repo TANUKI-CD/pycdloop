@@ -51,11 +51,28 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def source_hashes(root: Path) -> dict[str, str]:
-    """Return the SHA-256 of every file of the measured package."""
-    package = root / "src" / "pycdloop"
+def measured_package() -> Path:
+    """Return the directory of the package that the study imports and measures."""
+    import pycdloop
+
+    return Path(pycdloop.__file__).resolve().parent
+
+
+def source_hashes(package: Path) -> dict[str, str]:
+    """Return the SHA-256 of every file of the measured package.
+
+    The files are named as in a checkout, under ``src/pycdloop``, wherever
+    the package was imported from.
+    """
     files = sorted(p for p in package.rglob("*") if p.is_file() and "__pycache__" not in p.parts)
-    return {p.relative_to(root).as_posix(): sha256(p) for p in files}
+    return {f"src/pycdloop/{p.relative_to(package).as_posix()}": sha256(p) for p in files}
+
+
+def source_record() -> dict[str, Any]:
+    """Describe the measured package: where it was imported from, and its files."""
+    package = measured_package()
+    origin = "checkout" if package == ROOT / "src" / "pycdloop" else "installed"
+    return {"package": origin, "files_sha256": source_hashes(package)}
 
 
 def published_files(directory: Path) -> list[Path]:
@@ -164,7 +181,7 @@ def run(args: argparse.Namespace) -> Path:
         "signed_algorithms": document["signed_algorithms"],
         "oracle_validation": document["oracle_validation"], "precision_checks": document["precision_checks"],
         "corpus": document["corpus"], "steps": steps,
-        "source": {"files_sha256": source_hashes(ROOT)},
+        "source": source_record(),
         "tools_sha256": {p.name: sha256(p) for p in sorted(Path(__file__).parent.glob("stability*.py"))},
         "raw_sha256": {p.relative_to(directory).as_posix(): sha256(p) for p in sorted(raw.iterdir()) if p.is_file()},
     }

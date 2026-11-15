@@ -5,7 +5,7 @@ All notable changes to pycdloop are recorded in this file. The project follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version is
 defined in `src/pycdloop/_version.py`.
 
-## [0.1.0] - 2026-11-13
+## [0.1.0] - 2026-11-14
 
 ### Added
 
@@ -37,8 +37,9 @@ defined in `src/pycdloop/_version.py`.
   the remaining factors (`"schedule"`).
 - The decomposition maps `kappa`, `epsilon` and `spectrum`, the central and
   primitive idempotents, a basis of the center, inverses, integer powers in
-  `O(D + log k)` operations, zero-divisor tests, annihilators, minimal
-  polynomials and multiplication matrices.
+  `O(D + log k)` operations beyond the coordinatewise powers of the
+  spectrum, zero-divisor tests, annihilators, minimal polynomials and
+  multiplication matrices.
 - In characteristic 2, powers, inverses, nilpotency and zero-divisor tests,
   and minimal polynomials for every loop, central products included, from
   the identity `x^4 = aug(x)^4`. The operations that need the decomposition
@@ -50,9 +51,10 @@ defined in `src/pycdloop/_version.py`.
   loop basis and the split form, over R, C and finite fields. Their results
   are bit-identical to the reference evaluation in `_transform.py`.
 - `pycdloop.linalg` (rank, row reduction and null spaces over the coefficient
-  fields), `pycdloop.codes` (translate and generator matrices of one-sided
-  ideals, export to GAP and SageMath over prime fields, F_2 included) and
-  `pycdloop.testing` (sampled identity checks).
+  fields), `pycdloop.codes` (translate matrices, generator matrices of left,
+  right and two-sided ideals, a test for ideals, and export to GAP and
+  SageMath over every finite field) and `pycdloop.testing` (sampled identity
+  checks).
 - Benchmark drivers for three protocols and a numerical stability study
   against an exact reference, with `tools/check_operation_counts.py` and
   `tools/check_archives.py`.

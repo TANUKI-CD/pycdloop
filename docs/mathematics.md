@@ -63,7 +63,10 @@ The Cayley–Dickson loop `Q_n` is the set of signed basis elements
 Q_n = { +e_p, -e_p : 0 <= p < N }
 ```
 
-under the multiplication of `A_n`. It has order `2N`. The element `-1` is
+under the multiplication of `A_n`. The signs are formal: they are those of
+the Cayley–Dickson algebra over R, so `+e_p` and `-e_p` are distinct
+elements of the loop whatever the coefficient field of a loop algebra is,
+characteristic 2 included. The loop has order `2N`. The element `-1` is
 central of order two, and the quotient of `Q_n` by `{+1, -1}` is the
 elementary abelian 2-group of order `N`, with the coset `{+e_p, -e_p}`
 corresponding to the index `p` and the group operation to XOR.
@@ -338,20 +341,30 @@ summands:
 **Powers.** Powers of `x` do not depend on bracketing. The spectral part is
 raised to the power coordinatewise. Over R and C each coordinate is raised
 by binary exponentiation, with `O(log k)` multiplications, so that its power
-is exact whenever it is representable. For the signed part, the quadratic
-relation puts every power of `d` in the span of 1 and `d`: in the quotient
-ring `F[z] / (z^2 - 2 d_0 z + Q(d))`, binary exponentiation gives
-`z^k = u + v z` with `O(log k)` field operations, and then `d^k = u + v d`.
-A power therefore costs `O(D + log k)` field operations beyond the
-coordinatewise powers of the spectrum.
+is exact whenever it is representable. For the signed part, write
+`d = d_0 + w`, with `w` the part of `d` without the identity. Then
+`w^2 = -Q(w)` is a scalar, so every power of `d` lies in the commutative
+ring `F[w] = F[z] / (z^2 + Q(w))`: binary exponentiation of `d_0 + z` there
+gives `d^k = a + b w` with `O(log k)` field operations. Over R this ring is
+a copy of C, in which a product does not cancel, and for a scalar `d` the
+power is that of `d_0`. A power therefore costs `O(D + log k)` field
+operations beyond the coordinatewise powers of the spectrum. Over R and C
+the values of the recurrence can be far larger or smaller than the power
+itself, so outside the ordinary range it is evaluated on numbers whose
+exponents are kept apart as integers, and a coefficient of the power is
+lost only where it is itself out of the range of the floats.
 
-**Inverses.** `x` has a two-sided inverse when every spectral coordinate is
-nonzero and `Q(d) != 0`; it is the pair of the coordinatewise reciprocal and
-`conjugate(d) / Q(d)`. Over R the second condition is `d != 0`. Over C and
-finite fields there can be nonzero `d` with `Q(d) = 0`, which have no
-inverse: over C for `n >= 1`, and over a finite field for `n >= 2`, and for
-`n = 1` when `-1` is a square in it.
-From `n = 4` on, an element with an inverse can still be a zero divisor.
+**Inverses.** The inverse of `x` is the pair of the coordinatewise
+reciprocal and `conjugate(d) / Q(d)`. It exists exactly when every spectral
+coordinate is nonzero and `Q(d) != 0`. It is a two-sided inverse and a
+polynomial in `x`, and negative powers of `x` are its powers. Over R the
+second condition is `d != 0`. Over C and finite fields there can be nonzero
+`d` with `Q(d) = 0`, for which it does not exist: over C for `n >= 1`, over
+a finite field for `n >= 2`, and for `n = 1` when `-1` is a square in it.
+Through `n = 3` an element without this inverse has no two-sided inverse.
+From `n = 4` on, an element with an inverse can still be a zero divisor,
+two-sided inverses need not be unique, and an element with `Q(d) = 0` can
+have one. Only the inverse above is computed.
 
 **Zero divisors.** `x` multiplies with a nonzero element to zero exactly
 when a spectral coordinate vanishes, or `d` is zero, or `d` divides zero in

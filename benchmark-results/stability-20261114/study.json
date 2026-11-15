@@ -1,0 +1,203 @@
+{
+  "schema": "pycdloop-stability-study-v1",
+  "date": "2026-11-14",
+  "profile": "full",
+  "seed": 20261111,
+  "precision_bits": 256,
+  "jobs": 8,
+  "levels": {
+    "real": 10,
+    "complex": 8,
+    "real_chains": 8,
+    "complex_chains": 6
+  },
+  "command": "python3 benchmarks/stability_study.py --profile full --seed 20261111 --jobs 8 --output benchmark-results/stability-20261114",
+  "environment": {
+    "python": "3.14.8 (main, Oct  2 2026, 10:23:31) [GCC 16.2.1 20260810]",
+    "platform": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
+    "cpu_model": "Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz",
+    "numpy": "2.5.4",
+    "gmpy2": "2.3.2",
+    "mpfr": "MPFR 4.2.2",
+    "pyfastcd": "1.4.0",
+    "pycdloop": "0.1.0",
+    "matplotlib": "3.11.2"
+  },
+  "signed_algorithms": {
+    "real": {
+      "1": "quasilinear",
+      "2": "direct",
+      "3": "direct",
+      "4": "direct",
+      "5": "quasilinear",
+      "6": "quasilinear",
+      "7": "quasilinear",
+      "8": "quasilinear",
+      "9": "quasilinear",
+      "10": "quasilinear"
+    },
+    "complex": {
+      "1": "direct",
+      "2": "direct",
+      "3": "quasilinear",
+      "4": "quasilinear",
+      "5": "quasilinear",
+      "6": "quasilinear",
+      "7": "quasilinear",
+      "8": "quasilinear"
+    }
+  },
+  "oracle_validation": {
+    "basis_cases_against_rational_doubling": 341,
+    "loop_algebra_levels_against_rational_definition": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "known_quaternion_octonion_cases": 8,
+    "zero_divisor": {
+      "x_support": [
+        1,
+        10
+      ],
+      "x_values": [
+        1.0,
+        1.0
+      ],
+      "y_support": [
+        4,
+        15
+      ],
+      "y_values": [
+        1.0,
+        -1.0
+      ],
+      "verified_exactly": true
+    }
+  },
+  "precision_checks": [
+    {
+      "key": "real_5_gaussian_0",
+      "precision_bits": 256,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 1.924369007451699
+    },
+    {
+      "key": "real_5_gaussian_0",
+      "precision_bits": 512,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 1.924369007451699
+    },
+    {
+      "key": "complex_5_gaussian_0",
+      "precision_bits": 256,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 2.0829142105860132
+    },
+    {
+      "key": "complex_5_gaussian_0",
+      "precision_bits": 512,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 2.0829142105860132
+    },
+    {
+      "key": "real_3_gaussian_0",
+      "precision_bits": 256,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 1.3124485654256486
+    },
+    {
+      "key": "real_3_gaussian_0",
+      "precision_bits": 512,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 1.3124485654256486
+    },
+    {
+      "key": "complex_3_gaussian_0",
+      "precision_bits": 256,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 1.5010991663909223
+    },
+    {
+      "key": "complex_3_gaussian_0",
+      "precision_bits": 512,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 1.5010991663909223
+    },
+    {
+      "key": "real_1_gaussian_0",
+      "precision_bits": 256,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 0.8604071038814137
+    },
+    {
+      "key": "real_1_gaussian_0",
+      "precision_bits": 512,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 0.8604071038814137
+    },
+    {
+      "key": "complex_1_gaussian_0",
+      "precision_bits": 256,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 1.6881265828446144
+    },
+    {
+      "key": "complex_1_gaussian_0",
+      "precision_bits": 512,
+      "maximum_reference_discrepancy": 0.0,
+      "normalized_error_S": 1.6881265828446144
+    }
+  ],
+  "corpus": {
+    "path": "accuracy-corpus.npz",
+    "npz_sha256": "bbc136683c4fe9deb63371c66b358398e3895e02268c10be8b9cbeed0a90d05f",
+    "ordered_operands_sha256": "67649b1a583f75321fbdb40cf3f01557c639f92793161aa2bef6f6a9cadd2f39",
+    "pairs": 4764,
+    "chains": 2076
+  },
+  "steps": {
+    "accuracy": 11.896366021999711,
+    "tables": 0.21284350599671598,
+    "plots": 3.817522720000852
+  },
+  "source": {
+    "package": "checkout",
+    "files_sha256": {
+      "src/pycdloop/__init__.py": "9423f239c5f1724abe18a9d30328cc95935fe340220e128753c3e7ca8f4e5ce4",
+      "src/pycdloop/_algebra.py": "77cc85f2b71d2e593f58c0edae573a3abd0399113479cbb6ab99369e2fd40f0d",
+      "src/pycdloop/_array.py": "b9bcc5a248dd69fd29c7fc10edbdc7440c5b9758268bcab247eead8d2e3262da",
+      "src/pycdloop/_binary.py": "d919ffa7117dd92a2da0ee2ac59984a400b6bbabfc72e5523c77f9943c2b1337",
+      "src/pycdloop/_core.c": "aa9121a8a6e73a459dd8d083cf784399e5b6b68d079bcdac086034a2561c63e8",
+      "src/pycdloop/_core.cpython-314-x86_64-linux-gnu.so": "cce6303d89cacdedd0113f38ce9d0cec6c5da58de093d5a37539e293e5d1feaa",
+      "src/pycdloop/_core.pyi": "3aa1cd6af0448073542d316ff8e5f2d360bf725e7d09662b144a57f01b3fe6de",
+      "src/pycdloop/_element.py": "591fb66b429abf0738deeab8944673538c68776ce25f59bb3b70e0bc7d8f42c5",
+      "src/pycdloop/_field.py": "5ddc34c41314ac7ca393429a9a3c824220cd7c0d2d828014be1460144b64d1ac",
+      "src/pycdloop/_kernel.py": "48586a3613294dc1ae4e03dcb732cc9042e91c92c5f0a990a36d24a222f1e211",
+      "src/pycdloop/_lift.py": "b9fe4fa9d3e91866477593bb851b166da9d3cda1fb3722639b9320e337a2c94e",
+      "src/pycdloop/_loop.py": "d00fa36f13a25a2b227887def95ac7249bda06902e3b8f5062a20e80c55f3d63",
+      "src/pycdloop/_range.py": "b83029d5230b8ad24dfd5e175824fc2a3d0a7453b227ea6f9c92c93904c8e8c7",
+      "src/pycdloop/_schedule.py": "0c7b9bc82656c0eaf630e1130a521de55d3f8061eb5446cb1a4067cb9213ca0d",
+      "src/pycdloop/_signed.py": "f2402055b8313a3739e6cc3efb8e24cc5a0fba9d48edbb0debe110415d502e1b",
+      "src/pycdloop/_structure.py": "5aabd6c5c582330e4148cd9478fe98c38e769c59c6a4ebea4c7c84f46e905b9a",
+      "src/pycdloop/_transform.py": "eca73c859caa24530a29be26e36772b429774d5d7e773d706fb9660d278ac17a",
+      "src/pycdloop/_validation.py": "c94101ee2dbb379189715bf46c77b8ae8ab38ebb1fe8131364fd4a0ec8ffc028",
+      "src/pycdloop/_version.py": "72395be70ee133e266a83725204015f8a0044e09cd3d2025cb683bd8125364d7",
+      "src/pycdloop/codes.py": "55613b45fa2c1b14303325b86dd749c7ede9f00da7b6fc96fafa8fe54efc0bae",
+      "src/pycdloop/linalg.py": "4a33355f5336497a635c596964d435e0644880df615873ae85a1f34f13cea1f3",
+      "src/pycdloop/py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "src/pycdloop/testing.py": "a87ee13706be73d49bc8d2069cd51157daf159e0320ea1b7aa27912ea66530f3"
+    }
+  },
+  "tools_sha256": {
+    "stability.py": "98bb290eceff7d26db1ada4e5b6206f3c4b9decc7ab45671bae8fc963d53f77a",
+    "stability_plots.py": "c9b9054938bee37103a6614c9cf23a576637f78b412bf860d47bcccc5215fecf",
+    "stability_report.py": "dcf61f4a6213f3aa695e7d689127ce0ef5819134fd04c7ca972f9cc638586b21",
+    "stability_study.py": "89c44d86a91d99e38d37cb50b828ce03a86e0f4db520a040b087966dab531ea1"
+  },
+  "raw_sha256": {
+    "raw/accuracy-corpus.npz": "bbc136683c4fe9deb63371c66b358398e3895e02268c10be8b9cbeed0a90d05f",
+    "raw/accuracy.json": "27ee9dcee3b4227ad4eaed0660dfb595bf5584c587357f2c3ae8a17fcd4585f0"
+  }
+}

@@ -7,7 +7,7 @@ from typing import Any, final
 
 import numpy as np
 
-from ._validation import _index
+from ._validation import CACHE_LOCK, _index
 
 MAX_DEGREE = 12
 
@@ -184,17 +184,19 @@ class BinaryField:
         """Return the cached field with the given polynomial, building it once."""
 
         if modulus not in cls._cache:
-            self = object.__new__(cls)
-            degree = len(modulus) - 1
-            mask = _mask(modulus)
-            store = object.__setattr__
-            store(self, "deg", degree)
-            store(self, "modulus", modulus)
-            store(self, "_modulus_mask", mask)
-            exp, log = cls._tables(mask, degree)
-            store(self, "_exp", exp)
-            store(self, "_log", log)
-            cls._cache[modulus] = self
+            with CACHE_LOCK:
+                if modulus not in cls._cache:
+                    self = object.__new__(cls)
+                    degree = len(modulus) - 1
+                    mask = _mask(modulus)
+                    store = object.__setattr__
+                    store(self, "deg", degree)
+                    store(self, "modulus", modulus)
+                    store(self, "_modulus_mask", mask)
+                    exp, log = cls._tables(mask, degree)
+                    store(self, "_exp", exp)
+                    store(self, "_log", log)
+                    cls._cache[modulus] = self
         return cls._cache[modulus]
 
     @staticmethod

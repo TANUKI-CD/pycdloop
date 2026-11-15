@@ -58,15 +58,15 @@ An `Element` is one immutable element of a loop algebra, an `ElementArray` holds
 
 ## Benchmark
 
-The data in this table contains the mean microseconds per measured product in batches, over real coefficients, measured on 2026-11-13 on one logical CPU of an Intel Xeon Gold 6148. `2N` is the dimension of the loop algebra. `split` is the default algorithm on operands in the loop basis, `split form` is the same product on operands already in the decomposed coordinates, `table` evaluates the definition, and the last column is the pyfastcd product that every loop-algebra product contains. Timing is done in Python and includes the call overhead of the package. The protocol, the single-product and finite-field results, and the central-product results are in [Benchmark](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/benchmark.md).
+The data in this table contains the mean microseconds per measured product in batches, over real coefficients, measured on 2026-11-14 on one logical CPU of an Intel Xeon Gold 6148. `2N` is the dimension of the loop algebra. `split` is the default algorithm on operands in the loop basis, `split form` is the same product on operands already in the decomposed coordinates, `table` evaluates the definition, and the last column is the pyfastcd product that every loop-algebra product contains. Timing is done in Python and includes the call overhead of the package. The protocol, the single-product and finite-field results, and the central-product results are in [Benchmark](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/benchmark.md).
 
 | 2N | split | split form | table | Cayley–Dickson product alone |
 | ---: | ---: | ---: | ---: | ---: |
-| 8 | 0.22 | 0.077 | 0.93 | 0.012 |
-| 32 | 0.30 | 0.13 | 8.88 | 0.062 |
-| 128 | 1.08 | 0.58 | 184.0 | 0.45 |
-| 512 | 5.64 | 3.29 | 3,768 | 2.63 |
-| 2048 | 27.7 | 17.3 | 43,476 | 14.7 |
+| 8 | 0.20 | 0.085 | 0.83 | 0.011 |
+| 32 | 0.31 | 0.15 | 8.84 | 0.063 |
+| 128 | 1.15 | 0.62 | 194.3 | 0.45 |
+| 512 | 5.50 | 3.29 | 3,735 | 2.61 |
+| 2048 | 28.3 | 18.1 | 43,635 | 15.0 |
 
 ## Numerical stability
 
@@ -77,7 +77,7 @@ Accuracy was measured against an exact reference on 4,764 operand pairs. The err
 | split | 0.78 | 1.90 | 2.47 | 2.73 |
 | table | 0.67 | 1.86 | 4.92 | 9.68 |
 
-The error of `split` grows with the logarithm of the dimension, and its largest value anywhere in the corpus is 5.8 over R and 4.3 over C. Arithmetic over finite fields is exact and thus does not need an error analysis. The method and the full results are in [Numerical stability](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/stability.md).
+On this corpus the error of `split` grows with the logarithm of the dimension, and its largest value is 5.8 over R and 4.3 over C. Arithmetic over finite fields is exact and thus does not need an error analysis. The method and the full results are in [Numerical stability](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/stability.md).
 
 ## Documentation
 

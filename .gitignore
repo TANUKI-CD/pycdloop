@@ -13,6 +13,9 @@ __pycache__/
 *.whl
 /wheelhouse/
 
+# Notes from auditing the code for bugs
+.audit
+
 # Editor and operating-system metadata
 .DS_Store
 *.swp

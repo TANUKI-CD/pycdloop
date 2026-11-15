@@ -305,7 +305,7 @@ every difference.
 
 A subspace of a loop algebra is a linear code of length `len(loop)` through
 the loop-basis coefficients. `pycdloop.codes` builds generator matrices of
-one-sided ideals:
+left, right and two-sided ideals:
 
 ```python
 from pycdloop import codes, linalg
@@ -320,6 +320,13 @@ G.shape                                         # (6, 8)
 linalg.rank(T, field=A.field)                   # 6
 x.weight()                                      # 2: the Hamming weight
 print(codes.to_gap(G, field=A.field))           # a GUAVA expression
+
+y = x + A.basis(Q.basis(2))
+L = codes.generator_matrix(y)                   # the left ideal, of dimension 5
+B = codes.generator_matrix(y, side="two-sided") # the two-sided ideal
+B.shape                                         # (7, 8)
+codes.is_ideal(L, A)                            # True
+codes.is_ideal(L, A, side="right")              # False
 ```
 
 Binary codes come from the loop algebra over F_2 in the same way:
@@ -330,6 +337,17 @@ x2 = A2.basis(Q.basis(0)) + A2.basis(Q.basis(1))
 G2 = codes.generator_matrix(x2)                 # a binary code of length 8
 G2.shape                                        # (6, 8)
 print(codes.to_sage(G2, field=A2.field))        # a SageMath expression
+```
+
+The exports work over extension fields as well, and carry the modulus of
+the field:
+
+```python
+A4 = cdl.LoopAlgebra(Q, char=2, deg=2)
+x4 = A4.basis(Q.basis(0)) + A4.basis(Q.basis(1))
+G4 = codes.generator_matrix(x4)                 # a code of length 8 over F_4
+G4.shape                                        # (6, 8, 2)
+print(codes.to_sage(G4, field=A4.field))        # over GF(4, 't', modulus=[1, 1, 1])
 ```
 
 ## Where to go next

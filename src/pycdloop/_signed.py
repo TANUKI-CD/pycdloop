@@ -10,15 +10,18 @@ order of the loop.
 
 from __future__ import annotations
 
+import math
+from fractions import Fraction
 from typing import Any
 
 import numpy as np
 import pyfastcd as fcd
 
+from . import _range
 from ._field import _CoefficientField
 from ._loop import _cd_twist
 from ._schedule import schedule_multiply
-from ._validation import _choice
+from ._validation import CACHE_LOCK, _choice
 
 # The largest outer level multiplied row by row under "auto"; the schedule
 # takes over above it
@@ -34,10 +37,12 @@ def _signed_algebra(
 
     key = (levels, field)
     if key not in _CACHE:
-        if len(levels) == 1:
-            _CACHE[key] = _CayleyDickson(levels[0], field)
-        else:
-            _CACHE[key] = _Tensor(levels, field)
+        with CACHE_LOCK:
+            if key not in _CACHE:
+                if len(levels) == 1:
+                    _CACHE[key] = _CayleyDickson(levels[0], field)
+                else:
+                    _CACHE[key] = _Tensor(levels, field)
     return _CACHE[key]
 
 
@@ -230,16 +235,192 @@ class _CayleyDickson(_SignedAlgebra):
             return np.asarray(values).reshape(
                 x.shape[: -1 - self.field.tail] + self.field.shape
             )
+        if self.field.kind == "complex":
+            norm: np.ndarray = self._complex_sums(x)[0]
+            return norm
         # A plain sum of squares is exact on small integers, which the
         # scaled accumulation of pyfastcd is not
-        norm: np.ndarray = (x * x).sum(axis=-1)
+        norm = (x * x).sum(axis=-1)
         return norm
+
+    def wide_norm(self, x: np.ndarray) -> _range.Wide:
+        """Return ``Q(x)`` over R or C with an exponent that cannot leave the range.
+
+        In the ordinary range this is :meth:`quadratic_norm`, bit for bit.
+        """
+
+        if self.field.kind == "complex":
+            wide: _range.Wide = self._complex_sums(x, wide=True)[0]
+            return wide
+        # Each record is brought to unit size by a power of two, which
+        # leaves the rounding of the sum of its squares as it was
+        scaled, powers = _range.unit(x, always=True)
+        with np.errstate(invalid="ignore"):
+            norm = (scaled * scaled).sum(axis=-1)
+        return _range.Wide.of(norm, 2 * powers[..., 0].astype(np.int64))
+
+    def has_norm(self, x: np.ndarray) -> np.ndarray:
+        """Mark the records with ``Q(x) != 0``, for the stored coefficients exactly."""
+
+        if self.field.kind == "finite":
+            marks: np.ndarray = self.field.nonzero(self.quadratic_norm(x))
+            return marks
+        if self.field.kind == "real":
+            # A sum of squares of real numbers vanishes only at zero
+            marks = (x != 0).any(axis=-1)
+            return marks
+        return self._complex_sums(x)[1]
+
+    def _complex_sums(
+        self, x: np.ndarray, wide: bool = False
+    ) -> tuple[Any, np.ndarray]:
+        """Return ``Q(x)`` over C and whether it is nonzero, without loss.
+
+        The squares can cancel, and can leave the floating-point range
+        although their sum does not, so the sum is formed from records
+        brought to unit size, and its power of two is put back afterwards.
+        Where it is not far above its rounding error, it is formed in
+        rational arithmetic from the stored coefficients and rounded once.
+
+        The norm is an array of floats, accurate relative to its modulus.
+        With *wide* it is a :class:`~pycdloop._range.Wide`, whose real and
+        imaginary parts are summed each with its own exponent, so that a
+        part far smaller than the other is kept and neither can leave the
+        range.
+        """
+
+        records = x.reshape(-1, x.shape[-1])
+        # A record of the ordinary range is left as it is
+        scaled, powers = _range.unit(records)
+        with np.errstate(all="ignore"):
+            norm, weight = _complex_norm(scaled)
+            bound = _BOUND * (records.shape[-1] + 2) * weight
+            sound = _size(norm) > bound * _MARGIN
+        nonzero = sound
+        doubtful: Any = ()
+        if not sound.all():
+            finite = np.isfinite(records).all(axis=-1)
+            nonzero = sound | (~finite & (norm != 0))
+            # A record of zeros has norm zero and needs no second look
+            doubtful = np.flatnonzero(~sound & finite & (weight > 0))
+        exact = [_exact_norm(records[index]) for index in doubtful]
+        for index, (real, imaginary) in zip(doubtful, exact, strict=True):
+            nonzero[index] = bool(real or imaginary)
+        shape = x.shape[:-1]
+        if wide:
+            numbers = _range.Wide.of(records)
+            result = _range.total(numbers * numbers)
+            assert result.imaginary is not None
+            for index, (real, imaginary) in zip(doubtful, exact, strict=True):
+                for part, value in ((result.real, real), (result.imaginary, imaginary)):
+                    part[0][index], part[1][index] = _range.rational(value)
+            return result.reshaped(shape), nonzero.reshape(shape)
+        with np.errstate(over="ignore"):
+            norm = _range.shift(norm, _range.scale_power(powers[:, 0], 2))
+        for index, (real, imaginary) in zip(doubtful, exact, strict=True):
+            norm[index] = complex(_rounded(real), _rounded(imaginary))
+        return norm.reshape(shape), nonzero.reshape(shape)
 
     def reciprocal(self, x: np.ndarray) -> np.ndarray:
         """Return ``conjugate(x) / Q(x)``; raise ``ZeroDivisionError`` at ``Q = 0``."""
 
-        (value,), lead = self._wrap(x)
-        return self._raw(value.reciprocal(), lead)
+        if self.field.kind == "finite":
+            (value,), lead = self._wrap(x)
+            return self._raw(value.reciprocal(), lead)
+        # The operand is brought to unit size and the reciprocal scaled back,
+        # so that the squares in the quadratic norm stay in range
+        scaled, powers = _range.unit(x)
+        if self.field.kind == "complex":
+            records = scaled.reshape(-1, x.shape[-1])
+            norm, weight = _complex_norm(records)
+            bound = _BOUND * (records.shape[-1] + 2) * weight
+            doubtful = _size(norm) <= bound * _MARGIN
+            doubtful &= np.isfinite(records).all(axis=-1)
+            if doubtful.any():
+                return self._careful_reciprocal(x, doubtful)
+        (value,), lead = self._wrap(scaled)
+        return _range.shift(self._raw(value.reciprocal(), lead), -powers)
+
+    def _careful_reciprocal(self, x: np.ndarray, doubtful: np.ndarray) -> np.ndarray:
+        """Return reciprocals, in rational arithmetic where the norm nearly cancels."""
+
+        records = x.reshape(-1, x.shape[-1])
+        result = np.empty_like(records)
+        sound = np.flatnonzero(~doubtful)
+        if sound.size:
+            scaled, powers = _range.unit(records[sound])
+            (value,), lead = self._wrap(scaled)
+            result[sound] = _range.shift(self._raw(value.reciprocal(), lead), -powers)
+        for index in np.flatnonzero(doubtful):
+            result[index] = _exact_reciprocal(records[index])
+        return result.reshape(x.shape)
+
+
+# A complex norm within this factor of its rounding bound is recomputed in
+# rational arithmetic before it is used
+_MARGIN = float(1 << 20)
+# The rounding of a sum of n products is at most this times n times the sum
+# of the absolute values of the terms
+_BOUND = 8.0 * float(np.finfo(np.float64).eps)
+
+
+def _size(values: np.ndarray) -> np.ndarray:
+    """Return the larger of the absolute real and imaginary parts."""
+
+    size: np.ndarray = np.maximum(np.abs(values.real), np.abs(values.imag))
+    return size
+
+
+def _complex_norm(x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return the sum of squares of complex records and that of their absolute values.
+
+    The terms of the first sum can cancel, so the computed value can consist
+    of rounding alone; the second sum measures how large that rounding is.
+    """
+
+    norm: np.ndarray = (x * x).sum(axis=-1)
+    weight: np.ndarray = (x.real * x.real + x.imag * x.imag).sum(axis=-1)
+    return norm, weight
+
+
+def _exact_norm(record: np.ndarray) -> tuple[Fraction, Fraction]:
+    """Return the real and imaginary parts of ``Q`` of one complex record, exactly."""
+
+    real = [Fraction(value) for value in record.real.tolist()]
+    imaginary = [Fraction(value) for value in record.imag.tolist()]
+    pairs = list(zip(real, imaginary, strict=True))
+    return (
+        sum((a * a - b * b for a, b in pairs), Fraction(0)),
+        sum((2 * a * b for a, b in pairs), Fraction(0)),
+    )
+
+
+def _rounded(value: Fraction) -> float:
+    """Return a rational number rounded to a float, or an infinity beyond the range."""
+
+    try:
+        return float(value)
+    except OverflowError:
+        return math.inf if value > 0 else -math.inf
+
+
+def _exact_reciprocal(record: np.ndarray) -> np.ndarray:
+    """Return ``conjugate(x) / Q(x)`` of one complex record from rational arithmetic."""
+
+    real, imaginary = _exact_norm(record)
+    size = real * real + imaginary * imaginary
+    if not size:
+        raise ZeroDivisionError("the signed component has quadratic norm zero")
+    result = np.empty_like(record)
+    for position, value in enumerate(record.tolist()):
+        sign = 1 if position == 0 else -1
+        a, b = sign * Fraction(value.real), sign * Fraction(value.imag)
+        # (a + b i) / (real + imaginary i)
+        result[position] = complex(
+            _rounded((a * real + b * imaginary) / size),
+            _rounded((b * real - a * imaginary) / size),
+        )
+    return result
 
 
 class _Tensor(_SignedAlgebra):

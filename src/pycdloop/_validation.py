@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 import operator
+import threading
 from typing import Any
 
 import numpy as np
 
 # Messages reported from more than one module, kept here so that every layer
 # describes the same condition in the same words
+# Parents are compared by identity, so each is built once. Two threads that
+# ask for the same parent at the same time must not both build it, and the
+# lock is reentrant because building one parent can ask for another
+CACHE_LOCK = threading.RLock()
+
 DIFFERENT_ALGEBRA_MESSAGE = "operands belong to different loop algebras"
 DIFFERENT_LOOP_MESSAGE = "operands belong to different loops"
 MIXED_BASIS_MESSAGE = (
@@ -24,6 +30,15 @@ POWER_MESSAGE = (
     "outside characteristic 2; use left_power() or right_power()"
 )
 INTEGER_EXPONENT_MESSAGE = "loop algebra powers require an integer exponent"
+NO_COPY_MESSAGE = "the coefficients cannot be given another dtype without a copy"
+STORAGE_MESSAGE = (
+    "the coefficient storage of the array no longer has the dtype and shape "
+    "of the algebra"
+)
+RESIDUE_MESSAGE = (
+    "the coefficient storage of the array holds values that are not residues "
+    "of the field"
+)
 BINARY_MESSAGE = "{name} is not defined in characteristic 2"
 ARRAY_TRUTH_MESSAGE = (
     "the truth value of an array of elements is ambiguous; compare records and "
@@ -32,6 +47,24 @@ ARRAY_TRUTH_MESSAGE = (
 
 # The largest total doubling level for which index arithmetic stays in int64
 MAX_LEVEL = 62
+
+
+def _stored(field: Any, values: Any, record: tuple[int, ...]) -> np.ndarray:
+    """Return coefficient storage after checking its type, shape and residues.
+
+    This is the check of storage that something outside the package has
+    held: the coefficients of an array that were handed out, and the data
+    of a pickle.
+    """
+
+    if not isinstance(values, np.ndarray):
+        raise ValueError(STORAGE_MESSAGE)
+    shape = values.shape
+    if values.dtype != field.dtype or shape[len(shape) - len(record) :] != record:
+        raise ValueError(STORAGE_MESSAGE)
+    if field.exact and values.size and int(values.max()) >= field.char:
+        raise ValueError(RESIDUE_MESSAGE)
+    return values
 
 
 def _index(value: Any, name: str) -> int:

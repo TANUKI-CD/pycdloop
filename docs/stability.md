@@ -370,9 +370,9 @@ is evaluated.
 
 ## Recommendations
 
-- Use the default `split` algorithm. Its error grows with the logarithm of
-  the dimension, and from dimension 128 on it is the more accurate
-  algorithm as well as the faster one.
+- Use the default `split` algorithm. On this corpus its error grows with
+  the logarithm of the dimension, and from dimension 128 on it is the more
+  accurate algorithm as well as the faster one.
 - Keep chains of products in split form, with `Element` operands or a
   `SplitArray`: they are faster, and on this corpus usually more accurate.
 - When a product is expected to be small compared with its operands, the
@@ -386,7 +386,7 @@ is evaluated.
 ## Archive
 
 The study is archived in
-[benchmark-results/stability-20261113/](../benchmark-results/stability-20261113/):
+[benchmark-results/stability-20261114/](../benchmark-results/stability-20261114/):
 its record `study.json`, the summary tables and key figures, the charts in
 PNG, SVG and PDF, and `SHA256SUMS`. The raw per-case results and the
 operand corpus stay on the machine that ran the study and are not

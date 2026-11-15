@@ -490,16 +490,20 @@ static int coordinates_acquire(Coordinates* buffers, PyObject* loop,
         return -1;
     }
     buffers->count = record_count(&buffers->spectral, dimension, lanes, word);
+    if (buffers->count < 0) {
+        coordinates_release(buffers);
+        return -1;
+    }
+    // record_count has checked that the size of a record is representable
     buffers->length = dimension * lanes;
-    if (buffers->count >= 0
-            && (buffers->signed_part.len != buffers->spectral.len
-                    || buffers->loop.len != 2 * buffers->spectral.len)) {
+    // The lengths are compared by halving one, since doubling the other
+    // could overflow
+    if (buffers->signed_part.len != buffers->spectral.len
+            || buffers->loop.len % 2 != 0
+            || buffers->loop.len / 2 != buffers->spectral.len) {
         PyErr_SetString(PyExc_ValueError,
                 "the loop buffer must hold two rows for each record of the "
                 "spectral and signed buffers");
-        buffers->count = -1;
-    }
-    if (buffers->count < 0) {
         coordinates_release(buffers);
         return -1;
     }

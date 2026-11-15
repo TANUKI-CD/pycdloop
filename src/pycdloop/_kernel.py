@@ -37,6 +37,7 @@ from typing import Any
 
 import numpy as np
 
+from . import _range
 from ._validation import BINARY_MESSAGE, CD_ONLY_MESSAGE
 
 # Coefficients of intermediate arrays that the table product may hold at once
@@ -367,7 +368,7 @@ def _binary_power(algebra: Any, a: np.ndarray, exponent: int) -> np.ndarray:
 
 
 def inverse(algebra: Any, mode: str, a: Any) -> Any:
-    """Return the two-sided inverse, where powers are well defined."""
+    """Return the inverse that is a polynomial in the element."""
 
     signed = _require_powers(algebra, "inverse()")
     field = algebra._field
@@ -376,7 +377,7 @@ def inverse(algebra: Any, mode: str, a: Any) -> Any:
     # Check every denominator before producing any part of the result
     if not bool(np.all(field.nonzero(a[0]))):
         raise ZeroDivisionError("the element has a zero spectral coordinate")
-    if not bool(np.all(field.nonzero(signed.quadratic_norm(a[1])))):
+    if not bool(np.all(signed.has_norm(a[1]))):
         raise ZeroDivisionError("the signed component has quadratic norm zero")
     return field.reciprocal(a[0]), signed.reciprocal(a[1])
 
@@ -392,37 +393,100 @@ def power(algebra: Any, mode: str, a: Any, exponent: int) -> Any:
         a = inverse(algebra, mode, a)
         exponent = -exponent
     spectral, d = a
-    # Every d in a Cayley--Dickson algebra satisfies d^2 = t d - q with
-    # t = 2 d_0 and q = Q(d), so its powers lie in the span of 1 and d. In
-    # the quotient ring F[z] / (z^2 - t z + q), binary exponentiation of z
-    # gives z^k = u + v z with O(log k) field operations, and then
-    # d^k = u + v d costs O(N) more.
+    # Write d = d_0 + w, with w the part of d without the identity. Then
+    # w^2 = -Q(w) is a scalar, so the powers of d lie in the commutative
+    # ring F[w] = F[z] / (z^2 + Q(w)), where binary exponentiation of
+    # d_0 + z gives d^k = a + b w with O(log k) field operations, and
+    # d^k costs O(N) more. Over R this ring is a copy of C, in which
+    # products do not cancel, and for a scalar d it is the power of d_0.
     first = (Ellipsis, 0) + (slice(None),) * field.tail
-    trace = field.multiply_int(d[first], 2)
-    norm = signed.quadratic_norm(d)
-    one = np.broadcast_to(field.scalar(1), trace.shape).astype(field.dtype)
-    zero = np.zeros(trace.shape, dtype=field.dtype)
+    scalar = d[first]
+    rest = d.copy()
+    rest[first] = 0
+    if exponent > 1 and not field.exact and not _fits_power(algebra, d, exponent):
+        out = _wide_power(signed, field, scalar, rest, exponent)
+        return field.power(spectral, exponent), out
+    # The first power needs no product, and so no norm, which for a large
+    # operand is out of range
+    norm = signed.quadratic_norm(rest) if exponent > 1 else None
+    one = np.broadcast_to(field.scalar(1), scalar.shape).astype(field.dtype)
 
     def times(x: Split, y: Split) -> Split:
-        """Multiply u + v z by u' + v' z modulo z^2 - t z + q."""
+        """Multiply a + b z by a' + b' z modulo z^2 + Q(w)."""
 
-        tip = field.multiply(x[1], y[1])
-        low = field.subtract(field.multiply(x[0], y[0]), field.multiply(tip, norm))
-        cross = field.add(field.multiply(x[0], y[1]), field.multiply(x[1], y[0]))
-        return low, field.add(cross, field.multiply(tip, trace))
+        assert norm is not None
+        tip = field.multiply(field.multiply(x[1], y[1]), norm)
+        low = field.subtract(field.multiply(x[0], y[0]), tip)
+        return low, field.add(field.multiply(x[0], y[1]), field.multiply(x[1], y[0]))
 
-    result: Split = (one, zero)
-    base: Split = (zero, one)
-    remaining = exponent
-    while remaining:
-        if remaining & 1:
-            result = times(result, base)
-        remaining >>= 1
-        if remaining:
-            base = times(base, base)
-    out = field.scale(d, field.expand(result[1], 1))
-    out[first] = field.add(out[first], result[0])
+    if exponent == 0:
+        result: Split = (one, np.zeros(scalar.shape, dtype=field.dtype))
+    else:
+        # From the leading bit down, so that the first power is the operand
+        # itself and no product involves the norm before one is needed
+        base: Split = (scalar, one)
+        result = base
+        for bit in bin(exponent)[3:]:
+            result = times(result, result)
+            if bit == "1":
+                result = times(result, base)
+    out = field.scale(rest, field.expand(result[1], 1))
+    out[first] = result[0]
     return field.power(spectral, exponent), out
+
+
+# The recurrence of a power is evaluated with plain floats while every
+# value on the way stays within 2**-_ROOM .. 2**_ROOM, far enough inside the
+# range that nothing is lost at its ends
+_ROOM = _range.ROOM
+
+
+def _fits_power(algebra: Any, d: np.ndarray, exponent: int) -> bool:
+    """Return whether the power recurrence of *d* stays in the ordinary range."""
+
+    low, high = _range.spread(d)
+    # The coefficients of a power k are below (2 N)^(k/2) times the k-th
+    # power of the largest coefficient, times k
+    size = max(-low, high, 0) + algebra._size.bit_length() // 2 + 2
+    return exponent * size + 2 * exponent.bit_length() <= _ROOM
+
+
+def _wide_power(
+    signed: Any, field: Any, scalar: np.ndarray, rest: np.ndarray, exponent: int
+) -> np.ndarray:
+    """Return the signed part of a power over R or C, at any size of the values.
+
+    The recurrence is that of :func:`power`, on numbers whose exponents
+    cannot leave the range, so a coefficient of the result is lost only
+    where it is itself beyond the range.
+    """
+
+    wide = _range.Wide
+    norm = signed.wide_norm(rest)
+    flat = norm.is_zero()
+    nothing = wide.of(np.zeros(scalar.shape, dtype=field.dtype))
+
+    def times(
+        x: tuple[_range.Wide, _range.Wide], y: tuple[_range.Wide, _range.Wide]
+    ) -> tuple[_range.Wide, _range.Wide]:
+        """Multiply a + b z by a' + b' z modulo z^2 + Q(w)."""
+
+        # A norm of zero removes the term whatever the size of b b'
+        tip = (x[1] * y[1] * norm).at(flat, nothing)
+        return x[0] * y[0] - tip, x[0] * y[1] + x[1] * y[0]
+
+    base = (wide.of(scalar), wide.of(np.ones(scalar.shape, dtype=field.dtype)))
+    result = base
+    for bit in bin(exponent)[3:]:
+        result = times(result, result)
+        if bit == "1":
+            result = times(result, base)
+    with np.errstate(over="ignore"):
+        out = (wide.of(rest) * result[1].expanded()).to_array()
+        # A coefficient of zero stays zero beside a factor beyond the range
+        out[rest == 0] = 0
+        out[..., 0] = result[0].to_array()
+    return out
 
 
 def loop_product(
@@ -530,9 +594,9 @@ def divide(algebra: Any, mode: str, a: Any, scalar: np.ndarray) -> Any:
     if field.exact:
         return scale(algebra, mode, a, field.reciprocal(scalar))
     if mode == "loop":
-        return a / _scalar_axis(algebra, scalar, 2)
+        return _range.quotient(a, _scalar_axis(algebra, scalar, 2))
     divisor = _scalar_axis(algebra, scalar, 1)
-    return a[0] / divisor, a[1] / divisor
+    return _range.quotient(a[0], divisor), _range.quotient(a[1], divisor)
 
 
 def subtract_from_scalar(algebra: Any, mode: str, a: Any, scalar: np.ndarray) -> Any:

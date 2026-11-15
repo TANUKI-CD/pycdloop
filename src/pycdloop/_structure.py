@@ -9,11 +9,13 @@ work on loop-basis coefficients.
 
 from __future__ import annotations
 
+import math
+from fractions import Fraction
 from typing import Any
 
 import numpy as np
 
-from . import _kernel, linalg
+from . import _kernel, _range, linalg
 from ._validation import _choice
 
 Split = tuple[np.ndarray, np.ndarray]
@@ -62,7 +64,7 @@ def _signed_zero_divisor(algebra: Any, d: np.ndarray, side: str | None) -> np.nd
     if signed.cd is not None and signed.level <= _COMPOSITION_LEVEL:
         # Through the octonions d conj(d) = Q(d) and the algebra is
         # alternative, so d divides zero exactly when Q(d) = 0
-        marks: np.ndarray = ~field.nonzero(signed.quadratic_norm(d))
+        marks: np.ndarray = ~signed.has_norm(d)
         return marks
     size = algebra._size
     lead = field.index_shape(d)[:-1]
@@ -175,10 +177,158 @@ def minimal_polynomial(algebra: Any, split: Split) -> np.ndarray:
     # That is q times the factors t - lambda with q(lambda) != 0.
     polynomial = signed_polynomial(algebra, d)
     values = distinct_values(field, spectral)
-    keep = field.nonzero(_evaluate(field, polynomial, values))
-    for value in values[keep]:
+    kept = values[_not_roots(algebra, polynomial, d, values)]
+    factors = 2 + kept.shape[0]
+    if not field.exact and factors <= _EXACT_FACTORS and _wide(spectral, d, 1):
+        # Coordinates far from unit size: the coefficients are formed in
+        # rational arithmetic, where sums of terms of very different sizes
+        # lose nothing either. Its cost grows with the square of the degree
+        # times the length of the numbers, so it is kept to small degrees
+        return _exact_polynomial(field, d, kept)
+    if not field.exact and (_wide(spectral, d, 1) or _wide(spectral, d, factors)):
+        # The coefficients are sums of products of the roots, and a product
+        # of that many values can leave the range although the coefficient
+        # does not
+        return _wide_polynomial(algebra, d, kept)
+    for value in kept:
         polynomial = _times_linear(field, polynomial, value)
     return polynomial
+
+
+# A product of values stays in the range while the sum of the absolute
+# values of their exponents does
+_REACH = 1000
+# The largest number of factors of a polynomial formed in rational arithmetic
+_EXACT_FACTORS = 66
+
+
+def _wide(spectral: np.ndarray, d: np.ndarray, factors: int) -> bool:
+    """Return whether a product of *factors* coordinates could leave the range.
+
+    With one factor this asks whether a coordinate is itself far from unit
+    size. It is never so for coordinates that are not finite, which no
+    arithmetic can repair.
+    """
+
+    joint = np.concatenate([spectral.ravel(), d.ravel()])
+    if not np.isfinite(joint).all():
+        return False
+    low, high = _range.spread(joint)
+    if factors == 1:
+        return max(-low, high) >= _range.WINDOW
+    return factors * (max(-low, high) + 1) > _REACH
+
+
+_Exact = tuple[Fraction, Fraction]
+
+
+def _exact(value: Any) -> _Exact:
+    """Return a real or complex float as a pair of rational numbers."""
+
+    number = complex(value)
+    return Fraction(number.real), Fraction(number.imag)
+
+
+def _exact_times(x: _Exact, y: _Exact) -> _Exact:
+    """Multiply two complex rational numbers."""
+
+    return x[0] * y[0] - x[1] * y[1], x[0] * y[1] + x[1] * y[0]
+
+
+def _exact_polynomial(field: Any, d: np.ndarray, roots: np.ndarray) -> np.ndarray:
+    """Return the minimal polynomial from rational arithmetic, rounded once."""
+
+    entries = [_exact(value) for value in d.tolist()]
+    zero = (Fraction(0), Fraction(0))
+    one = (Fraction(1), Fraction(0))
+    first = entries[0]
+    if not any(real or imaginary for real, imaginary in entries[1:]):
+        factors = [(-first[0], -first[1]), one]
+    else:
+        squares = [_exact_times(entry, entry) for entry in entries]
+        norm = (
+            sum((q[0] for q in squares), Fraction(0)),
+            sum((q[1] for q in squares), Fraction(0)),
+        )
+        factors = [norm, (-2 * first[0], -2 * first[1]), one]
+    for root in (_exact(value) for value in roots.tolist()):
+        shifted = [zero] + factors
+        scaled = [_exact_times(factor, root) for factor in factors] + [zero]
+        factors = [
+            (a[0] - b[0], a[1] - b[1]) for a, b in zip(shifted, scaled, strict=True)
+        ]
+    result = field.zeros((len(factors),))
+    for position, (real, imaginary) in enumerate(factors):
+        if field.kind == "real":
+            result[position] = _rounded(real)
+        else:
+            result[position] = complex(_rounded(real), _rounded(imaginary))
+    return result
+
+
+def _rounded(value: Fraction) -> float:
+    """Return a rational number rounded to a float, or an infinity beyond the range."""
+
+    try:
+        return float(value)
+    except OverflowError:
+        return math.inf if value > 0 else -math.inf
+
+
+def _wide_polynomial(algebra: Any, d: np.ndarray, roots: np.ndarray) -> np.ndarray:
+    """Return the minimal polynomial over R or C at any size of the values.
+
+    The polynomial of :func:`signed_polynomial` is multiplied by the
+    linear factors in arithmetic whose exponents cannot leave the range,
+    so a coefficient is lost only where it is itself beyond the range.
+    """
+
+    field = algebra._field
+    wide = _range.Wide
+    one = wide.of(np.ones(1, dtype=field.dtype))
+    first = wide.of(d[:1])
+    if not d[1:].any():
+        factors = wide.joined([-first, one])
+    else:
+        norm = algebra._signed.wide_norm(d[None])
+        factors = wide.joined([norm, -(first + first), one])
+    for root in roots:
+        scaled = factors * wide.of(np.asarray(root, dtype=field.dtype))
+        factors = factors.padded(1, 0) - scaled.padded(0, 1)
+    with np.errstate(over="ignore"):
+        result = factors.to_array()
+    return result.astype(field.dtype)
+
+
+def _not_roots(
+    algebra: Any, polynomial: np.ndarray, d: np.ndarray, values: np.ndarray
+) -> np.ndarray:
+    """Mark the spectral values at which the polynomial of ``d`` does not vanish."""
+
+    field = algebra._field
+    finite = bool(np.isfinite(d).all() and np.isfinite(values).all())
+    if field.exact or polynomial.shape[0] == 2 or not finite:
+        # Exact arithmetic, or the linear polynomial t - d_0 of a scalar
+        marks: np.ndarray = field.nonzero(_evaluate(field, polynomial, values))
+        return marks
+    # For a nonscalar d the polynomial is (t - d_0)^2 + Q(d - d_0). Evaluated
+    # in floating point, the two terms can round to a sum of zero that the
+    # stored coefficients do not have
+    if field.kind == "real":
+        # A square plus a positive sum of squares
+        return np.ones(values.shape[0], dtype=bool)
+    rest = [Fraction(0), Fraction(0)]
+    for value in d[1:].tolist():
+        a, b = Fraction(value.real), Fraction(value.imag)
+        rest[0] += a * a - b * b
+        rest[1] += 2 * a * b
+    first = complex(d[0])
+    marks = np.empty(values.shape[0], dtype=bool)
+    for position, value in enumerate(values.tolist()):
+        a = Fraction(value.real) - Fraction(first.real)
+        b = Fraction(value.imag) - Fraction(first.imag)
+        marks[position] = bool(a * a - b * b + rest[0]) or bool(2 * a * b + rest[1])
+    return marks
 
 
 def left_matrix(algebra: Any, split: Split, side: str, basis: str) -> np.ndarray:
