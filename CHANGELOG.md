@@ -5,7 +5,7 @@ All notable changes to pycdloop are recorded in this file. The project follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version is
 defined in `src/pycdloop/_version.py`.
 
-## [0.1.0] - 2026-11-14
+## [0.1.0] - 2026-11-15
 
 ### Added
 

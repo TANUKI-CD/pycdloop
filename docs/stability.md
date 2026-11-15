@@ -2,16 +2,14 @@
 
 ## Summary
 
-Over R and C a loop-algebra product is computed in floating point, and the
-`split` algorithm rounds in forming the two components, in the
-Walsh–Hadamard transforms, in the coordinatewise product, in the
-Cayley–Dickson product, and in the recombination. A study measured its
-accuracy on 4,764 operand pairs against an exact reference, together with
-the `table` algorithm on the same stored operands, and measured 2,076 chains
-of products evaluated in two ways. Errors are in units of `u ||x|| ||y||`,
-where `u = 2^-53` is the unit roundoff of binary64 and the norms are
-Euclidean (see [Error measures](#error-measures)). The results describe the
-measured corpus and do not imply bounds.
+Over R and C a loop-algebra product is computed in floating point. A study
+measured the accuracy of the `split` and `table` algorithms against an exact
+reference on 4,764 operand pairs, each multiplied by both algorithms from
+the same stored operands, and on 2,076 chains of products evaluated in two
+ways. Errors are in units of `u ||x|| ||y||`, where `u = 2^-53` is the unit
+roundoff of binary64 and the norms are Euclidean (see
+[Error measures](#error-measures)). The results describe the measured
+corpus and do not imply bounds.
 
 - On dense inputs (Gaussian and uniform coefficients), the median error of
   `split` grows from 0.78 at dimension 4 to 2.73 at dimension 2048 over R,
@@ -32,9 +30,11 @@ result is exact, and none of this applies.
 
 ## Where rounding enters
 
-[Conventions and results](mathematics.md#floating-point) lists the rounded
-steps of the `split` algorithm. Three properties shape the measurements
-below.
+The `split` algorithm rounds in forming the two components, in the
+Walsh–Hadamard transforms, in the coordinatewise product, in the
+Cayley–Dickson product, and in the recombination;
+[Conventions and results](mathematics.md#floating-point) describes each
+step. Three properties shape the measurements below.
 
 **The transform is a balanced sum.** Each output of a Walsh–Hadamard
 transform is a signed sum of `D` terms, formed by butterflies as a balanced
@@ -82,28 +82,35 @@ chi   = ||x||_2 ||y||_2 / ||z||_2          (z nonzero)
 ```
 
 so that `E_rel = u eta chi`. The norms are Euclidean norms of the
-loop-basis coefficients; over C, of the complex coefficients. A loop algebra
-has zero divisors at every dimension: the product of an element whose
-signed component is zero with one whose group component is zero vanishes.
-`E_rel` and `chi` are undefined for such products, so `eta` is the main
-measure in the tables. For a chain of `k` operands, `eta` is `E_abs`
-divided by `u` times the product of the `k` norms.
+loop-basis coefficients; over C, of the complex coefficients. For a chain of
+`k` operands, `eta` is `E_abs` divided by `u` times the product of the `k`
+norms.
+
+A loop algebra has zero divisors at every dimension: the product of an
+element whose signed component is zero with one whose group component is
+zero vanishes. `E_rel` and `chi` are undefined for such products, so `eta`
+is the main measure in the tables.
 
 ### Methods
 
-S is the `split` algorithm and T is the `table` algorithm, both applied to
-loop-basis arrays of one record. The Cayley–Dickson product inside S uses
-pyfastcd's automatic selection: over R the single-product choice, which is
-quasilinear at level 1 and from level 5 on and direct at levels 2 through
-4; over C the batch choice, which is direct through level 2 and quasilinear
-above. The study records the algorithm at every level.
+**Single products.** S is the `split` algorithm and T is the `table`
+algorithm, both applied to loop-basis arrays of one record. The
+Cayley–Dickson product inside S uses pyfastcd's automatic selection, and
+the study records the algorithm at every level:
 
-In the chain experiment, a left-nested product `((x_1 x_2) x_3) ... x_k` of
-`k = 2, 4, 8` operands is evaluated twice. L multiplies `Element` operands,
-so that every intermediate result stays in split form and only the final
-result is converted to the loop basis. R multiplies `ElementArray`
-operands, so that every intermediate result is converted to the loop basis
-and back. Both are compared with the exact value of the chain.
+- Over R it is the single-product choice, which is quasilinear at level 1
+  and from level 5 on and direct at levels 2 through 4.
+- Over C it is the batch choice, which is direct through level 2 and
+  quasilinear above.
+
+**Chains.** A left-nested product `((x_1 x_2) x_3) ... x_k` of `k = 2, 4, 8`
+operands is evaluated twice, and both results are compared with the exact
+value of the chain:
+
+- L multiplies `Element` operands, so that every intermediate result stays
+  in split form and only the final result is converted to the loop basis.
+- R multiplies `ElementArray` operands, so that every intermediate result
+  is converted to the loop basis and back.
 
 ### Corpus
 
@@ -143,13 +150,14 @@ with the raw results of the study.
 ### Host and software
 
 The study ran on an Intel Xeon Gold 6148 under Linux with Python 3.14.8,
-NumPy 2.5.4, pyfastcd 1.4.0 and pycdloop 0.1.0. The record of the study
+NumPy 2.5.4, pyfastcd 1.4.0, and pycdloop 0.1.0. The record of the study
 lists the hash of every measured source file.
 
 ## Accuracy
 
 The tables below are generated from the archived results by
-`benchmarks/stability_report.py`.
+`benchmarks/stability_report.py`. [Reading the tables](#reading-the-tables)
+interprets them.
 
 <!-- BEGIN STABILITY ACCURACY -->
 
@@ -315,7 +323,7 @@ The tables below are generated from the archived results by
 | 128 | 4 | 16 | 3.32 / 3.89 | 4.04 / 4.83 | 94% / 0% |
 | 128 | 8 | 16 | 4.65 / 5.21 | 6.03 / 7.05 | 81% / 0% |
 
-The archived CSV summary also gives, for every family and chain length, the count, the median, mean, p95, p99 and maximum of eta, the relative errors and the paired comparison fractions. Groups with fewer than 100 samples have an empirical p99 close to their maximum and large sampling uncertainty.
+The archived CSV summary also gives, for every family and chain length, the count; the median, mean, p95, p99, and maximum of eta; the relative errors; and the paired comparison fractions. Groups with fewer than 100 samples have an empirical p99 close to their maximum and large sampling uncertainty.
 
 <!-- END STABILITY ACCURACY -->
 
@@ -334,7 +342,7 @@ factor of about 1.4 in the median.
 
 **Sparse and scaled inputs.** T is also more accurate on operands with a few
 nonzero coefficients, except that with a single one the two agree over R,
-and, over R, on operands with alternating magnitudes: it never combines
+and, over R, on operands with alternating magnitudes. T never combines
 coefficients that the product does not combine, whereas the transforms of S
 mix every coefficient of an operand before multiplying.
 
@@ -348,9 +356,8 @@ over C at the same dimension and 2.0 over R at dimension 16.
 **Exact zeros.** All 86 real and 50 complex pairs whose exact product is
 zero gave an exactly zero result with both algorithms: the `cross_ideal`
 and `zero_divisor` pairs and, over R, two `rademacher` pairs at dimensions
-4 and 8. For `cross_ideal` this is structural in
-S: one operand has an exactly zero signed component and the other an
-exactly zero spectrum.
+4 and 8. For `cross_ideal` this is structural in S: one operand has an
+exactly zero signed component and the other an exactly zero spectrum.
 
 **Near zero divisors.** For the perturbed zero divisors the product is small
 compared with the operands, and the relative error of S is correspondingly
@@ -364,8 +371,7 @@ sums directly.
 for bit. For four and eight operands the median `eta` of L is smaller than
 that of R at every dimension, by 7% to 45% over R, and L is at least as
 accurate in 64% to 100% of the real chains of a given length and dimension.
-The
-largest `eta` of a chain is 45 for L and 61 for R, both at dimension 64
+The largest `eta` of a chain is 45 for L and 61 for R, both at dimension 64
 with eight operands over R; errors compound along a chain whichever way it
 is evaluated.
 
@@ -378,16 +384,30 @@ is evaluated.
   `SplitArray`: they are faster, and on this corpus usually more accurate.
 - When a product is expected to be small compared with its operands, the
   relative error can be large even though `eta` is small, as for any
-  floating-point product with cancellation. Scale operands away from the
-  exponent limits, since spectral coordinates are sums of `2D` coefficients
-  and can overflow before the result does.
+  floating-point product with cancellation.
+- Scale operands away from the exponent limits: spectral coordinates are
+  sums of `2D` coefficients and can overflow before the result does.
 - Results on operands with integer coefficients are exact while no
   intermediate value exceeds `2^53`.
 
-## Archive
+## Limitations
+
+- The study is empirical. Its medians and maxima describe this corpus, not
+  all inputs, and no bound on the error of either algorithm is proved.
+  Only the dense rows through dimension 64 have 100 samples or more. Every
+  other group, including every group of chains, is too small to estimate
+  tails.
+- Nothing was measured above real dimension 2048 or complex dimension 512,
+  and the operands have controlled exponent ranges: overflow, underflow,
+  and exceptional values were not studied.
+- Only products and left-nested chains in the loop algebras of `Q_n` were
+  measured. Loop algebras of central products were not, and neither were
+  powers, inverses, or other operations built from products.
+
+## Archive and reproduction
 
 The study is archived in
-[benchmark-results/stability-20261114/](../benchmark-results/stability-20261114/):
+[benchmark-results/stability-20261115/](../benchmark-results/stability-20261115/):
 its record `study.json`, the summary tables and key figures, the charts in
 PNG, SVG, and PDF, and `SHA256SUMS`. The raw per-case results and the
 operand corpus stay on the machine that ran the study and are not

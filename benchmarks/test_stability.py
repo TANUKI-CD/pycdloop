@@ -346,7 +346,7 @@ class ProvenanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             package = Path(temporary) / "site" / "pycdloop"
             (package / "__pycache__").mkdir(parents=True)
-            (package / "__init__.py").write_text("one\n")
+            (package / "__init__.py").write_bytes(b"one\n")
             (package / "_core.so").write_bytes(b"\x00binary")
             (package / "__pycache__" / "skipped.pyc").write_bytes(b"cache")
             with mock.patch.object(stability_study, "measured_package", lambda: package):

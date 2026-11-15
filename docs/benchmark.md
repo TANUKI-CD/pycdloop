@@ -1,15 +1,17 @@
 # Benchmark
 
-pycdloop multiplies in a loop algebra with `split`, which works through the
-decomposition of the algebra, or with `table`, which evaluates the
-definition of the product. In characteristic 2, where the algebra has no
-decomposition, `lift` takes the place of `split`: it runs the split
-algorithm over a field of large odd characteristic and reduces the
-result. For central
-products the `split` algorithm multiplies signed components by one of three
-methods. `"auto"` chooses among these, and the benchmark measures them as
-the package ships them, so that the choices rest on reproducible data. The
-drivers in `benchmarks/` run three *protocols*:
+pycdloop multiplies in a loop algebra with three algorithms:
+
+- `split` works through the decomposition of the algebra.
+- `table` evaluates the definition of the product.
+- `lift` takes the place of `split` in characteristic 2, where the algebra
+  has no decomposition: it runs the split algorithm over a field of large
+  odd characteristic and reduces the result.
+
+For central products the `split` algorithm multiplies signed components by
+one of three methods. `"auto"` chooses among these, and the benchmark
+measures them as the package ships them, so that the choices rest on
+reproducible data. The drivers in `benchmarks/` run three *protocols*:
 
 | `--protocol` | Measurements | Driver |
 | --- | --- | --- |
@@ -45,9 +47,9 @@ never times inputs different from the ones it reports. Larger levels use
 fewer pairs, because one `table` product at dimension 2048 takes tens of
 milliseconds; the schedule is recorded with the run.
 
-Before any timing, every loop-algebra product of every task is compared
-with an independent evaluation of the definition, written in the driver: it derives
-the basis signs from the doubling formula and sums the products of
+Before any timing, every loop-algebra product of every task is compared with
+an independent evaluation of the definition, written in the driver: it
+derives the basis signs from the doubling formula and sums the products of
 coefficients directly, without pycdloop arithmetic. Over R and C a
 coordinate may differ from the reference by at most
 
@@ -118,7 +120,7 @@ change the defaults, and `--cpu` pins the process to one logical CPU.
 ## Complex and finite fields
 
 The `domains` protocol times `split` and `table` in both modes for `Q_n`
-over C and over the finite fields F_3, F_13, F_65521, F_2147483647, F_(3^5)
+over C and over the finite fields F_3, F_13, F_65521, F_2147483647, F_(3^5),
 and F_(13^5), at levels 2, 4, 6, and 8. Over F_2, F_4, and F_256 it times
 `lift` in place of `split`, at the same levels; the reports keep one set of
 columns, so there the columns named `split` hold the timings of `lift`.
@@ -159,14 +161,14 @@ the total level of the pairs whose full product is timed.
 
 ## Archived results
 
-The results below were measured on 2026-11-14 on a Dell PowerEdge T440 with an
-Intel Xeon Gold 6148, pinned to one logical CPU, with Python 3.14.8,
-NumPy 2.5.4 and pyfastcd 1.4.0 on Linux. The host is shared, and
-no governor, turbo, or SMT settings were changed; the load average during
-the runs was between 1.9 and 3.6. Every verified product
-agreed with the independent reference: 25,760 products in all. The
-JSON documents and full reports are archived in
-[benchmark-results/t440-20261114/](../benchmark-results/t440-20261114/).
+The results below were measured on 2026-11-15 on a Dell PowerEdge T440 with
+an Intel Xeon Gold 6148, pinned to one logical CPU, with Python 3.14.8,
+NumPy 2.5.4, and pyfastcd 1.4.0 on Linux. The host is shared, and no
+governor, turbo, or SMT settings were changed; the load average during the
+runs was between 1.6 and 2.3. Every verified product agreed with the
+independent reference: 25,760 products in all. The JSON documents and full
+reports are archived in
+[benchmark-results/t440-20261115/](../benchmark-results/t440-20261115/).
 
 ### Real coefficients
 
@@ -177,76 +179,74 @@ the loop algebra of `Q_n`.
 
 | N | n | pairs | split | table | splitform | fastest mean | default |
 | ---: | ---: | ---: | --- | --- | --- | --- | --- |
-| 4 | 1 | 256 | 190.3 [185.1, 195.6] | 602.1 [578.3, 625.9] | 83.04 [80.40, 85.68] | split | split |
-| 8 | 2 | 256 | 203.3 [196.5, 210.1] | 834.1 [813.1, 855.1] | 84.72 [82.52, 86.93] | split | split |
-| 16 | 3 | 256 | 212.8 [207.8, 217.9] | 1740.6 [1698.4, 1782.7] | 95.78 [93.34, 98.21] | split | split |
-| 32 | 4 | 256 | 307.7 [295.0, 320.3] | 8842.4 [8605.5, 9079.3] | 146.4 [142.4, 150.3] | split | split |
-| 64 | 5 | 256 | 540.1 [529.5, 550.7] | 46956 [46522, 47390] | 279.7 [274.0, 285.4] | split | split |
-| 128 | 6 | 256 | 1149.9 [1122.9, 1176.8] | 194279 [189335, 199223] | 624.9 [614.2, 635.5] | split | split |
-| 256 | 7 | 64 | 2734.3 [2685.3, 2783.2] | 647863 [642389, 653337] | 1529.4 [1507.1, 1551.8] | split | split |
-| 512 | 8 | 64 | 5503.7 [5380.8, 5626.6] | 3734639 [3719464, 3749814] | 3294.1 [3236.5, 3351.6] | split | split |
-| 1024 | 9 | 16 | 13413 [13203, 13624] | 14744094 [14694059, 14794129] | 8490.9 [8217.8, 8764.0] | split | split |
-| 2048 | 10 | 16 | 28270 [27469, 29071] | 43634747 [43487652, 43781841] | 18146 [17755, 18537] | split | split |
+| 4 | 1 | 256 | 188.6 [184.6, 192.5] | 588.2 [572.0, 604.4] | 82.60 [80.27, 84.94] | split | split |
+| 8 | 2 | 256 | 203.0 [200.5, 205.5] | 819.8 [801.3, 838.4] | 87.85 [83.83, 91.88] | split | split |
+| 16 | 3 | 256 | 211.6 [207.0, 216.2] | 1682.2 [1642.4, 1721.9] | 96.47 [94.33, 98.61] | split | split |
+| 32 | 4 | 256 | 305.3 [296.6, 313.9] | 8950.4 [8751.9, 9148.8] | 147.8 [144.8, 150.9] | split | split |
+| 64 | 5 | 256 | 553.0 [542.0, 564.1] | 48355 [47492, 49219] | 286.3 [280.1, 292.5] | split | split |
+| 128 | 6 | 256 | 1128.5 [1106.1, 1150.9] | 197239 [193905, 200572] | 613.3 [602.1, 624.4] | split | split |
+| 256 | 7 | 64 | 2768.5 [2674.5, 2862.6] | 727264 [718274, 736253] | 1517.1 [1473.7, 1560.5] | split | split |
+| 512 | 8 | 64 | 5685.4 [5523.7, 5847.2] | 3730925 [3716147, 3745704] | 3335.1 [3231.9, 3438.4] | split | split |
+| 1024 | 9 | 16 | 13475 [13170, 13779] | 14807170 [14737892, 14876448] | 8522.9 [8356.4, 8689.4] | split | split |
+| 2048 | 10 | 16 | 28205 [27420, 28990] | 43788816 [43610330, 43967301] | 17709 [17385, 18033] | split | split |
 
 #### Single products (ns per product)
 
 | N | n | pairs | split | table | cached | fastest mean | default |
 | ---: | ---: | ---: | --- | --- | --- | --- | --- |
-| 4 | 1 | 256 | 30759 [30332, 31185] | 47298 [46560, 48037] | 15348 [15076, 15619] | split | split |
-| 8 | 2 | 256 | 30530 [30088, 30972] | 47550 [46918, 48182] | 15609 [15284, 15934] | split | split |
-| 16 | 3 | 256 | 30626 [30263, 30990] | 50165 [48857, 51472] | 15232 [14989, 15475] | split | split |
-| 32 | 4 | 256 | 31086 [30677, 31495] | 54044 [52795, 55293] | 15697 [15403, 15990] | split | split |
-| 64 | 5 | 256 | 31669 [31197, 32141] | 63259 [62080, 64438] | 15875 [15687, 16064] | split | split |
-| 128 | 6 | 256 | 34926 [34322, 35530] | 124524 [121247, 127802] | 16781 [16473, 17089] | split | split |
-| 256 | 7 | 64 | 36042 [35375, 36708] | 360453 [354995, 365912] | 18731 [18211, 19251] | split | split |
-| 512 | 8 | 64 | 39011 [38032, 39989] | 1356510 [1337980, 1375040] | 20591 [19960, 21223] | split | split |
-| 1024 | 9 | 16 | 45329 [44298, 46360] | 5092589 [5027865, 5157313] | 25600 [24968, 26232] | split | split |
-| 2048 | 10 | 16 | 61153 [59247, 63059] | 34554684 [34368620, 34740749] | 35661 [34428, 36895] | split | split |
+| 4 | 1 | 256 | 30923 [30442, 31403] | 46734 [46086, 47382] | 15583 [15268, 15899] | split | split |
+| 8 | 2 | 256 | 30454 [29989, 30920] | 46970 [46288, 47652] | 15446 [15139, 15754] | split | split |
+| 16 | 3 | 256 | 30360 [29926, 30793] | 49839 [48881, 50798] | 15284 [15017, 15550] | split | split |
+| 32 | 4 | 256 | 31216 [30726, 31706] | 55352 [53347, 57358] | 15856 [15587, 16125] | split | split |
+| 64 | 5 | 256 | 31809 [31559, 32059] | 65007 [63493, 66522] | 16027 [15837, 16217] | split | split |
+| 128 | 6 | 256 | 33777 [33276, 34278] | 121367 [118744, 123989] | 16672 [16375, 16969] | split | split |
+| 256 | 7 | 64 | 35023 [34280, 35766] | 355695 [347782, 363609] | 18749 [18257, 19241] | split | split |
+| 512 | 8 | 64 | 38023 [37345, 38702] | 1345210 [1317672, 1372748] | 20700 [20010, 21390] | split | split |
+| 1024 | 9 | 16 | 46132 [44775, 47490] | 5036054 [4991707, 5080402] | 25831 [25257, 26405] | split | split |
+| 2048 | 10 | 16 | 59140 [57625, 60654] | 33963383 [33732098, 34194668] | 35456 [34617, 36295] | split | split |
 
 `split` is faster than `table` at every dimension in both modes, by a factor
-that grows from 3.16 at dimension 4 to 1547 at
-dimension 2048 in batch mode and from 1.54 to 566
-in single mode. `"auto"` therefore selects `split` at every dimension.
+that grows from 3.12 at dimension 4 to 1555 at dimension 2048 in batch mode
+and from 1.51 to 575 in single mode. `"auto"` therefore selects `split` at
+every dimension.
 
-A single call costs about 31 microseconds at small
-dimensions, nearly all of it the fixed cost of a call through the Python
-layers; a product of two elements that hold their split forms costs about
-half that.
+A single call costs about 31 microseconds at small dimensions, nearly all of
+it the fixed cost of a call through the Python layers; a product of two
+elements that hold their split forms costs about half that.
 
 #### Comparison with the Cayley–Dickson product
 
 | N | n | pyfastcd batch (ns) | splitform / pyfastcd | split / pyfastcd | pyfastcd single (ns) | cached / pyfastcd |
 | ---: | ---: | --- | --- | --- | --- | --- |
-| 4 | 1 | 9.58 [9.39, 9.78] | 8.65 [8.42, 8.9] | 19.8 [19.2, 20.5] | 98.27 [96.66, 99.88] | 156 [153, 159] |
-| 8 | 2 | 11.42 [11.25, 11.58] | 7.41 [7.21, 7.62] | 17.8 [17.1, 18.4] | 106.9 [105.4, 108.4] | 146 [144, 148] |
-| 16 | 3 | 19.53 [19.16, 19.90] | 4.9 [4.76, 5.05] | 10.9 [10.6, 11.2] | 119.8 [117.8, 121.8] | 127 [125, 129] |
-| 32 | 4 | 62.73 [61.80, 63.67] | 2.33 [2.26, 2.41] | 4.89 [4.68, 5.1] | 222.7 [218.8, 226.6] | 70.5 [69, 72] |
-| 64 | 5 | 182.6 [179.6, 185.6] | 1.53 [1.49, 1.57] | 2.96 [2.88, 3.03] | 331.8 [327.6, 336.0] | 47.8 [47.2, 48.5] |
-| 128 | 6 | 451.4 [446.1, 456.7] | 1.38 [1.36, 1.4] | 2.54 [2.48, 2.61] | 647.6 [641.9, 653.2] | 25.9 [25.5, 26.3] |
-| 256 | 7 | 1122.9 [1108.9, 1137.0] | 1.36 [1.34, 1.38] | 2.43 [2.38, 2.49] | 1348.4 [1333.2, 1363.6] | 13.9 [13.5, 14.2] |
-| 512 | 8 | 2613.7 [2585.5, 2642.0] | 1.26 [1.23, 1.29] | 2.1 [2.05, 2.15] | 2953.3 [2902.8, 3003.8] | 6.96 [6.79, 7.13] |
-| 1024 | 9 | 6599.5 [6516.5, 6682.4] | 1.28 [1.24, 1.33] | 2.03 [2, 2.07] | 6665.8 [6574.3, 6757.2] | 3.84 [3.76, 3.92] |
-| 2048 | 10 | 14983 [14795, 15171] | 1.21 [1.18, 1.24] | 1.88 [1.83, 1.94] | 14940 [14736, 15144] | 2.38 [2.31, 2.45] |
+| 4 | 1 | 9.48 [9.34, 9.62] | 8.7 [8.4, 9.01] | 19.9 [19.3, 20.4] | 98.23 [96.75, 99.72] | 159 [155, 162] |
+| 8 | 2 | 11.55 [11.31, 11.78] | 7.58 [7.21, 7.96] | 17.6 [17.2, 18] | 105.4 [104.1, 106.8] | 146 [144, 149] |
+| 16 | 3 | 19.41 [19.03, 19.79] | 4.97 [4.83, 5.11] | 10.9 [10.6, 11.2] | 119.1 [117.3, 120.9] | 128 [127, 130] |
+| 32 | 4 | 62.09 [60.72, 63.47] | 2.38 [2.31, 2.45] | 4.91 [4.73, 5.1] | 228.2 [224.4, 232.1] | 69.5 [68.5, 70.4] |
+| 64 | 5 | 185.6 [183.4, 187.8] | 1.54 [1.51, 1.58] | 2.98 [2.91, 3.05] | 338.0 [334.8, 341.3] | 47.4 [46.8, 48] |
+| 128 | 6 | 448.3 [440.1, 456.5] | 1.37 [1.34, 1.4] | 2.52 [2.45, 2.58] | 636.4 [628.0, 644.7] | 26.2 [25.9, 26.5] |
+| 256 | 7 | 1105.1 [1091.0, 1119.2] | 1.37 [1.33, 1.41] | 2.5 [2.41, 2.6] | 1329.8 [1311.5, 1348.0] | 14.1 [13.8, 14.4] |
+| 512 | 8 | 2593.9 [2555.7, 2632.0] | 1.28 [1.25, 1.32] | 2.19 [2.12, 2.26] | 2925.7 [2858.5, 2992.9] | 7.07 [6.94, 7.2] |
+| 1024 | 9 | 6495.7 [6414.9, 6576.6] | 1.31 [1.28, 1.34] | 2.07 [2.03, 2.11] | 6619.5 [6529.7, 6709.3] | 3.9 [3.82, 3.98] |
+| 2048 | 10 | 14522 [14277, 14766] | 1.22 [1.19, 1.25] | 1.94 [1.87, 2.01] | 14801 [14611, 14992] | 2.39 [2.35, 2.44] |
 
-In batch mode a product in split form costs 8.65 times the
-Cayley–Dickson product it contains at dimension 4 and 1.21 times at
-dimension 2048, and a product in the loop basis costs 19.8 and
-1.88 times. The conversions to and from split form account for
-between 31% and 51% of the time of the conversions and
-the product in split form together:
+In batch mode a product in split form costs 8.7 times the Cayley–Dickson
+product it contains at dimension 4 and 1.22 times at dimension 2048, and a
+product in the loop basis costs 19.9 and 1.94 times. The conversions to and
+from split form account for between 31% and 50% of the time of the
+conversions and the product in split form together:
 
 | N | n | forward (ns) | inverse (ns) | splitform (ns) | transform share |
 | ---: | ---: | --- | --- | --- | --- |
-| 4 | 1 | 46.96 [46.08, 47.83] | 30.85 [30.24, 31.46] | 83.04 [80.40, 85.68] | 48.4% [47.8%, 49.0%] |
-| 8 | 2 | 54.39 [53.60, 55.18] | 33.52 [32.94, 34.09] | 84.72 [82.52, 86.93] | 51.0% [50.4%, 51.5%] |
-| 16 | 3 | 55.26 [54.35, 56.16] | 36.21 [35.85, 36.56] | 95.78 [93.34, 98.21] | 48.9% [48.3%, 49.5%] |
-| 32 | 4 | 78.67 [77.68, 79.66] | 45.79 [44.79, 46.79] | 146.4 [142.4, 150.3] | 46.0% [45.4%, 46.5%] |
-| 64 | 5 | 129.5 [127.2, 131.8] | 72.90 [71.84, 73.96] | 279.7 [274.0, 285.4] | 42.0% [41.5%, 42.4%] |
-| 128 | 6 | 254.6 [251.3, 257.9] | 144.9 [142.0, 147.8] | 624.9 [614.2, 635.5] | 39.0% [38.6%, 39.4%] |
-| 256 | 7 | 600.4 [591.4, 609.3] | 313.0 [306.3, 319.7] | 1529.4 [1507.1, 1551.8] | 37.4% [36.9%, 37.9%] |
-| 512 | 8 | 1201.9 [1182.1, 1221.7] | 595.4 [582.7, 608.1] | 3294.1 [3236.5, 3351.6] | 35.3% [34.9%, 35.8%] |
-| 1024 | 9 | 2708.5 [2672.4, 2744.6] | 1346.5 [1313.6, 1379.4] | 8490.9 [8217.8, 8764.0] | 32.4% [31.8%, 33.0%] |
-| 2048 | 10 | 5517.8 [5433.8, 5601.9] | 2666.3 [2592.7, 2739.8] | 18146 [17755, 18537] | 31.1% [30.6%, 31.6%] |
+| 4 | 1 | 46.49 [45.76, 47.22] | 30.60 [30.02, 31.18] | 82.60 [80.27, 84.94] | 48.3% [47.6%, 49.0%] |
+| 8 | 2 | 54.11 [53.26, 54.96] | 34.55 [33.90, 35.19] | 87.85 [83.83, 91.88] | 50.3% [49.4%, 51.3%] |
+| 16 | 3 | 54.14 [53.39, 54.89] | 36.20 [35.60, 36.79] | 96.47 [94.33, 98.61] | 48.4% [47.9%, 48.9%] |
+| 32 | 4 | 79.29 [78.34, 80.24] | 45.97 [44.35, 47.60] | 147.8 [144.8, 150.9] | 45.9% [45.3%, 46.4%] |
+| 64 | 5 | 134.9 [133.0, 136.8] | 73.88 [72.10, 75.65] | 286.3 [280.1, 292.5] | 42.2% [41.8%, 42.6%] |
+| 128 | 6 | 253.0 [248.7, 257.2] | 141.1 [137.0, 145.2] | 613.3 [602.1, 624.4] | 39.1% [38.8%, 39.4%] |
+| 256 | 7 | 579.0 [570.4, 587.6] | 303.7 [295.7, 311.8] | 1517.1 [1473.7, 1560.5] | 36.8% [36.2%, 37.4%] |
+| 512 | 8 | 1213.4 [1189.4, 1237.3] | 589.3 [573.3, 605.2] | 3335.1 [3231.9, 3438.4] | 35.1% [34.5%, 35.8%] |
+| 1024 | 9 | 2817.7 [2748.9, 2886.5] | 1318.5 [1288.6, 1348.5] | 8522.9 [8356.4, 8689.4] | 32.7% [32.2%, 33.2%] |
+| 2048 | 10 | 5383.1 [5288.2, 5478.0] | 2558.8 [2503.9, 2613.8] | 17709 [17385, 18033] | 31.0% [30.6%, 31.4%] |
 
 In single mode the comparison is with pyfastcd's element type, which is
 implemented in C; the fixed cost of a pycdloop call dominates until the
@@ -262,38 +262,37 @@ ratio of `table` to it, so a ratio above 1 favours `split` or `lift`.
 
 | Field | N = 8 | N = 32 | N = 128 | N = 512 |
 | --- | ---: | ---: | ---: | ---: |
-| C | 714.5 (2.12x) | 1167.0 (6.42x) | 5071.8 (59.3x) | 23046 (185x) |
-| F_2 | 1230.2 (1.11x) | 2299.3 (1.71x) | 9289.8 (6.06x) | 37146 (33.1x) |
-| F_(2^2) | 2950.2 (2.49x) | 8222.4 (7.28x) | 31965 (29.2x) | 129177 (147x) |
-| F_(2^8) | 18170 (0.481x) | 58437 (1.54x) | 203912 (10.4x) | 841704 (38.6x) |
-| F_3 | 1123.0 (2.68x) | 2185.0 (9.54x) | 8189.5 (38.9x) | 29459 (178x) |
-| F_13 | 1100.1 (2.64x) | 2259.0 (8.88x) | 9168.8 (33.5x) | 31997 (158x) |
-| F_65521 | 1095.7 (2.68x) | 2189.6 (8.68x) | 8805.0 (34.3x) | 34426 (144x) |
-| F_2147483647 | 1106.8 (2.65x) | 2201.3 (8.93x) | 8812.5 (33.8x) | 34757 (142x) |
-| F_(3^5) | 3555.8 (3.7x) | 8361.5 (17x) | 31477 (72.1x) | 131231 (312x) |
-| F_(13^5) | 3727.1 (3.56x) | 11644 (12.8x) | 35469 (66.6x) | 137251 (297x) |
+| C | 723.2 (2.12x) | 1215.5 (6.17x) | 5178.3 (59.3x) | 23892 (182x) |
+| F_2 | 1216.9 (1.09x) | 2334.2 (1.73x) | 9200.2 (5.99x) | 38027 (32.8x) |
+| F_(2^2) | 3034.2 (2.47x) | 8768.6 (6.97x) | 30384 (29.7x) | 120163 (154x) |
+| F_(2^8) | 18285 (0.466x) | 54186 (1.62x) | 200135 (10.3x) | 832906 (38.3x) |
+| F_3 | 1095.7 (2.69x) | 2151.3 (10x) | 8952.6 (37.1x) | 31247 (177x) |
+| F_13 | 1120.3 (2.59x) | 2176.3 (8.71x) | 8542.6 (34.9x) | 31049 (162x) |
+| F_65521 | 1088.1 (2.62x) | 2202.7 (8.73x) | 8604.5 (34.6x) | 34447 (145x) |
+| F_2147483647 | 1092.8 (2.66x) | 2243.9 (8.65x) | 8491.0 (34.7x) | 33122 (150x) |
+| F_(3^5) | 3564.2 (3.66x) | 8285.2 (17.1x) | 31201 (71.9x) | 124150 (324x) |
+| F_(13^5) | 3663.5 (3.56x) | 11324 (13.1x) | 34574 (68.2x) | 137450 (300x) |
 
 #### Single products: split or lift ns per product (ratio of table to it)
 
 | Field | N = 8 | N = 32 | N = 128 | N = 512 |
 | --- | ---: | ---: | ---: | ---: |
-| C | 37137 (1.34x) | 38719 (1.48x) | 42811 (3.15x) | 52334 (32.2x) |
-| F_2 | 53887 (0.914x) | 56133 (0.945x) | 67387 (1.51x) | 82649 (11.6x) |
-| F_(2^2) | 93867 (1.67x) | 112808 (2.04x) | 135480 (8.06x) | 208817 (71.7x) |
-| F_(2^8) | 272136 (0.589x) | 348761 (0.719x) | 505255 (2.84x) | 1054060 (20.6x) |
-| F_3 | 46283 (1.64x) | 47045 (2.05x) | 54205 (7.48x) | 66906 (76.4x) |
-| F_13 | 45482 (1.64x) | 48547 (2.02x) | 58862 (6.8x) | 70551 (70x) |
-| F_65521 | 46885 (1.62x) | 46639 (2.07x) | 56336 (6.77x) | 75680 (64.1x) |
-| F_2147483647 | 46814 (1.63x) | 48545 (2.01x) | 57322 (6.64x) | 75766 (64x) |
-| F_(3^5) | 77821 (2.74x) | 87575 (3.99x) | 106064 (22.3x) | 193388 (184x) |
-| F_(13^5) | 79092 (2.69x) | 97139 (3.78x) | 110134 (22.8x) | 199993 (177x) |
+| C | 37563 (1.29x) | 40065 (1.51x) | 43732 (3.11x) | 54065 (31.2x) |
+| F_2 | 54033 (0.885x) | 55597 (0.911x) | 64696 (1.56x) | 86437 (11.4x) |
+| F_(2^2) | 96313 (1.66x) | 112634 (2.09x) | 130151 (8.09x) | 209184 (70.5x) |
+| F_(2^8) | 269759 (0.59x) | 338711 (0.709x) | 510517 (2.83x) | 1044165 (20.6x) |
+| F_3 | 45660 (1.61x) | 48894 (1.99x) | 57567 (7.35x) | 72351 (73.6x) |
+| F_13 | 47562 (1.56x) | 46530 (2x) | 56656 (6.79x) | 67486 (71.4x) |
+| F_65521 | 45528 (1.59x) | 46523 (2.06x) | 55324 (6.89x) | 72050 (65.8x) |
+| F_2147483647 | 45853 (1.59x) | 47589 (2.03x) | 54766 (6.92x) | 72629 (65.9x) |
+| F_(3^5) | 75818 (2.74x) | 84566 (4.1x) | 105198 (22.5x) | 185725 (188x) |
+| F_(13^5) | 74917 (2.67x) | 92759 (3.77x) | 108980 (22.4x) | 198427 (182x) |
 
 **C and odd characteristic.** `split` is faster in every cell, in both
-modes. For single products its advantage at dimension 8 is a factor of
-1.3 over C and about 1.6 over
-the prime fields. A single `split` call over C and the prime fields costs
-37 to 47 microseconds at dimension 8, nearly all of it the fixed
-cost of a call: in a batch the same product takes 0.7 to 1.1
+modes. For single products its advantage at dimension 8 is a factor of 1.3
+over C and about 1.6 over the prime fields. A single `split` call over C and
+the prime fields costs 38 to 48 microseconds at dimension 8, nearly all of
+it the fixed cost of a call: in a batch the same product takes 0.7 to 1.1
 microseconds.
 
 **Characteristic 2.** Over F_4 `lift` is faster in every cell. Over F_2 and
@@ -312,42 +311,42 @@ parentheses, the paired ratio of `table` to it, so a ratio above 1 favours
 
 | Field | N = 4 | N = 8 | N = 16 | N = 32 | N = 64 | N = 128 | N = 256 | N = 512 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| F_2 | 1069.1 (1.06x) | 1244.7 (1.09x) | 1585.9 (1.19x) | 2372.9 (1.64x) | 6145.2 (2.38x) | 9177.0 (5.97x) | 27539 (11.3x) | 35505 (53.3x) |
-| F_(2^2) | 2172.2 (2.04x) | 3042.0 (2.43x) | 5213.8 (3.46x) | 8593.6 (7x) | 19015 (12.2x) | 31156 (39.3x) | 75430 (65.3x) | 124873 (151x) |
-| F_(2^4) | 3188.2 (1.36x) | 6003.6 (1.31x) | 13589 (1.43x) | 18076 (3.83x) | 36787 (7.3x) | 65718 (19.7x) | 141317 (36.5x) | 273314 (89.1x) |
-| F_(2^6) | 4951.0 (0.91x) | 10906 (0.747x) | 28291 (0.741x) | 33131 (2.35x) | 64155 (4.79x) | 107807 (11.1x) | 234094 (19.9x) | 425613 (67.7x) |
-| F_(2^7) | 9786.5 (0.462x) | 18121 (0.459x) | 41673 (0.54x) | 56129 (1.5x) | 111419 (2.97x) | 196111 (6.49x) | 439560 (11.8x) | 783611 (39x) |
-| F_(2^8) | 9779.2 (0.469x) | 18084 (0.472x) | 41176 (0.572x) | 54482 (1.6x) | 113289 (3.08x) | 205664 (6.98x) | 450834 (12.8x) | 786777 (41.4x) |
-| F_(2^12) | 15172 (0.331x) | 33007 (0.299x) | 84718 (0.347x) | 101558 (1.09x) | 196174 (2.21x) | 332248 (5.43x) | 725510 (10.1x) | 1340815 (33.3x) |
+| F_2 | 1091.3 (1.05x) | 1225.7 (1.07x) | 1520.4 (1.22x) | 2333.5 (1.66x) | 6164.4 (2.32x) | 9158.6 (6.11x) | 26288 (12x) | 37617 (51.3x) |
+| F_(2^2) | 2189.6 (2.01x) | 2946.1 (2.49x) | 4957.2 (3.44x) | 8131.4 (7.26x) | 18830 (12.4x) | 29468 (40.2x) | 73913 (65.4x) | 125894 (149x) |
+| F_(2^4) | 3194.9 (1.39x) | 5868.7 (1.3x) | 13287 (1.42x) | 18227 (3.87x) | 35656 (7.71x) | 64712 (20x) | 142380 (37.2x) | 276983 (82.5x) |
+| F_(2^6) | 4880.0 (0.912x) | 10714 (0.749x) | 28026 (0.752x) | 33394 (2.38x) | 64827 (4.79x) | 109962 (11.1x) | 237365 (20.3x) | 420703 (67.8x) |
+| F_(2^7) | 9757.9 (0.471x) | 18405 (0.465x) | 41478 (0.529x) | 53735 (1.53x) | 108564 (3.03x) | 196412 (6.55x) | 429496 (12.1x) | 777004 (38.9x) |
+| F_(2^8) | 9711.6 (0.47x) | 18026 (0.457x) | 41088 (0.577x) | 55812 (1.62x) | 117131 (2.98x) | 200685 (7.05x) | 438306 (12.6x) | 792053 (41.6x) |
+| F_(2^12) | 15006 (0.329x) | 32497 (0.294x) | 84369 (0.35x) | 101312 (1.08x) | 189765 (2.29x) | 342710 (5.18x) | 740484 (9.65x) | 1328956 (33.6x) |
 
 #### Single products: lift ns per product (table / lift)
 
 | Field | N = 4 | N = 8 | N = 16 | N = 32 | N = 64 | N = 128 | N = 256 | N = 512 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| F_2 | 55061 (0.881x) | 55640 (0.875x) | 55527 (0.892x) | 56740 (0.903x) | 59309 (1.02x) | 65181 (1.56x) | 75813 (3.78x) | 85875 (11.3x) |
-| F_(2^2) | 94774 (1.59x) | 97143 (1.64x) | 100521 (1.69x) | 113592 (2.03x) | 114988 (3.41x) | 139299 (7.68x) | 161342 (23.4x) | 211285 (68.7x) |
-| F_(2^4) | 95166 (1.6x) | 98897 (1.59x) | 109084 (1.59x) | 125941 (1.86x) | 137139 (3.07x) | 166077 (6.95x) | 228228 (19.2x) | 356486 (47.6x) |
-| F_(2^6) | 97906 (1.56x) | 104590 (1.53x) | 123318 (1.46x) | 140554 (1.7x) | 164176 (2.69x) | 221399 (5.7x) | 319567 (15.2x) | 516492 (36.2x) |
-| F_(2^7) | 261356 (0.595x) | 273372 (0.575x) | 302095 (0.594x) | 348812 (0.7x) | 395538 (1.17x) | 476182 (2.78x) | 684117 (7.79x) | 1011798 (19.7x) |
-| F_(2^8) | 261351 (0.588x) | 274763 (0.572x) | 296167 (0.616x) | 339500 (0.715x) | 396476 (1.19x) | 492261 (2.94x) | 723535 (7.73x) | 1083191 (20.8x) |
-| F_(2^12) | 279517 (0.557x) | 289522 (0.574x) | 345876 (0.537x) | 396401 (0.64x) | 483502 (1.14x) | 626352 (2.84x) | 979202 (7.03x) | 1639659 (19.5x) |
+| F_2 | 54364 (0.883x) | 52658 (0.897x) | 53214 (0.916x) | 55778 (0.912x) | 58727 (1.02x) | 65537 (1.56x) | 72584 (3.93x) | 89657 (11.1x) |
+| F_(2^2) | 94923 (1.64x) | 93229 (1.64x) | 94524 (1.74x) | 110694 (2x) | 114996 (3.45x) | 129938 (8.22x) | 157024 (23.8x) | 206892 (71.6x) |
+| F_(2^4) | 93306 (1.6x) | 95085 (1.61x) | 103772 (1.62x) | 123183 (1.88x) | 133877 (3.09x) | 162192 (7.26x) | 223693 (19.8x) | 350117 (51.3x) |
+| F_(2^6) | 96027 (1.58x) | 101718 (1.54x) | 121247 (1.42x) | 139777 (1.68x) | 160668 (2.81x) | 209405 (6.09x) | 314243 (15.5x) | 510199 (36.3x) |
+| F_(2^7) | 265126 (0.581x) | 274321 (0.587x) | 295446 (0.598x) | 338815 (0.701x) | 383760 (1.18x) | 480005 (2.75x) | 687634 (7.76x) | 1013181 (19.7x) |
+| F_(2^8) | 256464 (0.584x) | 263443 (0.581x) | 293796 (0.609x) | 349707 (0.684x) | 393091 (1.19x) | 500050 (2.93x) | 660016 (8.14x) | 1013752 (22.6x) |
+| F_(2^12) | 267320 (0.562x) | 283639 (0.553x) | 339917 (0.535x) | 381842 (0.676x) | 463210 (1.14x) | 669123 (2.7x) | 985059 (7.1x) | 1562769 (20.4x) |
 
-`lift` is the faster algorithm in large loops, where its advantage reaches
-a factor of 151 in batch mode and 68.7 for
-single products at dimension 512. In small loops the outcome depends on the
-degree of the field, which sets the cost of a lifted product, and on the
-number of products in a call. For single products `lift` has the lower mean
-at every dimension over F_4, F_16, and F_64, and from dimension 64 over the
-other fields. In batch mode it has the lower mean at every dimension over
-F_2, F_4, and F_16, and from dimension 32 over the other fields.
+`lift` is the faster algorithm in large loops, where its advantage reaches a
+factor of 149 in batch mode and 71.6 for single products at dimension 512.
+In small loops the outcome depends on the degree of the field, which sets
+the cost of a lifted product, and on the number of products in a call. For
+single products `lift` has the lower mean at every dimension over F_4, F_16,
+and F_64, and from dimension 64 over the other fields. In batch mode it has
+the lower mean at every dimension over F_2, F_4, and F_16, and from
+dimension 32 over the other fields.
 
-`"auto"` follows the rule of
-[Choosing between the algorithms](mathematics.md#choosing-between-the-algorithms),
-which these measurements test: in 108 of the 112 cells
-it selects the algorithm with the lower mean, or one tied with it, and in
-the others the algorithm it selects is slower by a factor of at most
-1.35. The largest differences are for batches over F_64 in loops of
-dimension at most 16, where the rule selects `lift`.
+`"auto"` follows the rule of [Choosing between the
+algorithms](mathematics.md#choosing-between-the-algorithms), which these
+measurements test: in 108 of the 112 cells it selects the algorithm with the
+lower mean, or one tied with it, and in the others the algorithm it selects
+is slower by a factor of at most 1.33. The largest differences are for
+batches over F_64 in loops of dimension at most 16, where the rule selects
+`lift`.
 
 ### Central products
 
@@ -355,64 +354,64 @@ dimension at most 16, where the rule selects `lift`.
 
 | n x m | D | pairs | native | rows | schedule | fastest mean | auto |
 | --- | ---: | ---: | --- | --- | --- | --- | --- |
-| 1 x 4 | 32 | 64 | 1861.4 [1805.0, 1917.7] | 2425.7 [2362.8, 2488.6] | 2755.8 [2680.0, 2831.6] | native | native |
-| 1 x 8 | 512 | 4 | 33978 [32943, 35014] | 41906 [40627, 43184] | 50957 [49856, 52057] | native | native |
-| 2 x 2 | 16 | 64 | unavailable | 2340.1 [2301.5, 2378.8] | 2774.2 [2728.2, 2820.1] | rows | rows |
-| 2 x 4 | 64 | 64 | unavailable | 4636.0 [4479.2, 4792.8] | 4275.1 [4189.8, 4360.5] | schedule | rows |
-| 2 x 6 | 256 | 16 | unavailable | 19582 [19309, 19856] | 21006 [20527, 21485] | rows | rows |
-| 3 x 3 | 64 | 64 | unavailable | 6363.7 [6270.2, 6457.2] | 8692.3 [8527.6, 8857.0] | rows | rows |
-| 3 x 5 | 256 | 16 | unavailable | 29510 [28963, 30057] | 38981 [38410, 39551] | rows | rows |
-| 3 x 7 | 1024 | 4 | unavailable | 129912 [127442, 132383] | 177582 [172857, 182306] | rows | rows |
-| 4 x 4 | 256 | 16 | unavailable | 52578 [51523, 53633] | 58511 [57297, 59725] | rows | rows |
-| 4 x 6 | 1024 | 4 | unavailable | 222628 [219003, 226253] | 269723 [261036, 278411] | rows | rows |
-| 4 x 8 | 4096 | 4 | unavailable | 905611 [891183, 920039] | 788146 [769587, 806704] | schedule | rows |
-| 5 x 5 | 1024 | 4 | unavailable | 376410 [370273, 382548] | 340347 [331129, 349564] | schedule | schedule |
-| 5 x 7 | 4096 | 4 | unavailable | 1656751 [1628222, 1685279] | 1041602 [1008986, 1074218] | schedule | schedule |
-| 6 x 6 | 4096 | 4 | unavailable | 3931599 [3886864, 3976333] | 1160088 [1148895, 1171280] | schedule | schedule |
-| 7 x 7 | 16384 | 2 | unavailable | 34892275 [34579607, 35204943] | 5828510 [5666627, 5990394] | schedule | schedule |
+| 1 x 4 | 32 | 64 | 1801.4 [1773.5, 1829.2] | 2322.9 [2287.7, 2358.1] | 2665.1 [2606.9, 2723.3] | native | native |
+| 1 x 8 | 512 | 4 | 34561 [33613, 35509] | 42656 [41648, 43664] | 51925 [50715, 53135] | native | native |
+| 2 x 2 | 16 | 64 | unavailable | 2434.0 [2400.7, 2467.4] | 2833.3 [2783.2, 2883.4] | rows | rows |
+| 2 x 4 | 64 | 64 | unavailable | 4763.2 [4658.5, 4868.0] | 4477.4 [4370.1, 4584.7] | schedule | rows |
+| 2 x 6 | 256 | 16 | unavailable | 19402 [19093, 19711] | 20729 [20467, 20991] | rows | rows |
+| 3 x 3 | 64 | 64 | unavailable | 6362.4 [6235.0, 6489.8] | 8513.9 [8307.6, 8720.2] | rows | rows |
+| 3 x 5 | 256 | 16 | unavailable | 29071 [28143, 29999] | 37904 [37264, 38543] | rows | rows |
+| 3 x 7 | 1024 | 4 | unavailable | 131095 [128686, 133504] | 174554 [170639, 178469] | rows | rows |
+| 4 x 4 | 256 | 16 | unavailable | 52397 [51306, 53488] | 57376 [56237, 58515] | rows | rows |
+| 4 x 6 | 1024 | 4 | unavailable | 222998 [216652, 229345] | 271586 [263377, 279795] | rows | rows |
+| 4 x 8 | 4096 | 4 | unavailable | 911857 [898192, 925521] | 771936 [759434, 784438] | schedule | rows |
+| 5 x 5 | 1024 | 4 | unavailable | 382102 [377023, 387180] | 350873 [343628, 358118] | schedule | schedule |
+| 5 x 7 | 4096 | 4 | unavailable | 1680408 [1634049, 1726768] | 999042 [975667, 1022416] | schedule | schedule |
+| 6 x 6 | 4096 | 4 | unavailable | 3884691 [3812286, 3957095] | 1151597 [1116734, 1186460] | schedule | schedule |
+| 7 x 7 | 16384 | 2 | unavailable | 34844261 [34519817, 35168704] | 5744267 [5650608, 5837925] | schedule | schedule |
 
 #### Paired ratios of the signed-component methods
 
 | n x m | outer level | schedule / rows | native / rows |
 | --- | ---: | --- | --- |
-| 1 x 4 | 1 | 1.14 [1.1, 1.17] | 0.767 [0.747, 0.787] |
-| 1 x 8 | 1 | 1.22 [1.18, 1.25] | 0.811 [0.795, 0.827] |
-| 2 x 2 | 2 | 1.19 [1.17, 1.2] | unavailable |
-| 2 x 4 | 2 | 0.924 [0.895, 0.953] | unavailable |
-| 2 x 6 | 2 | 1.07 [1.05, 1.1] | unavailable |
-| 3 x 3 | 3 | 1.37 [1.34, 1.39] | unavailable |
-| 3 x 5 | 3 | 1.32 [1.3, 1.35] | unavailable |
-| 3 x 7 | 3 | 1.37 [1.32, 1.41] | unavailable |
-| 4 x 4 | 4 | 1.11 [1.09, 1.14] | unavailable |
-| 4 x 6 | 4 | 1.21 [1.18, 1.24] | unavailable |
-| 4 x 8 | 4 | 0.87 [0.853, 0.887] | unavailable |
-| 5 x 5 | 5 | 0.903 [0.882, 0.925] | unavailable |
-| 5 x 7 | 5 | 0.628 [0.613, 0.642] | unavailable |
-| 6 x 6 | 6 | 0.295 [0.291, 0.299] | unavailable |
-| 7 x 7 | 7 | 0.167 [0.162, 0.171] | unavailable |
+| 1 x 4 | 1 | 1.15 [1.12, 1.17] | 0.775 [0.764, 0.787] |
+| 1 x 8 | 1 | 1.22 [1.19, 1.24] | 0.81 [0.795, 0.825] |
+| 2 x 2 | 2 | 1.16 [1.14, 1.19] | unavailable |
+| 2 x 4 | 2 | 0.94 [0.915, 0.965] | unavailable |
+| 2 x 6 | 2 | 1.07 [1.05, 1.09] | unavailable |
+| 3 x 3 | 3 | 1.34 [1.3, 1.37] | unavailable |
+| 3 x 5 | 3 | 1.31 [1.27, 1.35] | unavailable |
+| 3 x 7 | 3 | 1.33 [1.3, 1.36] | unavailable |
+| 4 x 4 | 4 | 1.1 [1.07, 1.12] | unavailable |
+| 4 x 6 | 4 | 1.22 [1.17, 1.26] | unavailable |
+| 4 x 8 | 4 | 0.846 [0.834, 0.859] | unavailable |
+| 5 x 5 | 5 | 0.918 [0.903, 0.933] | unavailable |
+| 5 x 7 | 5 | 0.595 [0.583, 0.607] | unavailable |
+| 6 x 6 | 6 | 0.296 [0.287, 0.306] | unavailable |
+| 7 x 7 | 7 | 0.165 [0.162, 0.168] | unavailable |
 
 `native` is the fastest method wherever it applies. Through outer level 4,
-`rows` and `schedule` are within a factor of 1.4 of each other, and
-which is faster depends on the inner level. `schedule` is faster in every
-measured pair from outer level 5, by a factor that reaches 6.0 at
-`7 x 7`. `"auto"` therefore selects `native` where it applies, and otherwise
-`rows` through outer level 4 and `schedule` above.
+`rows` and `schedule` are within a factor of 1.3 of each other, and which is
+faster depends on the inner level. `schedule` is faster in every measured
+pair from outer level 5, by a factor that reaches 6.1 at `7 x 7`. `"auto"`
+therefore selects `native` where it applies, and otherwise `rows` through
+outer level 4 and `schedule` above.
 
 #### Full product (ns per product)
 
 | n x m | N | pairs | split | table | table / split | fastest mean |
 | --- | ---: | ---: | --- | --- | --- | --- |
-| 1 x 4 | 64 | 64 | 2285.7 [2235.8, 2335.6] | 31144 [30439, 31848] | 13.6 [13.5, 13.8] | split |
-| 1 x 8 | 1024 | 4 | 41383 [40454, 42312] | 10332562 [10193911, 10471214] | 250 [244, 256] | split |
-| 2 x 2 | 32 | 64 | 2842.2 [2779.1, 2905.2] | 5187.0 [5065.8, 5308.1] | 1.82 [1.78, 1.87] | split |
-| 2 x 4 | 128 | 64 | 5248.3 [5110.8, 5385.8] | 113131 [111190, 115071] | 21.6 [21.1, 22.1] | split |
-| 2 x 6 | 512 | 16 | 23124 [22729, 23519] | 2858846 [2838265, 2879426] | 124 [122, 126] | split |
-| 3 x 3 | 128 | 64 | 7195.0 [7075.3, 7314.8] | 112953 [111140, 114765] | 15.7 [15.4, 16] | split |
-| 3 x 5 | 512 | 16 | 32584 [31843, 33325] | 2835687 [2804456, 2866918] | 87.1 [85.2, 89.1] | split |
-| 3 x 7 | 2048 | 4 | 143956 [140616, 147296] | 43521000 [43279902, 43762099] | 303 [295, 310] | split |
-| 4 x 4 | 512 | 16 | 55901 [54657, 57146] | 2718702 [2692574, 2744831] | 48.7 [47.6, 49.8] | split |
-| 4 x 6 | 2048 | 4 | 240817 [233059, 248575] | 43130455 [42812245, 43448665] | 180 [174, 185] | split |
-| 5 x 5 | 2048 | 4 | 347098 [341586, 352610] | 43162866 [42950890, 43374842] | 124 [123, 126] | split |
+| 1 x 4 | 64 | 64 | 2239.4 [2199.0, 2279.7] | 31068 [30108, 32028] | 13.9 [13.5, 14.2] | split |
+| 1 x 8 | 1024 | 4 | 42746 [41476, 44015] | 10359237 [10275580, 10442893] | 243 [235, 251] | split |
+| 2 x 2 | 32 | 64 | 2808.8 [2765.7, 2851.8] | 5277.3 [5181.5, 5373.1] | 1.88 [1.85, 1.91] | split |
+| 2 x 4 | 128 | 64 | 5457.7 [5382.3, 5533.0] | 118236 [116597, 119876] | 21.7 [21.4, 22] | split |
+| 2 x 6 | 512 | 16 | 22726 [22360, 23092] | 2853617 [2829235, 2878000] | 126 [124, 128] | split |
+| 3 x 3 | 128 | 64 | 7084.4 [6913.1, 7255.7] | 111590 [109857, 113322] | 15.8 [15.4, 16.1] | split |
+| 3 x 5 | 512 | 16 | 31974 [31164, 32783] | 2829542 [2794911, 2864173] | 88.6 [86.5, 90.8] | split |
+| 3 x 7 | 2048 | 4 | 150022 [146757, 153287] | 43871862 [43568734, 44174990] | 293 [286, 300] | split |
+| 4 x 4 | 512 | 16 | 55926 [54563, 57289] | 2729314 [2707134, 2751494] | 48.9 [47.8, 50] | split |
+| 4 x 6 | 2048 | 4 | 236249 [229505, 242992] | 43405767 [43169403, 43642130] | 184 [180, 189] | split |
+| 5 x 5 | 2048 | 4 | 361473 [355984, 366962] | 43561391 [43395788, 43726995] | 121 [119, 122] | split |
 
 ## Reproducing a run
 
@@ -421,12 +420,14 @@ python -m pip install -e ".[dev]"
 python benchmarks/protocols.py --protocol all --output results/run.json --cpu 2
 ```
 
-The three protocols write `run.real.json`, `run.domains.json` and
-`run.central.json` with their reports, and take about ten minutes
-together on the archive's host; the second `domains` run over the fields of
+The three protocols write `run.real.json`, `run.domains.json`, and
+`run.central.json` with their reports, and take about ten minutes together
+on the archive's host; the second `domains` run over the fields of
 characteristic 2 takes about six minutes more. The archived `central` run
 was given a longer list of factor pairs with `--factors`; the README of the
 archive records the exact commands. The corpus is written to
-`benchmark-corpora/` on first use. `benchmarks/test_benchmark.py` tests the
-drivers themselves: argument validation, the statistics, the independent
-reference, and a short run of every protocol.
+`benchmark-corpora/` on first use.
+
+`benchmarks/test_benchmark.py` tests the drivers themselves: argument
+validation, the statistics, the independent reference, and a short run of
+every protocol.

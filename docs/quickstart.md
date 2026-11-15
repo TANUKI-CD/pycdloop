@@ -1,6 +1,6 @@
 # Quick start
 
-pycdloop requires CPython 3.10 or newer, NumPy 1.26 or newer and pyfastcd
+pycdloop requires CPython 3.10 or newer, NumPy 1.26 or newer, and pyfastcd
 1.4.0 or newer, below 2. To install it from PyPI with `pip`, run:
 
 ```sh
@@ -185,6 +185,7 @@ A.signed_algorithms         # ('auto', 'direct', 'cariow_cariowa', 'quasilinear'
 through the decomposition; `"table"` evaluates the definition with
 `O(D^2)` multiplications and is useful as an independent check.
 `signed_algorithm` names the method for the product of signed components.
+
 `A.algorithms` and `A.signed_algorithms` list the names an algebra accepts.
 The methods for signed components depend on the loop and on the coefficient
 field, and `algorithms` differs in [characteristic 2](#characteristic-2).
@@ -245,6 +246,9 @@ lists what follows.
 
 ## Structure
 
+An element answers structural questions about itself, and its algebra
+returns the matrices and bases behind them:
+
 ```python
 A = cdl.LoopAlgebra(cdl.CDLoop(4), char=7)
 x = A.random(5)
@@ -291,17 +295,18 @@ p1 == p2                                        # True: both are exact
 ```
 
 In characteristic 2 the algebra has no decomposition: `spectrum()`,
-`epsilon()`, `split()` and the idempotents raise `TypeError`, and elements
+`epsilon()`, `split()`, and the idempotents raise `TypeError`, and elements
 and arrays stay in the loop basis. In exchange the algebra is simpler. The
 square of every element is central, so powers, inverses, and minimal
 polynomials are defined for central products as well, and an element is
-invertible exactly when its augmentation is nonzero. Products are computed
-by `"lift"`, which runs the split algorithm over a field of large odd
-characteristic and
-reduces the result, or by `"table"`; `"auto"` picks the faster one for the
-size at hand. [Conventions and results](mathematics.md#characteristic-2)
-has the mathematics, and the [API reference](api.md#characteristic-2) lists
-every difference.
+invertible exactly when its augmentation is nonzero.
+
+Products are computed by `"lift"`, which runs the split algorithm over a
+field of large odd characteristic and reduces the result, or by `"table"`;
+`"auto"` picks the faster one for the size at hand.
+[Conventions and results](mathematics.md#characteristic-2) has the
+mathematics, and the [API reference](api.md#characteristic-2) lists every
+difference.
 
 ## Codes
 

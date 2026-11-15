@@ -17,7 +17,7 @@ The Cayley–Dickson loop `Q_n` consists of the signed basis elements of the Cay
 
 ## Installation
 
-pycdloop requires CPython 3.10 or newer, NumPy 1.26 or newer and pyfastcd 1.4.0 or newer, below 2. To install it from PyPI with `pip`, run:
+pycdloop requires CPython 3.10 or newer, NumPy 1.26 or newer, and pyfastcd 1.4.0 or newer, below 2. To install it from PyPI with `pip`, run:
 
 ```sh
 pip install pycdloop
@@ -58,15 +58,15 @@ An `Element` is one immutable element of a loop algebra, an `ElementArray` holds
 
 ## Benchmark
 
-The data in this table contains the mean microseconds per measured product in batches, over real coefficients, measured on 2026-11-14 on one logical CPU of an Intel Xeon Gold 6148. `2N` is the dimension of the loop algebra. `split` is the default algorithm on operands in the loop basis, `split form` is the same product on operands already in the decomposed coordinates, `table` evaluates the definition, and the last column is the pyfastcd product that every loop-algebra product contains. Timing is done in Python and includes the call overhead of the package. The protocol, the single-product and finite-field results, and the central-product results are in [Benchmark](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/benchmark.md).
+The data in this table contains the mean microseconds per measured product in batches, over real coefficients, measured on 2026-11-15 on one logical CPU of an Intel Xeon Gold 6148. `2N` is the dimension of the loop algebra. `split` is the default algorithm on operands in the loop basis, `split form` is the same product on operands already in the decomposed coordinates, `table` evaluates the definition, and the last column is the pyfastcd product that every loop-algebra product contains. Timing is done in Python and includes the call overhead of the package. The protocol, the single-product and finite-field results, and the central-product results are in [Benchmark](https://git.tanuki-cd.com/algebraity/pycdloop/src/branch/main/docs/benchmark.md).
 
 | 2N | split | split form | table | Cayley–Dickson product alone |
 | ---: | ---: | ---: | ---: | ---: |
-| 8 | 0.20 | 0.085 | 0.83 | 0.011 |
-| 32 | 0.31 | 0.15 | 8.84 | 0.063 |
-| 128 | 1.15 | 0.62 | 194.3 | 0.45 |
-| 512 | 5.50 | 3.29 | 3,735 | 2.61 |
-| 2048 | 28.3 | 18.1 | 43,635 | 15.0 |
+| 8 | 0.20 | 0.088 | 0.82 | 0.012 |
+| 32 | 0.31 | 0.15 | 8.95 | 0.062 |
+| 128 | 1.13 | 0.61 | 197.2 | 0.45 |
+| 512 | 5.69 | 3.34 | 3,731 | 2.59 |
+| 2048 | 28.2 | 17.7 | 43,789 | 14.5 |
 
 ## Numerical stability
 

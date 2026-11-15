@@ -439,16 +439,19 @@ coefficient field, so `LoopAlgebra(L, char=2, deg=3)` and
 `LoopAlgebra(L, field=BinaryField(deg=3))` are the same object.
 
 Every loop has a loop algebra in characteristic 2. Over the other fields
-the signed components are held by pyfastcd, whose storage limits apply:
-over R a factor of level 60 or more raises `OverflowError`, and over C and
-over finite fields the limit is up to a few levels lower, depending on the
-characteristic and the degree. A central product with a factor of level 1
-over R also uses the algebra over C. Creating the algebra of a central
-product allocates one byte for each of the `D` basis indices, and a sign
-table for every factor but one of largest level, whose memory grows with
-the square of that factor's order; a product too large for this raises
-`MemoryError`. In characteristic 2 these are built when the algebra to
-which products are lifted is first needed.
+two limits apply.
+
+**Level.** The signed components are held by pyfastcd, whose storage limits
+apply: over R a factor of level 60 or more raises `OverflowError`, and over
+C and over finite fields the limit is up to a few levels lower, depending on
+the characteristic and the degree. A central product with a factor of level
+1 over R also uses the algebra over C.
+
+**Memory.** Creating the algebra of a central product allocates one byte for
+each of the `D` basis indices, and a sign table for every factor but one of
+largest level, whose memory grows with the square of that factor's order. A
+product too large for this raises `MemoryError`. In characteristic 2 these
+are built when the algebra to which products are lifted is first needed.
 
 ### Properties
 
@@ -689,17 +692,19 @@ The three methods that return idempotents are not defined in characteristic
 
 - `left_matrix(x, *, basis="loop")`, `right_matrix(x, *, basis="loop")`
 
-  Return the matrix of `y -> x y`, or of `y -> y x`, for one element. With
-  `basis="loop"` the matrix `M` of `y -> x y` satisfies
-  `(x * y).coefficients.ravel() == M @ y.coefficients.ravel()`, and that of
-  `y -> y x` the same with `y * x`: up to rounding over R and C, and exactly
-  over prime fields when the right side is computed in integers that do not
-  overflow and reduced modulo `char`. The entries of `M` are `uint32`
-  there, and their products can exceed that type. With
-  `basis="split"` it acts on the spectral coordinates followed by the
-  signed coordinates and is block diagonal; this basis is not defined in
-  characteristic 2. Over an extension field the matrix has a trailing
-  polynomial axis.
+  Return the matrix of `y -> x y`, or of `y -> y x`, for one element. Over
+  an extension field the matrix has a trailing polynomial axis.
+
+  - With `basis="loop"` the matrix `M` of `y -> x y` satisfies
+    `(x * y).coefficients.ravel() == M @ y.coefficients.ravel()`, and that
+    of `y -> y x` the same with `y * x`. The identity holds up to rounding
+    over R and C, and exactly over prime fields when the right side is
+    computed in integers that do not overflow and reduced modulo `char`: the
+    entries of `M` are `uint32` there, and their products can exceed that
+    type.
+  - With `basis="split"` the matrix acts on the spectral coordinates
+    followed by the signed coordinates and is block diagonal. This basis is
+    not defined in characteristic 2.
 
 - `structure_constants() -> numpy.ndarray`
 
@@ -716,13 +721,25 @@ The three methods that return idempotents are not defined in characteristic
 
 ### GeneratedSubalgebra
 
-The record that `subalgebra_generated_by` returns. Its attributes cannot
-be reassigned: `dimension`, `minimal_polynomial`,
-`spectral_values` (the distinct spectral coordinates of the element), and
-`signed_polynomial` (the minimal polynomial of its signed component). The
-subalgebra is isomorphic to `F[t] / (minimal_polynomial)`. In
-characteristic 2 the last two attributes are `None`, and the minimal
-polynomial is a power of `t - aug(x)` of degree at most 4.
+The record that `subalgebra_generated_by` returns. The subalgebra is
+isomorphic to `F[t] / (minimal_polynomial)`. Its attributes cannot be
+reassigned.
+
+- `dimension`, `minimal_polynomial`
+
+  The dimension of the subalgebra, and the minimal polynomial of the
+  element. In characteristic 2 the minimal polynomial is a power of
+  `t - aug(x)` of degree at most 4.
+
+- `spectral_values`
+
+  The distinct spectral coordinates of the element; `None` in
+  characteristic 2.
+
+- `signed_polynomial`
+
+  The minimal polynomial of the signed component of the element; `None` in
+  characteristic 2.
 
 ---
 
@@ -731,7 +748,7 @@ polynomial is a power of `t - aug(x)` of degree at most 4.
 ### Construction
 
 Create an `Element` with `A(...)` or another constructor of the algebra, an
-`ElementArray` with `A.array`, `A.asarray` or `A.random`, and a
+`ElementArray` with `A.array`, `A.asarray`, or `A.random`, and a
 `SplitArray` with `X.split()` or `A.split_array`. Constructing any of the
 three classes directly raises `TypeError`. In characteristic 2 there is no
 split form, and so no `SplitArray`.
@@ -863,16 +880,16 @@ Results are new objects, and arrays broadcast their batch axes.
 
 - `x ** k`
 
-  An integer power, where powers do not depend on bracketing: in the loop
-  algebra of a Cayley–Dickson loop, and in every loop algebra of
-  characteristic 2. Negative powers use the inverse. Any Python integer is
-  accepted as an exponent; over R and C a power whose value leaves the
-  range of the floats holds infinities, zeros, or NaNs. The cost grows with
-  `log k`,
-  and in characteristic 2 a power takes at most two products. In the loop
-  algebra of a central product over R, C, or a field of odd characteristic
-  the operator raises `TypeError`. An exponent that is not an integer, or is
-  a boolean, raises `TypeError`.
+  An integer power. It is defined where powers do not depend on bracketing:
+  in the loop algebra of a Cayley–Dickson loop, and in every loop algebra of
+  characteristic 2. In the loop algebra of a central product over R, C, or a
+  field of odd characteristic the operator raises `TypeError`.
+
+  Negative powers use the inverse. Any Python integer is accepted as an
+  exponent; an exponent that is not an integer, or is a boolean, raises
+  `TypeError`. The cost grows with `log k`, and in characteristic 2 a power
+  takes at most two products. Over R and C a power whose value leaves the
+  range of the floats holds infinities, zeros, or NaNs.
 
 - `x == y`, `x != y`
 
@@ -947,17 +964,17 @@ In the next three methods `y` stands for the operand `other`.
 - `inverse()`
 
   Return the inverse of `x` that is a polynomial in `x`, which is a
-  two-sided inverse. Over R, C, and fields of odd characteristic it is
-  defined for a Cayley–Dickson loop, is the pair of the coordinatewise
-  reciprocal and `conjugate(d) / Q(d)`, and exists exactly when every
-  spectral coordinate is nonzero and the signed component has `Q(d) != 0`.
-  From level 4 on an element can have other two-sided inverses, and over C
-  and finite fields also where this one does not exist; they are not
-  computed. In
-  characteristic 2 the inverse is defined for every loop, exists when the
-  augmentation is nonzero, and equals `x**3 / aug(x)**4`. Where it does not
-  exist, `ZeroDivisionError` is raised. A batch checks every record before
-  producing any result.
+  two-sided inverse. Where it does not exist, `ZeroDivisionError` is raised.
+  A batch checks every record before producing any result.
+
+  - Over R, C, and fields of odd characteristic the inverse is defined for a
+    Cayley–Dickson loop. It is the pair of the coordinatewise reciprocal and
+    `conjugate(d) / Q(d)`, and exists exactly when every spectral coordinate
+    is nonzero and the signed component has `Q(d) != 0`. From level 4 on an
+    element can have other two-sided inverses, and over C and finite fields
+    also where this one does not exist; they are not computed.
+  - In characteristic 2 the inverse is defined for every loop, exists when
+    the augmentation is nonzero, and equals `x**3 / aug(x)**4`.
 
 - `weight()`
 
@@ -1034,14 +1051,16 @@ The following are methods of `Element` only.
 
   Return the monic polynomial of least degree that vanishes at `x`, as
   field coefficients with the constant term first. Where powers are
-  defined. Over R and C, coincidences between spectral values are detected
-  by exact comparison of floating-point numbers, and whether a spectral
-  value is a root of the polynomial of the signed component is decided
-  exactly, for the spectrum and the signed component as they are held. For
-  an element given by loop-basis coefficients these are rounded sums of
-  the coefficients, so a coincidence that holds for the coefficients can
-  be missed. In characteristic 2 the polynomial is
-  `(t - aug(x))**j` for some `j` from 1 to 4.
+  defined. In characteristic 2 the polynomial is `(t - aug(x))**j` for some
+  `j` from 1 to 4.
+
+  Over R and C the polynomial is computed from the spectrum and the signed
+  component as they are held. Coincidences between spectral values are
+  detected by exact comparison of floating-point numbers, and whether a
+  spectral value is a root of the polynomial of the signed component is
+  decided exactly. For an element given by loop-basis coefficients these
+  are rounded sums of the coefficients, so a coincidence that holds for the
+  coefficients can be missed.
 
 Methods marked "where powers are defined" are available in the loop algebra
 of a Cayley–Dickson loop, and in every loop algebra of characteristic 2.
@@ -1112,29 +1131,35 @@ trailing polynomial axis for an extension field, and the results are exact.
 - `row_reduce(matrix, *, field=None, tol=None) -> tuple[numpy.ndarray, tuple[int, ...]]`
 
   Return the reduced row echelon form and the pivot column of each nonzero
-  row. Over R and C the result is numerical. With `tol`, entries of a
-  pivot column at or below `tol` count as zero, in the rows that do not
-  hold a pivot yet. Without it, such an entry
-  counts as zero when it is no larger than the rounding that elimination
-  can have left in its place: `max(rows, columns)` times the machine
-  epsilon times the largest entry of its row, multiplied by the growth of
-  the reduction, which is large where the pivot columns are nearly
-  dependent. A pivot has in addition to be above `max(rows, columns)`
-  times the machine epsilon times the largest entry of the matrix. So a
-  row that depends on the others, exactly or up to rounding, reduces to a
-  row of zeros, and `tol=0` treats every nonzero entry as significant. An
-  entry that counts as zero is zero in the elimination too, and is not
-  multiplied by the pivot row. The rows that already hold a pivot are
-  always cleared, whatever the size of their entries. NaN and infinite
-  entries raise nothing, and the result is then without meaning.
+  row. Over R and C the result is numerical, and `tol` decides which
+  entries of a pivot column count as zero, in the rows that do not hold a
+  pivot yet:
+
+  - With `tol`, the entries at or below `tol` count as zero. `tol=0` treats
+    every nonzero entry as significant.
+  - Without it, an entry counts as zero when it is no larger than the
+    rounding that elimination can have left in its place:
+    `max(rows, columns)` times the machine epsilon times the largest entry
+    of its row, multiplied by the growth of the reduction, which is large
+    where the pivot columns are nearly dependent. A pivot has in addition to
+    be above `max(rows, columns)` times the machine epsilon times the
+    largest entry of the matrix. So a row that depends on the others,
+    exactly or up to rounding, reduces to a row of zeros.
+
+  An entry that counts as zero is zero in the elimination too, and is not
+  multiplied by the pivot row. The rows that already hold a pivot are always
+  cleared, whatever the size of their entries.
 
   Elimination uses scaled partial pivoting: of the entries that can be
-  pivots it takes the one that is largest relative to the largest entry
-  of its row. Apart from the comparisons with `tol` and with the largest
-  entry of the matrix, the result does not depend on the scale of each
-  row, and rows may lie anywhere in the range of the floats beside one
-  another: where a step overflows or underflows, the reduction is done on
-  numbers whose exponents cannot leave the range.
+  pivots it takes the one that is largest relative to the largest entry of
+  its row. Apart from the comparisons with `tol` and with the largest entry
+  of the matrix, the result does not depend on the scale of each row, and
+  rows may lie anywhere in the range of the floats beside one another: where
+  a step overflows or underflows, the reduction is done on numbers whose
+  exponents cannot leave the range.
+
+  NaN and infinite entries raise nothing, and the result is then without
+  meaning.
 
 - `nullspace(matrix, *, field=None, tol=None) -> numpy.ndarray`
 
@@ -1219,9 +1244,10 @@ extension field by the polynomial axis.
 ## pycdloop.testing
 
 Sampled identity checks. Each draws `samples` random elements for each
-operand of the identity and returns whether it held on all of them: `False` exhibits a counterexample
-and is conclusive, `True` only reports that none was found. Over R and C
-the samples have small integer coefficients, so the checks are exact.
+operand of the identity and returns whether it held on all of them: `False`
+exhibits a counterexample and is conclusive, `True` only reports that none
+was found. Over R and C the samples have small integer coefficients, so the
+checks are exact.
 
 - `random_elements(algebra, count, rng=None, *, exact=True) -> ElementArray`
 
@@ -1260,52 +1286,70 @@ the samples have small integer coefficients, so the checks are exact.
 - **Layout.** Strided, broadcast, and unaligned views are accepted.
   Operations copy operands that are not C-contiguous or not aligned, and
   operands whose layout pyfastcd cannot read in place.
-- **Range.** Over R and C, inverses, powers, the predicates, minimal
-  polynomials, scalar division, `linalg.row_reduce` and `pycdloop.codes`
-  return a coefficient that is representable whatever the sizes of the
-  values formed on the way, whether the coefficients of an operand are all
-  large, all small, or of very different sizes. Squares, norms, quotients,
-  and the recurrence of a power are evaluated with exponents that cannot
-  leave the range, or in rational arithmetic, and operands are rescaled by
-  a power of two only where that loses nothing. A coefficient that is
-  itself out of range is an infinity, a zero, or a NaN; over C it is out of
-  range when either of its parts is. Sums are plain floating-point sums. A
-  product, and the conversion between loop-basis coefficients and split
-  form that products, powers, inverses, and the predicates of loop-basis
-  operands pass through, form sums of up to `2 D` coefficients, and a
-  complex product a difference of two products. They can overflow when
-  coefficients are within a factor `4 D` of the largest float, and an
-  infinity in one coordinate of the split form makes every loop-basis
-  coefficient of the record an infinity or a NaN. Accuracy is that of
-  floating-point arithmetic: relative to the largest of the terms that
-  are added, so a coefficient that is a small difference of large terms
-  carries their rounding. A product is accurate relative to the largest
-  coefficients of its operands, not to each coefficient.
-- **Cancellation.** Over C the quadratic norm `Q(d)` is a sum of squares
-  that can cancel. Where the floating-point sum is not well above its
-  rounding error, it is formed in rational arithmetic from the stored
-  coefficients and rounded once. Whether it vanishes, in `has_inverse`,
-  `inverse`, `is_nilpotent` and, through level 3, `is_zero_divisor`, is
-  decided exactly, and inverses, powers, and minimal polynomials use the
-  rounded exact value. A complex result is accurate relative to the
-  modulus of each coefficient.
-- **Validity.** The storage of an `ElementArray` or `SplitArray` can be
-  written to from outside once it has been handed out, through
-  `coefficients`, `to_numpy(copy=False)`, a NumPy conversion that does not
-  copy, the parts of a `SplitArray`, `asarray` of an ndarray, or `out=`.
-  From then on every arithmetic operation, comparison, predicate, and
-  decomposition, and `copy()`, `copy.copy`, `copy.deepcopy` and pickling,
-  check it before they read it, for that array and for every array that
-  shares the storage: storage whose dtype was changed, whose trailing axes
-  are no longer those of the coefficients, or that over a finite field
-  holds a value that is not below the characteristic, raises `ValueError`.
-  `to_numpy()` and the NumPy conversions return the storage as it is,
-  without this check. An `Element` is immutable: the views of its
-  coefficients that it returns, from `coefficients`,
-  `to_numpy(copy=False)` and NumPy conversions that do not copy, are
-  read-only and cannot be made writable, its other methods return
-  independent arrays, and writing to the array it was created from does
-  not change it.
+
+### Shared storage
+
+The storage of an `ElementArray` or `SplitArray` can be written to from
+outside once it has been handed out: through `coefficients`,
+`to_numpy(copy=False)`, a NumPy conversion that does not copy, the parts of
+a `SplitArray`, `asarray` of an ndarray, or `out=`.
+
+From then on the storage is checked before it is read, for that array and
+for every array that shares it. The check runs in every arithmetic
+operation, comparison, predicate, and decomposition, and in `copy()`,
+`copy.copy`, `copy.deepcopy`, and pickling. It raises `ValueError` for
+storage
+
+- whose dtype was changed,
+- whose trailing axes are no longer those of the coefficients, or
+- that over a finite field holds a value that is not below the
+  characteristic.
+
+`to_numpy()` and the NumPy conversions return the storage as it is, without
+this check.
+
+An `Element` is immutable. The views of its coefficients that it returns,
+from `coefficients`, `to_numpy(copy=False)`, and NumPy conversions that do
+not copy, are read-only and cannot be made writable. Its other methods
+return independent arrays, and writing to the array it was created from
+does not change it.
+
+### Range and accuracy over R and C
+
+**Results stay in range.** Inverses, powers, the predicates, minimal
+polynomials, scalar division, `linalg.row_reduce`, and `pycdloop.codes`
+return a coefficient that is representable whatever the sizes of the values
+formed on the way, whether the coefficients of an operand are all large, all
+small, or of very different sizes. Squares, norms, quotients, and the
+recurrence of a power are evaluated with exponents that cannot leave the
+range, or in rational arithmetic, and operands are rescaled by a power of
+two only where that loses nothing. A coefficient that is itself out of range
+is an infinity, a zero, or a NaN; over C it is out of range when either of
+its parts is.
+
+**Sums can overflow.** Sums are plain floating-point sums. A product, and
+the conversion between loop-basis coefficients and split form that
+products, powers, inverses, and the predicates of loop-basis operands pass
+through, form sums of up to `2 D` coefficients, and a complex product a
+difference of two products. They can overflow when coefficients are within a
+factor `4 D` of the largest float, and an infinity in one coordinate of the
+split form makes every loop-basis coefficient of the record an infinity or a
+NaN.
+
+**Accuracy.** Accuracy is that of floating-point arithmetic: relative to the
+largest of the terms that are added, so a coefficient that is a small
+difference of large terms carries their rounding. A product is accurate
+relative to the largest coefficients of its operands, not to each
+coefficient.
+
+**Cancellation in the quadratic norm.** Over C the quadratic norm `Q(d)` is
+a sum of squares that can cancel. Where the floating-point sum is not well
+above its rounding error, it is formed in rational arithmetic from the
+stored coefficients and rounded once. Whether it vanishes is decided
+exactly, in `has_inverse`, `inverse`, `is_nilpotent` and, through level 3,
+`is_zero_divisor`; inverses, powers, and minimal polynomials use the rounded
+exact value. A complex result is accurate relative to the modulus of each
+coefficient.
 
 ### NumPy interfaces
 
@@ -1317,14 +1361,15 @@ the samples have small integer coefficients, so the checks are exact.
 
 ### Copying and serialization
 
-Pickling, `copy.copy` and `copy.deepcopy` of arrays create independent
+Pickling, `copy.copy`, and `copy.deepcopy` of arrays create independent
 storage. Elements are immutable, so `copy.copy` returns the element itself.
 A pickled element records the form it was created with. Loops and algebras
-pickle to the same cached objects. Data that does not have the dtype and
-shape of the algebra, that over a finite field holds a value that is not
-below the characteristic, or that is in split form for an algebra of
-characteristic 2, raises `ValueError` when it is unpickled into an array
-or an element.
+pickle to the same cached objects.
+
+Unpickling into an array or an element raises `ValueError` for data that
+does not have the dtype and shape of the algebra, that over a finite field
+holds a value that is not below the characteristic, or that is in split form
+for an algebra of characteristic 2.
 
 ---
 
@@ -1332,29 +1377,38 @@ or an element.
 
 - `TypeError`
 
-  An unsupported operand or scalar type, including a scalar of another
-  field as an operand, or given to `scalar` or `from_terms`; an
-  `ElementArray` combined with a
-  `SplitArray`; direct construction of `Element`, `ElementArray`,
-  `SplitArray`, or `BinaryFieldElement`; `**`, `inverse`, `has_inverse`,
-  `is_nilpotent`, `minimal_polynomial`, or `subalgebra_generated_by` in the
-  loop algebra of a central product outside characteristic 2; an operation
-  that is not defined in characteristic 2; a non-integer exponent, index,
-  level, or degree; a `field` that is not a field object, or is combined
-  with `char` or `deg`; a non-string algorithm name; a wrong `out` dtype.
+  - An unsupported operand or scalar type, including a scalar of another
+    field as an operand, or given to `scalar` or `from_terms`.
+  - An `ElementArray` combined with a `SplitArray`.
+  - Direct construction of `Element`, `ElementArray`, `SplitArray`, or
+    `BinaryFieldElement`.
+  - `**`, `inverse`, `has_inverse`, `is_nilpotent`, `minimal_polynomial`, or
+    `subalgebra_generated_by` in the loop algebra of a central product
+    outside characteristic 2.
+  - An operation that is not defined in characteristic 2.
+  - A non-integer exponent, index, level, or degree.
+  - A `field` that is not a field object, or is combined with `char` or
+    `deg`.
+  - A non-string algorithm name.
+  - A wrong `out` dtype.
 
 - `ValueError`
 
-  Mismatched parents; two `BinaryFieldElement` scalars of different fields,
-  or a scalar of another field among coefficients given to a constructor
-  or assigned to an item; a wrong coefficient
-  shape; a broadcast failure; an unknown algorithm name, including `"split"`
-  in characteristic 2 and `"lift"` elsewhere; a subset that is not a subloop
-  where one is required; a map that is not a bijection; a table requested
-  for too large a loop; a degree out of range or a reducible modulus of a
-  `BinaryField`; a lifted product for a loop beyond the bound of
-  [Multiplication by lifting](mathematics.md#multiplication-by-lifting);
-  `secure=True` over R or C; the truth value of an array.
+  - Mismatched parents.
+  - Two `BinaryFieldElement` scalars of different fields, or a scalar of
+    another field among coefficients given to a constructor or assigned to
+    an item.
+  - A wrong coefficient shape, or a broadcast failure.
+  - An unknown algorithm name, including `"split"` in characteristic 2 and
+    `"lift"` elsewhere.
+  - A subset that is not a subloop where one is required, or a map that is
+    not a bijection.
+  - A table requested for too large a loop.
+  - A degree out of range or a reducible modulus of a `BinaryField`.
+  - A lifted product for a loop beyond the bound of
+    [Multiplication by lifting](mathematics.md#multiplication-by-lifting).
+  - `secure=True` over R or C.
+  - The truth value of an array.
 
 - `IndexError`
 
@@ -1388,22 +1442,25 @@ results are then without meaning.
 
 ## Threads
 
-Loops, algebras, fields, scalars, and loop elements are immutable and can be
-shared between threads. Loops, fields, and algebras are cached, and each is
-built once: threads
-that construct the same loop, field, or algebra at the same time all receive
-the same object. An `Element` derives its second form, or in
-characteristic 2 the transforms of its lifted coefficients, on first use
-and stores it; two threads that do so at once compute the same value, so
-sharing elements is safe under the global interpreter lock. Do not modify
-the storage of an array while an operation that uses it is running: the
-compiled kernels of pycdloop release the global interpreter lock, the
-transform on large batches and the change of coordinates always, and those
-of pyfastcd release it on large batches, so other threads can run during
-them. The
-temporaries that a product of arrays reuses are kept separately by each
-thread. pyfastcd does not support free-threaded CPython builds, and neither
-does pycdloop.
+**Immutable objects.** Loops, algebras, fields, scalars, and loop elements
+are immutable and can be shared between threads. Loops, fields, and algebras
+are cached, and each is built once: threads that construct the same loop,
+field, or algebra at the same time all receive the same object.
+
+**Elements.** An `Element` derives its second form, or in characteristic 2
+the transforms of its lifted coefficients, on first use and stores it. Two
+threads that do so at once compute the same value, so sharing elements is
+safe under the global interpreter lock.
+
+**Arrays.** Do not modify the storage of an array while an operation that
+uses it is running. The compiled kernels release the global interpreter
+lock, so other threads can run during them: those of pycdloop release it for
+the transform on large batches and for the change of coordinates always, and
+those of pyfastcd on large batches. The temporaries that a product of arrays
+reuses are kept separately by each thread.
+
+pyfastcd does not support free-threaded CPython builds, and neither does
+pycdloop.
 
 ---
 
@@ -1428,7 +1485,7 @@ a `py.typed` marker. Loops, loop elements, `BinaryField`, and the functions
 of `linalg`, `codes`, and `testing` have concrete return annotations, except
 the sign functions `twist`, `commutator_sign`, and `associator_sign`, whose
 result depends on the arguments; most parameters are annotated `Any`. The
-arithmetic of `Element`, `ElementArray`, and
-`SplitArray` is shared between the three classes and annotated with `Any`,
-since the result type depends on the operand types and, for the
-decomposition methods, on the coefficient field.
+arithmetic of `Element`, `ElementArray`, and `SplitArray` is shared between
+the three classes and annotated with `Any`, since the result type depends on
+the operand types and, for the decomposition methods, on the coefficient
+field.
