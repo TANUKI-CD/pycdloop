@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Draw the accuracy charts of a stability study from its CSV summary.
 
-For each of R and C the script draws three charts, each as PNG, SVG and PDF:
+For each of R and C the script draws three charts, each as PNG, SVG, and PDF:
 the median relative error and the median normalized error eta of the split
 algorithm (S) and the table algorithm (T) on dense inputs, and the median eta
 of chains kept in split form (L) and returned to the loop basis after every

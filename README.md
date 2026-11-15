@@ -23,7 +23,7 @@ pycdloop requires CPython 3.10 or newer, NumPy 1.26 or newer and pyfastcd 1.4.0 
 pip install pycdloop
 ```
 
-Wheels are provided for CPython 3.10 through 3.14 on Linux, macOS and Windows. To build and install it from a checkout of this repository, which also requires a C11 compiler and the Python development headers, run:
+Wheels are provided for CPython 3.10 through 3.14 on Linux, macOS, and Windows. To build and install it from a checkout of this repository, which also requires a C11 compiler and the Python development headers, run:
 
 ```sh
 python -m pip install .

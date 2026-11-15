@@ -5,7 +5,7 @@
 ``domains`` times it over C and finite fields (``domains.py``), ``central``
 times central products over R (``central.py``), and ``all`` runs the three in
 that order, each in its own process with its own JSON document and Markdown
-report, and writes an index of them. ``--levels``, ``--fields`` and
+report, and writes an index of them. ``--levels``, ``--fields``, and
 ``--factors`` are passed to the protocols that define them and otherwise
 keep each protocol's default.
 

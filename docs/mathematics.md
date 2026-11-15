@@ -1,9 +1,9 @@
 # Conventions and results
 
 This page fixes the conventions pycdloop uses for Cayley–Dickson loops,
-their central products and their loop algebras, and summarizes the
+their central products, and their loop algebras, and summarizes the
 mathematics behind its algorithms. The decomposition of the loop algebras,
-the split algorithm and the schedule for central products are those of the
+the split algorithm, and the schedule for central products are those of the
 forthcoming paper *Quasilinear multiplication in Cayley–Dickson loop algebras*
 (H. Lemley). The Cayley–Dickson arithmetic underneath is that of
 [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), whose
@@ -11,7 +11,7 @@ forthcoming paper *Quasilinear multiplication in Cayley–Dickson loop algebras*
 this page follows.
 
 Throughout, `F` is the coefficient field: the real numbers R, the complex
-numbers C, or a finite field F_(p^d). The loops, their central products and
+numbers C, or a finite field F_(p^d). The loops, their central products, and
 the definition of the loop algebra are the same for every field. The
 decomposition of the algebra, and the algorithms and results built on it,
 need 2 to be invertible in `F`; the sections that use it say so, and
@@ -50,7 +50,7 @@ sigma_(n+1)(M + i, j)     =  epsilon(j) sigma_n(i, j)
 sigma_(n+1)(M + i, M + j) = -epsilon(j) sigma_n(j, i),
 ```
 
-with `sigma_0(0, 0) = 1`, `epsilon(0) = 1` and `epsilon(j) = -1` for
+with `sigma_0(0, 0) = 1`, `epsilon(0) = 1`, and `epsilon(j) = -1` for
 `j > 0`. `CDLoop.twist` evaluates this recurrence, on integers or on whole
 arrays of indices. It follows that `e_0` is the identity, that
 `e_p^2 = -1` for `p > 0`, and that `e_q e_p = -e_p e_q` for distinct nonzero
@@ -91,7 +91,7 @@ In the iteration order of a loop, and wherever elements are numbered, `+e_p`
 has position `p` and `-e_p` has position `N + p`. The export to GAP numbers
 the same positions from 1.
 
-### Commutators, associators and the center
+### Commutators, associators, and the center
 
 Because `-1` is central, any two elements commute up to sign and any three
 associate up to sign. The signs depend only on the indices:
@@ -105,7 +105,7 @@ e_s e_t       = c(s, t) e_t e_s,            c(s, t)    = sigma(s, t) sigma(t, s)
 `commutator_sign` and `associator_sign` return `c` and `a`. The commutant of
 a loop is the set of elements that commute with every element, a nucleus is
 the set of elements that associate with every pair of elements from a given
-position (left, middle or right) of the associator, and the center is the
+position (left, middle, or right) of the associator, and the center is the
 intersection of the commutant with the three nuclei.
 
 | n | Commutant | Nucleus | Center |
@@ -115,7 +115,7 @@ intersection of the commutant with the three nuclei.
 | 3 and above | `{+1, -1}` | `{+1, -1}` | `{+1, -1}` |
 
 The square of every element is `+1` or `-1`, so the powers of an element do
-not depend on bracketing, every element has order 1, 2 or 4, and the inverse
+not depend on bracketing, every element has order 1, 2, or 4, and the inverse
 of `s e_p` is `s sigma(p, p) e_p`.
 
 ## Central products
@@ -145,7 +145,7 @@ quotient by `{+1, -1}` is the elementary abelian 2-group of order `D`.
 
 A central product is therefore the same kind of object as `Q_n`: signed
 basis elements over an elementary abelian 2-group, with a twist `sigma`. All
-the sign functions, tables and substructure methods apply to both.
+the sign functions, tables, and substructure methods apply to both.
 
 The commutator and associator signs of a central product are the products of
 those of its factors. A basis element therefore lies in the commutant or in
@@ -190,7 +190,7 @@ polynomial of degree `d`, the `modulus` of the field, and is stored as `d`
 canonical `uint32` residues.
 
 The fields of odd characteristic are those of pyfastcd, `p` an odd prime
-below `2^31` and `d` at most 12, and the selectors `char`, `deg` and `field`
+below `2^31` and `d` at most 12, and the selectors `char`, `deg`, and `field`
 of `LoopAlgebra` choose among them exactly as they do for
 `pyfastcd.Algebra`. pyfastcd has no fields of characteristic 2, so pycdloop
 provides them: `BinaryField` is F_(2^k) for `k` from 1 to 12, with the same
@@ -283,7 +283,7 @@ part because every element of `C` is its own inverse. On the signed part it
 is the Cayley–Dickson conjugation for `Q_n`, and the tensor product of the
 conjugations of the factors for a central product.
 
-### Idempotents, ideals and the center
+### Idempotents, ideals, and the center
 
 The elements
 
@@ -331,7 +331,7 @@ d^2 - 2 d_0 d + Q(d) = 0,     Q(d) = sum over i of d_i^2,
 ```
 
 with `d_0` the coefficient of `e_0`. `A_n` is flexible and
-power-associative for every `n`, alternative through `n = 3` and associative
+power-associative for every `n`, alternative through `n = 3`, and associative
 through `n = 2`, and the loop algebra inherits these identities from its two
 summands:
 
@@ -382,7 +382,7 @@ is decided from the rank of the matrix of left or right multiplication by
 
 **Idempotents and nilpotents.** `x` is idempotent when its spectrum has
 entries 0 and 1 only and `d d = d`. `x` is nilpotent when its spectrum is
-zero, `d_0 = 0` and `Q(d) = 0`; then `d d = 0`. Over R the only nilpotent
+zero, `d_0 = 0`, and `Q(d) = 0`; then `d d = 0`. Over R the only nilpotent
 element is zero.
 
 **Minimal polynomial.** The powers of `x` span a commutative, associative
@@ -430,14 +430,14 @@ Consequently, in the loop algebra of a central product:
 
 - `x ** k` raises `TypeError`. `left_power` and `right_power` evaluate
   `x (x (... (x x)))` and `(((x x) x) ...) x` with `k - 1` products.
-- `inverse()`, `has_inverse()`, `is_nilpotent()` and `minimal_polynomial()`
+- `inverse()`, `has_inverse()`, `is_nilpotent()`, and `minimal_polynomial()`
   are not defined and raise `TypeError`.
 - Zero divisors of the signed component are always decided from the rank of
   a multiplication matrix.
 
 Everything that does not rely on the quadratic relation is available: the
 ring operations, commutators and associators, the decomposition, the
-idempotents, the center, the annihilators and the multiplication matrices.
+idempotents, the center, the annihilators, and the multiplication matrices.
 
 These restrictions belong to the fields in which 2 is invertible. In
 characteristic 2 the powers of an element are well defined for every loop,
@@ -467,7 +467,7 @@ a'' = (f + g) / 2,    b'' = (f - g) / 2.
 ```
 
 This takes two forward transforms, `D` coordinatewise products, one inverse
-transform and one product in `S`. For operands already in split form only
+transform, and one product in `S`. For operands already in split form only
 the `D` coordinatewise products and the product in `S` remain.
 
 ### The product of signed components
@@ -537,7 +537,7 @@ half-size calls determine `D` and `H`; at the top level, where the operands
 have no `iota` part, the single call `C_(n-1)(u + iota s, v + iota t)`
 returns `D` and `H` as its two parts. The maps `(f, lambda, g)` with
 coefficients `a + iota b` are evaluated by the three-product formula, on the
-parts `a`, on the parts `b` and on their sums.
+parts `a`, on the parts `b`, and on their sums.
 
 Every step is linear in each operand, so the recursion is valid for
 coefficients in any module `B` with a bilinear product, over a ring in
@@ -576,7 +576,7 @@ algorithm for small loops over some of the fields; see
 
 `M` counts multiplications of two input-dependent values, `A` additions and
 subtractions, and `E` multiplications by fixed scalars other than `0` and
-`±1`; `T = M + A + E`. Reading, copying and changing signs are free. The
+`±1`; `T = M + A + E`. Reading, copying, and changing signs are free. The
 counts below are those of the split algorithm when the product of signed
 components is evaluated by the schedule above with scalar coefficients,
 whose own total is `tau_n`. A loop-algebra product of `Q_n` then uses
@@ -586,7 +586,7 @@ M = N + p_n,     T = tau_n + 3nN + 10N
 ```
 
 operations: `3nN` additions in the three transforms, `6N` to form the
-components and recombine them, `2N` halvings, `N` scalings by `1/N` and `N`
+components and recombine them, `2N` halvings, `N` scalings by `1/N`, and `N`
 coordinatewise products. At `N = 1` the scalings by `1/N` are trivial and
 `T` is smaller by one.
 
@@ -633,14 +633,14 @@ specialised leaf and, from `N = 16` on, slightly smaller counts (see
 `tools/check_operation_counts.py` runs the schedule and the reference
 evaluations of the transform and of the change of coordinates on counting
 scalars. It checks the columns `M` and `T` of both tables against the
-formulas for `p_n`, `M` and `T`, and prints the tables, columns `A` and `E`
+formulas for `p_n`, `M`, and `T`, and prints the tables, columns `A` and `E`
 included, as they are shown here. The compiled kernels perform the
 operations of those reference evaluations, as the tests verify bit for bit.
 
 ## Characteristic 2
 
 Let `F = F_(2^k)`. The loop algebra `F[L]` has the same basis, the same
-product and the same storage as over any other field, but its structure is
+product, and the same storage as over any other field, but its structure is
 different, because `2 = 0` in `F`.
 
 ### What replaces the decomposition
@@ -724,7 +724,7 @@ augmentation zero, so the minimal polynomial of `x` is `(t - a)^j` for some
 `j` from 1 to 4, and the powers of `x` span a copy of `F[t] / ((t - a)^j)`.
 
 Accordingly `x ** k`, `inverse()`, `has_inverse()`, `is_nilpotent()`,
-`minimal_polynomial()` and `subalgebra_generated_by()` are defined in
+`minimal_polynomial()`, and `subalgebra_generated_by()` are defined in
 characteristic 2 for every loop.
 
 ### Identities
@@ -756,7 +756,7 @@ power-associative loop algebra over F_(2^k).
 ### The center
 
 The rule of
-[Idempotents, ideals and the center](#idempotents-ideals-and-the-center)
+[Idempotents, ideals, and the center](#idempotents-ideals-and-the-center)
 holds as stated: an element is central exactly when `a_t = b_t` for every
 `u_t` that is not central in the loop. A basis of the center consists of
 `[u_t]` and `[-u_t]` for the central `u_t`, and of `z [u_t]` for the others.
@@ -862,7 +862,7 @@ types differ in how they hold the two.
   every transform is visible in the calling code.
 
 The coordinates in which an `Element` operation is evaluated depend only on
-how its operands were created: sums, scalings and `conjugate()` of elements
+how its operands were created: sums, scalings, and `conjugate()` of elements
 created in the loop basis are evaluated there, and every other arithmetic
 operation in split form. A
 derived form is a function of the form the element was created with, so an
@@ -923,7 +923,7 @@ modulo `p`.
 
 In characteristic 2 a sum is the XOR of the stored residues. A product over
 F_2 is a bitwise AND. On arrays over F_(2^k) with `k >= 2`, products,
-reciprocals and powers are computed from tables of discrete logarithms,
+reciprocals, and powers are computed from tables of discrete logarithms,
 which a `BinaryField` builds once. Lifted products run
 in odd characteristic, as described under
 [Multiplication by lifting](#multiplication-by-lifting).
@@ -936,7 +936,7 @@ conjugation fixes coefficients: neither the Cayley–Dickson conjugation nor
 The `"native"` method for central products needs the extension of the
 coefficient field by a square root of `-1` to be a field that pyfastcd
 provides: C over R, and F_(p^2) over F_p when `-1` is not a square, that is,
-when `p = 3 (mod 4)`. Over C, over prime fields with `p = 1 (mod 4)` and
+when `p = 3 (mod 4)`. Over C, over prime fields with `p = 1 (mod 4)`, and
 over extension fields the method is not offered and `"auto"` chooses between
 `"rows"` and `"schedule"`. A lifted product over F_2 runs over F_p with
 `p = 2^31 - 1`, which is `3 (mod 4)`, so `"native"` applies to it; lifted
@@ -949,7 +949,7 @@ Real coefficients, and the real and imaginary parts of complex coefficients,
 are IEEE binary64 values. A product is computed by a sequence of rounded
 operations and is not correctly rounded as a whole. The compiled kernels
 are built without floating-point contraction or value-changing
-optimizations, and perform exactly the additions, subtractions, divisions
+optimizations, and perform exactly the additions, subtractions, divisions,
 and halvings described here.
 
 The split algorithm rounds in four places: forming `a + b` and `a - b`; the

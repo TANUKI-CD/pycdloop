@@ -404,7 +404,7 @@ class ElementArray(_Batch):
         return ElementArray._make(algebra, selected, self._shown)
 
     def __setitem__(self, key: Any, value: Any) -> None:
-        """Assign a field scalar, an element, an array or coefficients."""
+        """Assign a field scalar, an element, an array, or coefficients."""
 
         algebra = self._algebra
         field = algebra._field
@@ -503,7 +503,7 @@ class SplitArray(_Batch):
     The split form of an element with loop-basis coefficients ``a_t`` of
     ``[e_t]`` and ``b_t`` of ``[-e_t]`` is the pair of the Walsh--Hadamard
     transform of ``(a_t + b_t)`` and the array ``(a_t - b_t)``. Addition,
-    scaling and multiplication act on the two parts separately, and a
+    scaling, and multiplication act on the two parts separately, and a
     product needs no transform: it is one coordinatewise product and one
     product of signed components.
 
@@ -733,7 +733,7 @@ class SplitArray(_Batch):
         return SplitArray._make(algebra, spectral, signed, self._shown)
 
     def __setitem__(self, key: Any, value: Any) -> None:
-        """Assign a field scalar, an element or a split array."""
+        """Assign a field scalar, an element, or a split array."""
 
         algebra = self._algebra
         if isinstance(value, ElementArray):

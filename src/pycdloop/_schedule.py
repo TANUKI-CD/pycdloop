@@ -32,7 +32,7 @@ def _repeat(row: np.ndarray, count: int) -> np.ndarray:
 
 
 def _parts(plane: np.ndarray, half: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Split an imaginary element X = (u, gamma + s) into u, gamma and s."""
+    """Split an imaginary element X = (u, gamma + s) into u, gamma, and s."""
 
     return plane[:, 1:half], plane[:, half], plane[:, half + 1 :]
 
@@ -183,7 +183,7 @@ def schedule_multiply(
     ----------
     field
         Linear arithmetic of the coefficients: ``add``, ``subtract``,
-        ``negate``, ``halve`` and ``sum`` on arrays.
+        ``negate``, ``halve``, and ``sum`` on arrays.
     multiply
         The product of ``B`` on arrays of shape ``(calls, count, ...)``,
         applied row by row with the first argument on the left.

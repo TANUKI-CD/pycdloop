@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the accuracy tables, CSV summary and key figures from stability.py results.
+"""Render the accuracy tables, CSV summary, and key figures from stability.py results.
 
 S is the split algorithm and T is the table algorithm of the loop-algebra
 product. In the chain experiment, L keeps a chain of products in split form and
@@ -27,8 +27,8 @@ DENSE = ("gaussian", "uniform")
 METHODS = ("S", "T")
 CHAIN_METHODS = ("L", "R")
 FOOTER = (
-    "The archived CSV summary also gives, for every family and chain length, the count, the "
-    "median, mean, p95, p99 and maximum of eta, the relative errors and the paired comparison "
+    "The archived CSV summary also gives, for every family and chain length, the count; the "
+    "median, mean, p95, p99, and maximum of eta; the relative errors; and the paired comparison "
     "fractions. Groups with fewer than 100 samples have an empirical p99 close to their maximum "
     "and large sampling uncertainty."
 )
@@ -243,7 +243,7 @@ def update_document(path: Path, tables: str) -> bool:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("results", type=Path, help="stability.py JSON results")
-    parser.add_argument("--output-dir", type=Path, required=True, help="directory for the tables, CSV summary and key figures")
+    parser.add_argument("--output-dir", type=Path, required=True, help="directory for the tables, CSV summary, and key figures")
     parser.add_argument("--update-docs", action="store_true", help="rewrite the accuracy section of the document")
     parser.add_argument("--document", type=Path, default=ROOT / "docs" / "stability.md")
     args = parser.parse_args(argv)

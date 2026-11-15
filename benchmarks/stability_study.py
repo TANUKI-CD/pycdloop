@@ -36,7 +36,7 @@ PUBLISHED = {
     "study.json": "The command, the host and software, the hashes of the measured sources and of the raw files, and every step with its duration.",
     "key-figures.json": "The figures quoted in docs/stability.md, computed from the results.",
     "accuracy-tables.md": "The accuracy tables shown in docs/stability.md.",
-    "accuracy-summary.csv": "Error statistics for every domain, dimension, family, chain length and method.",
+    "accuracy-summary.csv": "Error statistics for every domain, dimension, family, chain length, and method.",
     "PLOTS.md": "Description of the charts and the command that drew them.",
     "plot-data.csv": "Every plotted value in tabular form.",
 }
@@ -110,10 +110,10 @@ def readme(study: dict[str, Any], figures: dict[str, Any], files: list[str]) -> 
         "## What was measured", "",
         "The floating-point accuracy of the product of the loop algebra of a Cayley–Dickson loop, "
         "over the real and the complex numbers, against the exact product of the stored operands.", "",
-        "- **S, the split algorithm:** three Walsh–Hadamard transforms, one coordinatewise product and one "
+        "- **S, the split algorithm:** three Walsh–Hadamard transforms, one coordinatewise product, and one "
         "Cayley–Dickson product.",
         "- **T, the table algorithm:** the direct evaluation of the definition in the loop basis.",
-        "- **L and R, chains of products:** a left-nested product of 2, 4 or 8 operands, kept in split form "
+        "- **L and R, chains of products:** a left-nested product of 2, 4, or 8 operands, kept in split form "
         "with one conversion at the end (L), or returned to the loop basis after every product (R).", "",
         f"The {study['profile']} profile measured {figures['pairs']:,} operand pairs and {figures['chains']:,} chains. "
         "The reference converts every binary64 coefficient to an integer times a power of two, sums the "
@@ -136,7 +136,7 @@ def readme(study: dict[str, Any], figures: dict[str, Any], files: list[str]) -> 
                   "every file of the measured package.", "", "## Files", "", "| File | Contents |", "|:---|:---|"])
     lines.extend(f"| {name} | {text} |" for name, text in PUBLISHED.items())
     charts = sorted({name.rsplit(".", 1)[0] for name in files if name.endswith(".png")})
-    lines.append(f"| {', '.join(charts)} | The charts, each as PNG, SVG and PDF. |")
+    lines.append(f"| {', '.join(charts)} | The charts, each as PNG, SVG, and PDF. |")
     lines.extend(["", f"The raw per-case results and the operand corpus are written to `{RAW}/`. They are not "
                   "distributed; study.json records their SHA-256, and `tools/check_archives.py --full` "
                   "checks them where they are present.", ""])

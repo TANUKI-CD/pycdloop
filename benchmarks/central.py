@@ -20,7 +20,7 @@ Full product
     against the ``table`` algorithm on loop-basis arrays, for the pairs
     whose total level does not exceed ``--max-table-level``.
 
-The corpus, blocks, statistics and verification follow ``benchmark.py``; the
+The corpus, blocks, statistics, and verification follow ``benchmark.py``; the
 pair schedule is indexed by the total level ``n + m``.
 
 Example:

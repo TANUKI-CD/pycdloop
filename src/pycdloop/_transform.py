@@ -19,7 +19,7 @@ def _butterflies(work: np.ndarray, modulus: int | None = None) -> None:
     operations so that it accepts any element type. The compiled kernel in
     ``_core.c`` performs the same additions and subtractions on each
     coordinate in the same order, and is used for ``float64``,
-    ``complex128`` and residue arrays. The array must be C-contiguous, so
+    ``complex128``, and residue arrays. The array must be C-contiguous, so
     that each stage can address the two halves of every block as views.
     With *modulus*, entries are reduced often enough to stay inside the
     integer range of the array.

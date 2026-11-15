@@ -682,7 +682,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                    "ordered_operands_sha256": corpus_hash.hexdigest(), "pairs": len(samples), "chains": len(chains)},
         "elapsed_seconds": time.perf_counter() - start,
         "limitations": ["Finite samples describe only the measured corpus; groups below 100 samples do not support tail estimates.",
-                        "Controlled finite exponent ranges; no overflow, underflow or exceptional-value study."],
+                        "Controlled finite exponent ranges; no overflow, underflow, or exceptional-value study."],
         "samples": samples, "chains": chains,
     }
     args.output.write_text(json.dumps(document, indent=2, allow_nan=False) + "\n")

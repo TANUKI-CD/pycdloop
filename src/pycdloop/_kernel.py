@@ -27,7 +27,7 @@ The arithmetic functions take the loop algebra, a mode (``"loop"`` or
 mode. Sums and scalings are evaluated in either mode. Products, and the
 operations built on them, are evaluated in split form; in mode ``"loop"``
 they are the routines of characteristic 2. The conversions, the
-augmentation and the table and workspace products take no mode.
+augmentation, and the table and workspace products take no mode.
 """
 
 from __future__ import annotations

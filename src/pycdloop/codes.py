@@ -278,7 +278,7 @@ def generator_matrix(
     elements : Element or iterable of Element
         The generators, all from one loop algebra.
     side : str, optional
-        ``"left"`` for the left ideal, ``"right"`` for the right ideal and
+        ``"left"`` for the left ideal, ``"right"`` for the right ideal, and
         ``"two-sided"`` for the ideal closed under translation on both
         sides.
     closure : bool, optional
@@ -333,7 +333,7 @@ def is_ideal(matrix: Any, algebra: Any, *, side: str = "left", tol: Any = None) 
     algebra : LoopAlgebra
         The loop algebra.
     side : str, optional
-        ``"left"``, ``"right"`` or ``"two-sided"``: the side on which the
+        ``"left"``, ``"right"``, or ``"two-sided"``: the side on which the
         row space is to be closed under translation by every loop element.
     tol : float, optional
         Over R and C, a vector of norm 1 counts as lying in a space when its
@@ -422,7 +422,7 @@ def to_gap(matrix: Any, *, field: Any) -> str:
     that is a root of the modulus, as it is for the default moduli of
     :class:`~pycdloop.BinaryField`, and the first root that GAP finds
     otherwise. The roots differ by automorphisms of the field, and the codes
-    they give have the same length, dimension and weights.
+    they give have the same length, dimension, and weights.
     """
 
     values = _residues(matrix, field)

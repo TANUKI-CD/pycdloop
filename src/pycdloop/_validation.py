@@ -51,7 +51,7 @@ MAX_LEVEL = 62
 
 
 def _stored(field: Any, values: Any, record: tuple[int, ...]) -> np.ndarray:
-    """Return coefficient storage after checking its type, shape and residues.
+    """Return coefficient storage after checking its type, shape, and residues.
 
     This is the check of storage that something outside the package has
     held: the coefficients of an array that were handed out, and the data

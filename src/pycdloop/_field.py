@@ -116,7 +116,7 @@ class _CoefficientField:
     """Arithmetic of one coefficient field on arrays of coefficients.
 
     A coefficient array has shape ``index_shape + self.shape``, where
-    ``self.shape`` is ``()`` over R, C and prime fields and ``(deg,)`` over
+    ``self.shape`` is ``()`` over R, C, and prime fields and ``(deg,)`` over
     an extension field. Real and complex coefficients are ``float64`` and
     ``complex128`` values; finite-field coefficients are canonical
     ``uint32`` residues, as in pyfastcd. Arithmetic methods return new
@@ -233,7 +233,7 @@ class _CoefficientField:
         return np.array(self._number(value), dtype=self.dtype)
 
     def python(self, coefficient: np.ndarray) -> Any:
-        """Return one coefficient as a ``float``, ``complex`` or field scalar."""
+        """Return one coefficient as a ``float``, ``complex``, or field scalar."""
 
         if self.kind == "finite":
             if self.tail:

@@ -138,7 +138,7 @@ class BinaryField:
 
     Calling a field creates a scalar: ``F(1)`` embeds an integer in the
     prime subfield, and ``F([c0, c1, ...])`` reads all ``deg`` polynomial
-    coordinates. Scalars support ``+``, ``-``, ``*``, ``/`` and ``**``.
+    coordinates. Scalars support ``+``, ``-``, ``*``, ``/``, and ``**``.
 
     Examples
     --------
@@ -306,7 +306,7 @@ class BinaryField:
     # Scalars
 
     def __call__(self, value: Any = 0) -> BinaryFieldElement:
-        """Create a scalar from an integer, a scalar or polynomial coordinates."""
+        """Create a scalar from an integer, a scalar, or polynomial coordinates."""
 
         if isinstance(value, BinaryFieldElement):
             if value.algebra is not self:

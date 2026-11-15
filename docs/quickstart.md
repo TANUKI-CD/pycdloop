@@ -73,7 +73,7 @@ M.basis(1, 4).index                 # 12, the flat index 1 * 8 + 4
 
 A central product has the same methods as a Cayley–Dickson loop, with
 `factor_embedding` in place of `embed`; indices are flat, and `basis`,
-`flat_index` and `factor_indices` convert between a flat index and one
+`flat_index`, and `factor_indices` convert between a flat index and one
 index for each factor.
 
 ## Loop algebras and elements
@@ -109,7 +109,7 @@ scales every coefficient.
 
 ## The decomposition
 
-Over R, C and the finite fields of odd characteristic, every element has a
+Over R, C, and the finite fields of odd characteristic, every element has a
 *group component* and a *signed component*, and the two maps are
 homomorphisms:
 
@@ -181,7 +181,7 @@ p3 = A.multiply(x, y, signed_algorithm="quasilinear")    # passed to pyfastcd
 A.signed_algorithms         # ('auto', 'direct', 'cariow_cariowa', 'quasilinear')
 ```
 
-`algorithm` is `"auto"`, `"split"` or `"table"`. `"split"` multiplies
+`algorithm` is `"auto"`, `"split"`, or `"table"`. `"split"` multiplies
 through the decomposition; `"table"` evaluates the definition with
 `O(D^2)` multiplications and is useful as an independent check.
 `signed_algorithm` names the method for the product of signed components.
@@ -293,7 +293,7 @@ p1 == p2                                        # True: both are exact
 In characteristic 2 the algebra has no decomposition: `spectrum()`,
 `epsilon()`, `split()` and the idempotents raise `TypeError`, and elements
 and arrays stay in the loop basis. In exchange the algebra is simpler. The
-square of every element is central, so powers, inverses and minimal
+square of every element is central, so powers, inverses, and minimal
 polynomials are defined for central products as well, and an element is
 invertible exactly when its augmentation is nonzero. Products are computed
 by `"lift"`, which runs the split algorithm over a field of large odd
@@ -307,7 +307,7 @@ every difference.
 
 A subspace of a loop algebra is a linear code of length `len(loop)` through
 the loop-basis coefficients. `pycdloop.codes` builds generator matrices of
-left, right and two-sided ideals:
+left, right, and two-sided ideals:
 
 ```python
 from pycdloop import codes, linalg

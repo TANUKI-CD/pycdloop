@@ -29,7 +29,7 @@ class _Arithmetic:
 
     A subclass says in which coordinates an operation runs (``_mode``),
     supplies its data in those coordinates (``_data``), wraps a raw result
-    (``_result``) and names the operand types it combines with
+    (``_result``), and names the operand types it combines with
     (``_accepts``). Everything else is written once, here, on top of
     :mod:`pycdloop._kernel`.
     """
@@ -114,7 +114,7 @@ class _Arithmetic:
         linear: bool,
         reflected: bool = False,
     ) -> Any:
-        """Evaluate a binary operator with an element, array or field scalar."""
+        """Evaluate a binary operator with an element, array, or field scalar."""
 
         if self._algebra._field.is_scalar(other):
             if scalar_implementation is None:
@@ -151,7 +151,7 @@ class _Arithmetic:
         return self._binary(other, _kernel.subtract, None, linear=True)
 
     def __rsub__(self, other: Any) -> Any:
-        """Subtract the receiver from an element, array or field scalar."""
+        """Subtract the receiver from an element, array, or field scalar."""
 
         return self._binary(
             other,
@@ -189,7 +189,7 @@ class _Arithmetic:
         """Return an integer power, where powers do not depend on bracketing.
 
         Negative exponents use the inverse. In the loop algebra of a central
-        product over R, C or a field of odd characteristic, powers can depend
+        product over R, C, or a field of odd characteristic, powers can depend
         on bracketing, and this operator raises ``TypeError`` for every such
         algebra; use :meth:`left_power` or :meth:`right_power`. In
         characteristic 2 the square of an element is central for every loop,
@@ -275,7 +275,7 @@ class _Arithmetic:
     def inverse(self) -> Any:
         """Return the inverse that is a polynomial in the element.
 
-        It is a two-sided inverse. Over R, C and fields of odd characteristic
+        It is a two-sided inverse. Over R, C, and fields of odd characteristic
         it is defined for a Cayley--Dickson loop, is the pair of the
         coordinatewise reciprocal and ``conjugate(d) / Q(d)``, and exists
         exactly when every spectral coordinate is nonzero and the signed
@@ -343,7 +343,7 @@ class _Arithmetic:
     def is_nilpotent(self) -> Any:
         """Return whether some power vanishes, where powers are well defined.
 
-        For a Cayley--Dickson loop over R, C or a field of odd
+        For a Cayley--Dickson loop over R, C, or a field of odd
         characteristic, the group component must be zero, and the signed
         component ``d`` must satisfy ``d_0 = 0`` and ``Q(d) = 0``, in which
         case ``d d = 0``. In characteristic 2, for every loop, the elements

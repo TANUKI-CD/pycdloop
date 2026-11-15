@@ -37,7 +37,7 @@ run `python -m pip install -e .` again to rebuild it. The tests under
   components, delegated to pyfastcd for a Cayley–Dickson loop and evaluated
   by the tensor-product methods for a central product.
 - `src/pycdloop/_structure.py`: zero divisors, annihilators, minimal
-  polynomials, the center and multiplication matrices.
+  polynomials, the center, and multiplication matrices.
 - `src/pycdloop/_loop.py`, `_algebra.py`, `_element.py`, `_array.py`: the
   public classes.
 - `tests/reference.py`: an oracle that imports neither pycdloop nor
@@ -54,13 +54,13 @@ run `python -m pip install -e .` again to rebuild it. The tests under
 - The C source follows the conventions of fastCD: four-space block
   indentation, eight-space continuations, pointers attached to their types,
   and a short purpose comment before each function. It must build without
-  warnings under GCC, Clang and MSVC, with no floating-point contraction or
+  warnings under GCC, Clang, and MSVC, with no floating-point contraction or
   value-changing optimization, and it allocates only the scratch of one
   record.
 - A compiled routine must perform the arithmetic of its reference
   evaluation in the same order on each coordinate, so that results stay
   bit-identical; `tests/test_kernel.py` checks this. Every buffer a routine
-  receives is checked for its element type, contiguity, alignment and
+  receives is checked for its element type, contiguity, alignment, and
   length before it is read or written.
 - Error messages used by more than one module are defined in
   `src/pycdloop/_validation.py`.
@@ -77,7 +77,7 @@ run `python -m pip install -e .` again to rebuild it. The tests under
 
 ## Arithmetic checks
 
-For changes to the transform, the splitting or the schedule, run
+For changes to the transform, the splitting, or the schedule, run
 `python tools/check_operation_counts.py`. It runs the schedule and the
 reference evaluations of the transform and of the change of coordinates on
 counting scalars, checks the number of products of the schedule and the

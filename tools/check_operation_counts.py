@@ -74,7 +74,7 @@ class Counted:
 
     A value is *fixed* when it does not depend on the operands of the
     product being counted. Arithmetic between fixed values is free, as is
-    adding a fixed zero and multiplying by a fixed 0, 1 or -1.
+    adding a fixed zero and multiplying by a fixed 0, 1, or -1.
     """
 
     __slots__ = ("value", "fixed")

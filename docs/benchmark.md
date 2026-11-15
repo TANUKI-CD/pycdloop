@@ -59,7 +59,7 @@ and over finite fields the comparison is exact, against schoolbook
 polynomial arithmetic. A failed check is reported as a failure, never as a
 timing.
 
-### Observations, modes and blocks
+### Observations, modes, and blocks
 
 An *observation* times complete passes over the corpus. After two untimed
 passes, the driver calibrates the number of passes so that the observation
@@ -80,7 +80,7 @@ formed within a block.
 
 Each run writes a JSON file with the raw observations, the corpus hashes,
 the hash of every source file of the package, the versions of Python, NumPy,
-pyfastcd and pycdloop, and the state of the CPU, and a Markdown report
+pyfastcd, and pycdloop, and the state of the CPU, and a Markdown report
 beside it. A time is the mean over the blocks, in nanoseconds per product,
 with a two-sided 95% Student-t interval whose degrees of freedom are capped
 at 30. A ratio is the geometric mean of the per-block ratios with its 95%
@@ -88,7 +88,7 @@ interval. A "fastest mean" column names the lowest mean, or a tie when the
 interval of the paired ratio of the two lowest means contains one.
 
 An interval describes the variation between the blocks of one run in one
-process. It does not cover differences between processes, between runs or
+process. It does not cover differences between processes, between runs, or
 between hosts, and on a shared host those can exceed it.
 
 ## Real coefficients
@@ -112,14 +112,14 @@ one Cayley–Dickson product of dimension `N / 2`.
 python benchmarks/benchmark.py --output results/real.json --cpu 2
 ```
 
-`--levels`, `--pairs`, `--blocks`, `--min-time-ms`, `--seed` and `--tasks`
+`--levels`, `--pairs`, `--blocks`, `--min-time-ms`, `--seed`, and `--tasks`
 change the defaults, and `--cpu` pins the process to one logical CPU.
 
 ## Complex and finite fields
 
 The `domains` protocol times `split` and `table` in both modes for `Q_n`
 over C and over the finite fields F_3, F_13, F_65521, F_2147483647, F_(3^5)
-and F_(13^5), at levels 2, 4, 6 and 8. Over F_2, F_4 and F_256 it times
+and F_(13^5), at levels 2, 4, 6, and 8. Over F_2, F_4, and F_256 it times
 `lift` in place of `split`, at the same levels; the reports keep one set of
 columns, so there the columns named `split` hold the timings of `lift`.
 `--fields` takes other fields as `char:deg` pairs.
@@ -129,9 +129,9 @@ python benchmarks/domains.py --output results/domains.json --cpu 2
 ```
 
 In characteristic 2 `"auto"` chooses between `lift` and `table` from the
-size of the loop, the number of products and the degree of the field. The
+size of the loop, the number of products, and the degree of the field. The
 data behind that choice is a second run of this protocol, over F_(2^k)
-alone, for `k` = 1, 2, 4, 6, 7, 8 and 12 at every level from 1 to 8:
+alone, for `k` = 1, 2, 4, 6, 7, 8, and 12 at every level from 1 to 8:
 
 ```sh
 python benchmarks/domains.py --output results/binary.json --cpu 2 \
@@ -144,7 +144,7 @@ A batch holds 64 products at levels 1 through 4, 16 at levels 5 and 6, and
 ## Central products
 
 The `central` protocol times central products `Q_n * Q_m` over R in two
-parts. The first compares the signed-component methods `native`, `rows` and
+parts. The first compares the signed-component methods `native`, `rows`, and
 `schedule` on `SplitArray` operands, where no transform is involved, so the
 tasks differ only in the method. The second times the full product, `split`
 with the method that `"auto"` selects against `table`, on `ElementArray`
@@ -255,7 +255,7 @@ arithmetic outgrows it.
 ### Complex and finite fields
 
 Each cell gives the `split` mean in nanoseconds per product, or the `lift`
-mean in the rows of F_2, F_4 and F_256, and, in parentheses, the paired
+mean in the rows of F_2, F_4, and F_256, and, in parentheses, the paired
 ratio of `table` to it, so a ratio above 1 favours `split` or `lift`.
 
 #### Batch products: split or lift ns per product (ratio of table to it)
@@ -337,9 +337,9 @@ a factor of 151 in batch mode and 68.7 for
 single products at dimension 512. In small loops the outcome depends on the
 degree of the field, which sets the cost of a lifted product, and on the
 number of products in a call. For single products `lift` has the lower mean
-at every dimension over F_4, F_16 and F_64, and from dimension 64 over the
+at every dimension over F_4, F_16, and F_64, and from dimension 64 over the
 other fields. In batch mode it has the lower mean at every dimension over
-F_2, F_4 and F_16, and from dimension 32 over the other fields.
+F_2, F_4, and F_16, and from dimension 32 over the other fields.
 
 `"auto"` follows the rule of
 [Choosing between the algorithms](mathematics.md#choosing-between-the-algorithms),

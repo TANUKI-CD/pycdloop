@@ -5,7 +5,7 @@
 Over R and C a loop-algebra product is computed in floating point, and the
 `split` algorithm rounds in forming the two components, in the
 Walsh–Hadamard transforms, in the coordinatewise product, in the
-Cayley–Dickson product and in the recombination. A study measured its
+Cayley–Dickson product, and in the recombination. A study measured its
 accuracy on 4,764 operand pairs against an exact reference, together with
 the `table` algorithm on the same stored operands, and measured 2,076 chains
 of products evaluated in two ways. Errors are in units of `u ||x|| ||y||`,
@@ -54,7 +54,7 @@ overtakes that of `split`.
 `a - b`, multiplies the two components independently, and recombines them.
 When one component is much smaller than the other, its rounding error is
 measured against the larger one. The families `signed_cancel`,
-`group_cancel`, `group_ideal` and `signed_ideal` below exercise this.
+`group_cancel`, `group_ideal`, and `signed_ideal` below exercise this.
 
 ## How accuracy was measured
 
@@ -114,7 +114,7 @@ corpus has 4,764 pairs, 2,440 real from 22 families and 2,324 complex from
 - **Dense:** unit-norm Gaussian coefficients, uniform coefficients in
   `[-1, 1)`, and exactly representable Rademacher coefficients. The dense
   rows of the tables pool the first two.
-- **Sparse:** supports of one, four and `D/8` loop elements, the last of
+- **Sparse:** supports of one, four, and `D/8` loop elements, the last of
   them at least one.
 - **Correlated:** `y = x`, and `y = ±x + 2^-40 noise`.
 - **Magnitude:** alternating magnitudes over exponents `[-24, 24]`.
@@ -129,7 +129,7 @@ corpus has 4,764 pairs, 2,440 real from 22 families and 2,324 complex from
   coordinate), and `scalar_only`.
 - **Zero divisors (real, dimension 32 and above):** the sedenion zero
   divisor `(e1 + e10)(e4 - e15) = 0` lifted to the signed components, and
-  perturbations of it by `2^-20`, `2^-40` and `2^-52`.
+  perturbations of it by `2^-20`, `2^-40`, and `2^-52`.
 - **Isotropic (complex):** signed components with `Q(d) = 0`, exact and
   perturbed by `2^-40`.
 
@@ -389,7 +389,7 @@ is evaluated.
 The study is archived in
 [benchmark-results/stability-20261114/](../benchmark-results/stability-20261114/):
 its record `study.json`, the summary tables and key figures, the charts in
-PNG, SVG and PDF, and `SHA256SUMS`. The raw per-case results and the
+PNG, SVG, and PDF, and `SHA256SUMS`. The raw per-case results and the
 operand corpus stay on the machine that ran the study and are not
 distributed. `tools/check_archives.py` checks the archive against its
 checksums and the tables on this page against the archive.

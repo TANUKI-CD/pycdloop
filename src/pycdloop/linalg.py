@@ -1,4 +1,4 @@
-"""Rank, row reduction and null spaces of matrices over a coefficient field.
+"""Rank, row reduction, and null spaces of matrices over a coefficient field.
 
 Without ``field`` a matrix is real or complex and the results are numerical:
 ranks and null spaces come from the singular value decomposition, with a

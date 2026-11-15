@@ -1,4 +1,4 @@
-"""Tests of the exact reference, the operand families and the study tooling."""
+"""Tests of the exact reference, the operand families, and the study tooling."""
 
 from __future__ import annotations
 
@@ -385,7 +385,7 @@ class SmokeStudyTests(unittest.TestCase):
         return subprocess.run(command, capture_output=True, text=True, check=False)
 
     def test_published_files(self) -> None:
-        """Write the tables, summary, figures, charts and descriptions."""
+        """Write the tables, summary, figures, charts, and descriptions."""
 
         names = {p.name for p in self.directory.iterdir()}
         expected = {"README.md", "SHA256SUMS", "study.json", "key-figures.json", "accuracy-tables.md",
@@ -406,7 +406,7 @@ class SmokeStudyTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256((self.directory / name).read_bytes()).hexdigest(), digest)
 
     def test_study_record(self) -> None:
-        """Record the profile, seed, versions, source hashes and raw hashes."""
+        """Record the profile, seed, versions, source hashes, and raw hashes."""
 
         study = json.loads((self.directory / "study.json").read_text())
         self.assertEqual((study["profile"], study["seed"]), ("smoke", 20261111))
@@ -434,7 +434,7 @@ class SmokeStudyTests(unittest.TestCase):
         self.assertIn("benchmark-results/stability-20260101", study["command"])
 
     def test_raw_results(self) -> None:
-        """Store every case with its seed, operand hash and measures."""
+        """Store every case with its seed, operand hash, and measures."""
 
         document = json.loads((self.directory / "raw" / "accuracy.json").read_text())
         self.assertTrue(document["completed"])
@@ -472,7 +472,7 @@ class SmokeStudyTests(unittest.TestCase):
         self.assertEqual(stability_report.section(self.document.read_text()), tables)
 
     def test_checker_rejects_changes(self) -> None:
-        """Fail on a changed file, an unrecorded file and a stale document."""
+        """Fail on a changed file, an unrecorded file, and a stale document."""
 
         target = self.directory / "plot-data.csv"
         original = target.read_bytes()

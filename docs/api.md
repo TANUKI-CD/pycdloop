@@ -1,10 +1,10 @@
 # Python API reference
 
-`pycdloop` models Cayley–Dickson loops, their central products and their
+`pycdloop` models Cayley–Dickson loops, their central products, and their
 loop algebras. Its public names are `CDLoop`, `CentralProduct`,
 `LoopElement`, `LoopAlgebra`, `BinaryField`, `BinaryFieldElement`,
 `Element`, `ElementArray`, `SplitArray`, `GeneratedSubalgebra`, `wht`,
-`dyadic_convolve`, `__version__` and the modules `linalg`, `codes` and
+`dyadic_convolve`, `__version__`, and the modules `linalg`, `codes`, and
 `testing`; modules whose names begin with an underscore are private. Errors
 are reported as Python exceptions.
 [Conventions and results](mathematics.md) defines the mathematical objects
@@ -21,7 +21,7 @@ factor first. The *position* of `+e_t` is `t` and that of `-e_t` is
 
 **Coefficient field and selectors.** Every loop algebra has its
 coefficients in R, C, or a finite field F_(p^d). The keyword arguments
-`char`, `deg` and `field` choose the field with the meaning they have in
+`char`, `deg`, and `field` choose the field with the meaning they have in
 pyfastcd:
 
 | Selectors | Coefficients | `dtype` | `coefficient_shape` |
@@ -45,7 +45,7 @@ something is not defined in characteristic 2, it raises `TypeError` there;
 [Characteristic 2](#characteristic-2) lists every difference in one place.
 
 **Scalars.** A *field scalar* is a value of the coefficient field: a real
-number (`int`, `float`, `Fraction`, `Decimal`, a real NumPy scalar or
+number (`int`, `float`, `Fraction`, `Decimal`, a real NumPy scalar, or
 zero-dimensional array) over R, additionally a complex number over C, and
 an `int` or a scalar of the same field over a finite field: a `pyfastcd`
 scalar in odd characteristic and a `BinaryFieldElement` in characteristic
@@ -68,7 +68,7 @@ axis of an extension field. Products need no transform in split form. It is
 not defined in characteristic 2.
 
 Below, `L` is a loop, `A` a loop algebra, `x`, `y`, `z` elements, `X` an
-`ElementArray`, `S` a `SplitArray` and `r` a field scalar.
+`ElementArray`, `S` a `SplitArray`, and `r` a field scalar.
 
 ## Module contents
 
@@ -203,7 +203,7 @@ Subsets of a loop are passed as iterables of `LoopElement` and returned as
 - `center()`, `commutant()`, `nucleus(side=None)`
 
   Return the center, the commutant, and a nucleus. `side` is `"left"`,
-  `"middle"` or `"right"` for the elements that associate with every pair
+  `"middle"`, or `"right"` for the elements that associate with every pair
   from that position of the associator, and `None` for the intersection of
   the three. They examine every index, so time and memory grow with `D`.
 
@@ -218,7 +218,7 @@ Subsets of a loop are passed as iterables of `LoopElement` and returned as
 
 - `is_normal(elements) -> bool`
 
-  Return whether a subloop `S` satisfies `xS = Sx`, `x(yS) = (xy)S` and
+  Return whether a subloop `S` satisfies `xS = Sx`, `x(yS) = (xy)S`, and
   `(Sx)y = S(xy)` for all `x` and `y`. Elements that do not form a subloop
   raise `ValueError`.
 
@@ -324,7 +324,7 @@ Operands must belong to the same loop; elements of different loops raise
 
 - `x == y`, `hash(x)`
 
-  Elements are equal when they have the same loop, index and sign.
+  Elements are equal when they have the same loop, index, and sign.
 
 - `inverse() -> LoopElement`
 
@@ -332,7 +332,7 @@ Operands must belong to the same loop; elements of different loops raise
 
 - `order() -> int`
 
-  Return the order: 1, 2 or 4.
+  Return the order: 1, 2, or 4.
 
 - `commutator(other) -> LoopElement`
 
@@ -349,7 +349,7 @@ Operands must belong to the same loop; elements of different loops raise
 
 pyfastcd provides the finite fields of odd characteristic. `BinaryField`
 provides F_(2^k) as a coefficient field for loop algebras and for `linalg`,
-`codes` and `dyadic_convolve`. Its properties and scalar constructors,
+`codes`, and `dyadic_convolve`. Its properties and scalar constructors,
 listed below, have the names and meaning they have in
 `pyfastcd.FiniteField`; it has no arrays or arithmetic functions of its
 own.
@@ -371,7 +371,7 @@ and so are the loop algebras over them.
 
 A degree or modulus coefficient that is not an integer, or is a boolean,
 raises `TypeError`. A degree outside `1..12`, a leading coefficient other
-than 1 and a reducible polynomial raise `ValueError`.
+than 1, and a reducible polynomial raise `ValueError`.
 
 ### Properties
 
@@ -397,7 +397,7 @@ than 1 and a reducible polynomial raise `ValueError`.
   the prime subfield; from a sequence of `deg` polynomial coordinates,
   constant coefficient first; or from a scalar of `F`, which is returned.
   A wrong number of coordinates and a scalar of another field raise
-  `ValueError`; a boolean, a float or a string raises `TypeError`.
+  `ValueError`; a boolean, a float, or a string raises `TypeError`.
 
 - `F.zero()`, `F.one() -> BinaryFieldElement`
 
@@ -487,7 +487,7 @@ which products are lifted is first needed.
   The algorithm that `"auto"` selects in `multiply` for a single product,
   and for a large batch. Both are `"split"` except in characteristic 2,
   where `"auto"` selects `"lift"` or `"table"` from the size of the loop,
-  the number of products and the degree of the field (see
+  the number of products, and the degree of the field (see
   [Choosing between the algorithms](mathematics.md#choosing-between-the-algorithms)).
 
 - `signed_algorithms: tuple[str, ...]`
@@ -520,7 +520,7 @@ which products are lifted is first needed.
   - coefficients of shape `coefficient_shape`, from a nested sequence or an
     array.
 
-  A `LoopElement`, a `set` or a `dict` raises `TypeError`; a wrong shape
+  A `LoopElement`, a `set`, or a `dict` raises `TypeError`; a wrong shape
   raises `ValueError`; complex coefficients over R and floats over a finite
   field raise `TypeError`.
 
@@ -718,7 +718,7 @@ The three methods that return idempotents are not defined in characteristic
 
 The record that `subalgebra_generated_by` returns. Its attributes cannot
 be reassigned: `dimension`, `minimal_polynomial`,
-`spectral_values` (the distinct spectral coordinates of the element) and
+`spectral_values` (the distinct spectral coordinates of the element), and
 `signed_polynomial` (the minimal polynomial of its signed component). The
 subalgebra is isomorphic to `F[t] / (minimal_polynomial)`. In
 characteristic 2 the last two attributes are `None`, and the minimal
@@ -726,7 +726,7 @@ polynomial is a power of `t - aug(x)` of degree at most 4.
 
 ---
 
-## Element, ElementArray and SplitArray
+## Element, ElementArray, and SplitArray
 
 ### Construction
 
@@ -748,7 +748,7 @@ exactly when their NumPy storage is.
 | `SplitArray` | `SplitArray`, `Element`, field scalar | `SplitArray` |
 
 Combining an `ElementArray` with a `SplitArray` raises `TypeError` in every
-operator, method, comparison and assignment. The methods of an `Element`
+operator, method, comparison, and assignment. The methods of an `Element`
 take `Element` operands only; to combine an element with an array, call the
 method on the array or use an operator.
 
@@ -756,7 +756,7 @@ method on the array or use an operator.
 
 - `algebra`, `dtype`, `dimension`
 
-  The parent, its storage type and its dimension.
+  The parent, its storage type, and its dimension.
 
 - `shape`
 
@@ -867,10 +867,10 @@ Results are new objects, and arrays broadcast their batch axes.
   algebra of a Cayley–Dickson loop, and in every loop algebra of
   characteristic 2. Negative powers use the inverse. Any Python integer is
   accepted as an exponent; over R and C a power whose value leaves the
-  range of the floats holds infinities, zeros or NaNs. The cost grows with
+  range of the floats holds infinities, zeros, or NaNs. The cost grows with
   `log k`,
   and in characteristic 2 a power takes at most two products. In the loop
-  algebra of a central product over R, C or a field of odd characteristic
+  algebra of a central product over R, C, or a field of odd characteristic
   the operator raises `TypeError`. An exponent that is not an integer, or is
   a boolean, raises `TypeError`.
 
@@ -947,7 +947,7 @@ In the next three methods `y` stands for the operand `other`.
 - `inverse()`
 
   Return the inverse of `x` that is a polynomial in `x`, which is a
-  two-sided inverse. Over R, C and fields of odd characteristic it is
+  two-sided inverse. Over R, C, and fields of odd characteristic it is
   defined for a Cayley–Dickson loop, is the pair of the coordinatewise
   reciprocal and `conjugate(d) / Q(d)`, and exists exactly when every
   spectral coordinate is nonzero and the signed component has `Q(d) != 0`.
@@ -970,8 +970,8 @@ In the next three methods `y` stands for the operand `other`.
   Return the number of loop-basis coefficients in which two operands
   differ.
 
-For a Cayley–Dickson loop over R, C or a field of odd characteristic,
-`square`, `anticommutator`, `jordan_product` and `conjugate` cost `O(D)`
+For a Cayley–Dickson loop over R, C, or a field of odd characteristic,
+`square`, `anticommutator`, `jordan_product`, and `conjugate` cost `O(D)`
 operations on operands in split form, and `x ** k` costs `O(D + log k)`
 beyond the coordinatewise powers of the spectrum.
 
@@ -1045,7 +1045,7 @@ The following are methods of `Element` only.
 
 Methods marked "where powers are defined" are available in the loop algebra
 of a Cayley–Dickson loop, and in every loop algebra of characteristic 2.
-In the loop algebra of a central product over R, C or a field of odd
+In the loop algebra of a central product over R, C, or a field of odd
 characteristic they raise `TypeError`.
 
 ### Indexing and iteration
@@ -1056,13 +1056,13 @@ characteristic they raise `TypeError`.
   otherwise an array that shares storage where NumPy indexing does. An
   index cannot reach the coefficient axes: too many indices raise
   `IndexError`.
-- `X[key] = value` assigns a field scalar, an `Element`, an `ElementArray`
+- `X[key] = value` assigns a field scalar, an `Element`, an `ElementArray`,
   or a coefficient array. `S[key] = value` assigns a field scalar, an
-  `Element` or a `SplitArray`.
+  `Element`, or a `SplitArray`.
 - `len(X)` is the length of the first batch axis. As in NumPy, an array
   with an empty batch shape has no length and cannot be iterated.
 - An `Element` is not a sequence; read its coefficients through
-  `coefficients`, `coefficient` or `terms`.
+  `coefficients`, `coefficient`, or `terms`.
 
 ---
 
@@ -1071,20 +1071,20 @@ characteristic they raise `TypeError`.
 Over a `BinaryField` the loop algebra has no decomposition into a group
 component and a signed component, and its elements behave differently (see
 [Characteristic 2](mathematics.md#characteristic-2) in the conventions).
-Loops, loop elements and everything not listed here work as over the other
+Loops, loop elements, and everything not listed here work as over the other
 fields.
 
 | | Members |
 |---|---|
 | Not defined; raise `TypeError` | `SplitArray`, `ElementArray.split`, `LoopAlgebra.split_array`, `from_components`, `lift_group`, `lift_signed`; `spectrum`, `epsilon`; `central_idempotents`, `primitive_idempotent`, `primitive_idempotents`; `jordan_product`; `left_matrix` and `right_matrix` with `basis="split"`; `wht` with a `BinaryField` |
 | Defined for every loop, central products included | `x ** k`, `inverse`, `has_inverse`, `is_nilpotent`, `minimal_polynomial`, `subalgebra_generated_by` |
-| Different algorithm names | `multiply` takes `"auto"`, `"lift"` or `"table"`; `"split"` raises `ValueError`; `signed_algorithms` and `default_signed_algorithm` are those of the algebra to which products are lifted |
+| Different algorithm names | `multiply` takes `"auto"`, `"lift"`, or `"table"`; `"split"` raises `ValueError`; `signed_algorithms` and `default_signed_algorithm` are those of the algebra to which products are lifted |
 | Different contents | `center_basis` returns the basis described with it |
-| Different result types | `kappa` returns an ndarray; `augmentation`, `coefficient` and the values of `terms` are `BinaryFieldElement` scalars; `cd_algebra` is `None`; `GeneratedSubalgebra.spectral_values` and `signed_polynomial` are `None` |
+| Different result types | `kappa` returns an ndarray; `augmentation`, `coefficient`, and the values of `terms` are `BinaryFieldElement` scalars; `cd_algebra` is `None`; `GeneratedSubalgebra.spectral_values` and `signed_polynomial` are `None` |
 
 Every operation is exact. The results of `"lift"` and `"table"` are
 identical, so `"auto"` chooses between them by expected running time, from
-the quotient order `D`, the number of products in the call and the degree of
+the quotient order `D`, the number of products in the call, and the degree of
 the field; `default_algorithm` and `default_batch_algorithm` give the choice
 for one product and for a large batch, and
 [Choosing between the algorithms](mathematics.md#choosing-between-the-algorithms)
@@ -1164,7 +1164,7 @@ extension field by the polynomial axis.
   Return a generator matrix in reduced row echelon form of the code
   generated by one element or an iterable of elements, of which there has
   to be at least one, or `ValueError` is raised. `side` is `"left"`,
-  `"right"` or `"two-sided"`. With `closure=True` the code is the ideal the
+  `"right"`, or `"two-sided"`. With `closure=True` the code is the ideal the
   elements generate on that side: the smallest subspace that contains them
   and is closed under translation by every loop element on the left, on the
   right, or on both sides. Because the algebra need not be associative,
@@ -1181,7 +1181,7 @@ extension field by the polynomial axis.
 - `is_ideal(matrix, algebra, *, side="left", tol=None) -> bool`
 
   Return whether the row space of `matrix` is closed under translation by
-  every loop element on the given side, `"left"`, `"right"` or
+  every loop element on the given side, `"left"`, `"right"`, or
   `"two-sided"`. The matrix has one column for each loop element, followed
   over an extension field by the polynomial axis; its rows need not be
   independent, and a matrix without rows spans the zero ideal. The entries
@@ -1207,7 +1207,7 @@ extension field by the polynomial axis.
   `t = Z(q)` when that is a root of the modulus, as it is for the default
   moduli of `BinaryField`, and the first root that GAP finds otherwise.
   The roots differ by automorphisms of the field, and the codes they give
-  have the same length, dimension and weights.
+  have the same length, dimension, and weights.
 
   R and C (`field=None`) and a matrix that is not an integer array with
   two index axes, followed by the polynomial axis of an extension field,
@@ -1254,24 +1254,24 @@ the samples have small integer coefficients, so the checks are exact.
   converted and copied, unless `copy=False` forbids it.
 - **Reduction.** When finite-field coefficients are copied, integers of
   any size and NumPy integer type are reduced modulo `char`. Booleans,
-  floats and strings are not coefficients of a finite field and raise
+  floats, and strings are not coefficients of a finite field and raise
   `TypeError`. The coefficients of a pyfastcd object given as a signed
   component are copied and reduced in the same way.
-- **Layout.** Strided, broadcast and unaligned views are accepted.
+- **Layout.** Strided, broadcast, and unaligned views are accepted.
   Operations copy operands that are not C-contiguous or not aligned, and
   operands whose layout pyfastcd cannot read in place.
 - **Range.** Over R and C, inverses, powers, the predicates, minimal
   polynomials, scalar division, `linalg.row_reduce` and `pycdloop.codes`
   return a coefficient that is representable whatever the sizes of the
   values formed on the way, whether the coefficients of an operand are all
-  large, all small, or of very different sizes. Squares, norms, quotients
+  large, all small, or of very different sizes. Squares, norms, quotients,
   and the recurrence of a power are evaluated with exponents that cannot
   leave the range, or in rational arithmetic, and operands are rescaled by
   a power of two only where that loses nothing. A coefficient that is
-  itself out of range is an infinity, a zero or a NaN; over C it is out of
+  itself out of range is an infinity, a zero, or a NaN; over C it is out of
   range when either of its parts is. Sums are plain floating-point sums. A
   product, and the conversion between loop-basis coefficients and split
-  form that products, powers, inverses and the predicates of loop-basis
+  form that products, powers, inverses, and the predicates of loop-basis
   operands pass through, form sums of up to `2 D` coefficients, and a
   complex product a difference of two products. They can overflow when
   coefficients are within a factor `4 D` of the largest float, and an
@@ -1286,14 +1286,14 @@ the samples have small integer coefficients, so the checks are exact.
   rounding error, it is formed in rational arithmetic from the stored
   coefficients and rounded once. Whether it vanishes, in `has_inverse`,
   `inverse`, `is_nilpotent` and, through level 3, `is_zero_divisor`, is
-  decided exactly, and inverses, powers and minimal polynomials use the
+  decided exactly, and inverses, powers, and minimal polynomials use the
   rounded exact value. A complex result is accurate relative to the
   modulus of each coefficient.
 - **Validity.** The storage of an `ElementArray` or `SplitArray` can be
   written to from outside once it has been handed out, through
   `coefficients`, `to_numpy(copy=False)`, a NumPy conversion that does not
-  copy, the parts of a `SplitArray`, `asarray` of an ndarray or `out=`.
-  From then on every arithmetic operation, comparison, predicate and
+  copy, the parts of a `SplitArray`, `asarray` of an ndarray, or `out=`.
+  From then on every arithmetic operation, comparison, predicate, and
   decomposition, and `copy()`, `copy.copy`, `copy.deepcopy` and pickling,
   check it before they read it, for that array and for every array that
   shares the storage: storage whose dtype was changed, whose trailing axes
@@ -1336,11 +1336,11 @@ or an element.
   field as an operand, or given to `scalar` or `from_terms`; an
   `ElementArray` combined with a
   `SplitArray`; direct construction of `Element`, `ElementArray`,
-  `SplitArray` or `BinaryFieldElement`; `**`, `inverse`, `has_inverse`,
-  `is_nilpotent`, `minimal_polynomial` or `subalgebra_generated_by` in the
+  `SplitArray`, or `BinaryFieldElement`; `**`, `inverse`, `has_inverse`,
+  `is_nilpotent`, `minimal_polynomial`, or `subalgebra_generated_by` in the
   loop algebra of a central product outside characteristic 2; an operation
   that is not defined in characteristic 2; a non-integer exponent, index,
-  level or degree; a `field` that is not a field object, or is combined
+  level, or degree; a `field` that is not a field object, or is combined
   with `char` or `deg`; a non-string algorithm name; a wrong `out` dtype.
 
 - `ValueError`
@@ -1378,7 +1378,7 @@ or an element.
   entries: in `linalg`, the annihilators, and `is_zero_divisor` where it
   computes a rank.
 
-Operators and products do not raise on NaN, infinity or overflow of
+Operators and products do not raise on NaN, infinity, or overflow of
 coefficients over R and C. They follow NumPy's floating-point error state,
 so by default an overflow emits a `RuntimeWarning`. `linalg.row_reduce` and
 `pycdloop.codes` do not raise on NaN or infinite entries either, and their
@@ -1388,10 +1388,10 @@ results are then without meaning.
 
 ## Threads
 
-Loops, algebras, fields, scalars and loop elements are immutable and can be
-shared between threads. Loops, fields and algebras are cached, and each is
+Loops, algebras, fields, scalars, and loop elements are immutable and can be
+shared between threads. Loops, fields, and algebras are cached, and each is
 built once: threads
-that construct the same loop, field or algebra at the same time all receive
+that construct the same loop, field, or algebra at the same time all receive
 the same object. An `Element` derives its second form, or in
 characteristic 2 the transforms of its lifted coefficients, on first use
 and stores it; two threads that do so at once compute the same value, so
@@ -1423,12 +1423,12 @@ and `"auto"` may select a different algorithm.
 
 ## Typing
 
-pycdloop ships inline type annotations, a stub for its compiled module and
-a `py.typed` marker. Loops, loop elements, `BinaryField` and the functions
-of `linalg`, `codes` and `testing` have concrete return annotations, except
-the sign functions `twist`, `commutator_sign` and `associator_sign`, whose
+pycdloop ships inline type annotations, a stub for its compiled module, and
+a `py.typed` marker. Loops, loop elements, `BinaryField`, and the functions
+of `linalg`, `codes`, and `testing` have concrete return annotations, except
+the sign functions `twist`, `commutator_sign`, and `associator_sign`, whose
 result depends on the arguments; most parameters are annotated `Any`. The
-arithmetic of `Element`, `ElementArray` and
+arithmetic of `Element`, `ElementArray`, and
 `SplitArray` is shared between the three classes and annotated with `Any`,
 since the result type depends on the operand types and, for the
 decomposition methods, on the coefficient field.

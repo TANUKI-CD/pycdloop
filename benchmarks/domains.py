@@ -3,7 +3,7 @@
 
 For each coefficient field and doubling level the script times the ``split``
 and ``table`` algorithms of the loop algebra of ``Q_n`` in batch and single
-mode, with the corpus, blocks and statistics of ``benchmark.py``. Fields are
+mode, with the corpus, blocks, and statistics of ``benchmark.py``. Fields are
 given as ``char:deg`` pairs: ``0:2`` is C, ``p:1`` a prime field and ``p:d``
 the extension of degree ``d`` in its default presentation. In characteristic
 2 the algebra has no split form, and the tasks named ``split`` time the
@@ -121,7 +121,7 @@ def field_multiply(char: int, modulus: Sequence[int]) -> Callable[[np.ndarray, n
 
 
 def reference_arithmetic(algebra: Any) -> tuple[Callable[..., np.ndarray], int | None, int]:
-    """Return the coefficient product, modulus and budget of the reference."""
+    """Return the coefficient product, modulus, and budget of the reference."""
 
     field = algebra.field
     if field is None:

@@ -1,4 +1,4 @@
-"""Tests of the benchmark drivers: arguments, statistics, reference and smoke runs."""
+"""Tests of the benchmark drivers: arguments, statistics, reference, and smoke runs."""
 
 from __future__ import annotations
 

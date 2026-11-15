@@ -8,7 +8,7 @@ Python, with the garbage collector disabled inside each timed region, so the
 call overhead of the package is part of every measurement.
 
 Two algorithms are compared. ``split`` multiplies through the decomposition
-of the algebra: Walsh--Hadamard transforms, one coordinatewise product and
+of the algebra: Walsh--Hadamard transforms, one coordinatewise product, and
 one Cayley--Dickson product. ``table`` evaluates the definition of the
 product with a quadratic number of multiplications. Both are timed in two
 modes over the same pairs: ``batch`` (one call on arrays holding the whole
@@ -25,7 +25,7 @@ elements.
 Each block takes one observation of every task in a rotated order, so every
 task occupies every position equally often when the block count is a
 multiple of the task count. Block observations are summarized with means,
-two-sided 95% Student-t intervals and paired ratios. Every product of every
+two-sided 95% Student-t intervals, and paired ratios. Every product of every
 task is verified against an independent evaluation of the definition before
 any timing; a failed check is reported as a failure, never as a timing.
 
@@ -330,7 +330,7 @@ def pin_cpu(cpu: int | None) -> list[int] | None:
 
 
 def environment(arguments: argparse.Namespace) -> dict[str, Any]:
-    """Describe the interpreter, libraries and machine of a run."""
+    """Describe the interpreter, libraries, and machine of a run."""
 
     affinity = pin_cpu(arguments.cpu)
     try:
@@ -633,7 +633,7 @@ def run_cell(tasks: Sequence[Task], reference: np.ndarray, operands: np.ndarray,
 
 
 def summarize(values: list[float]) -> dict[str, Any]:
-    """Return the mean, spread and 95% Student-t interval of block observations."""
+    """Return the mean, spread, and 95% Student-t interval of block observations."""
 
     count = len(values)
     mean = math.fsum(values) / count
@@ -746,7 +746,7 @@ def verification_totals(cells: Sequence[dict[str, Any]]) -> dict[str, int]:
 
 
 def report_header(title: str, document: dict[str, Any]) -> list[str]:
-    """Render the heading, host line and verification line of a report."""
+    """Render the heading, host line, and verification line of a report."""
 
     host = document["environment"]
     protocol = document["protocol"]
@@ -899,7 +899,7 @@ def write_markdown(path: Path, document: dict[str, Any]) -> None:
     lines = report_header("pycdloop multiplication benchmark: real coefficients", document)
     lines += [
         "`split` multiplies through the decomposition of the loop algebra (three "
-        "Walsh–Hadamard transforms, one coordinatewise product and one Cayley–Dickson "
+        "Walsh–Hadamard transforms, one coordinatewise product, and one Cayley–Dickson "
         "product); `table` evaluates the definition. `N` is the dimension of the loop "
         "algebra of `Q_n`, which is `2^(n+1)`. `fastest mean` names the lower mean of "
         "`split` and `table`, or a tie when the interval of their paired ratio contains "

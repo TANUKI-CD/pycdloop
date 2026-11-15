@@ -382,7 +382,7 @@ class _SignedLoop:
     def nucleus(self, side: str | None = None) -> frozenset[LoopElement]:
         """Return the elements that associate with every pair of elements.
 
-        *side* is ``"left"``, ``"middle"`` or ``"right"`` for the nucleus in
+        *side* is ``"left"``, ``"middle"``, or ``"right"`` for the nucleus in
         which the element takes that position of the associator, and
         ``None`` for the intersection of the three.
         """
@@ -448,7 +448,7 @@ class _SignedLoop:
     def is_normal(self, elements: Iterable[Any]) -> bool:
         """Return whether a subloop is normal.
 
-        A subloop ``S`` is normal when ``xS = Sx``, ``x(yS) = (xy)S`` and
+        A subloop ``S`` is normal when ``xS = Sx``, ``x(yS) = (xy)S``, and
         ``(Sx)y = S(xy)`` for all elements ``x`` and ``y``. The test
         examines up to ``quotient_order**2 * len(S)`` triples of elements,
         with eight sign evaluations each, when ``S`` does not contain -1.
@@ -687,7 +687,7 @@ class CDLoop(_SignedLoop):
     Notes
     -----
     Loops are immutable and cached, so ``CDLoop(3) is CDLoop(3)``. ``Q_1``
-    is the cyclic group of order 4, ``Q_2`` the quaternion group and
+    is the cyclic group of order 4, ``Q_2`` the quaternion group, and
     ``Q_3`` the octonion loop.
 
     Examples
@@ -866,7 +866,7 @@ class LoopElement:
     sign: int
 
     def __init__(self, loop: Any, index: Any, sign: Any = 1) -> None:
-        """Validate the parent, index and sign."""
+        """Validate the parent, index, and sign."""
 
         if hasattr(self, "sign"):
             raise AttributeError("LoopElement objects are immutable")
@@ -887,7 +887,7 @@ class LoopElement:
         raise AttributeError("LoopElement objects are immutable")
 
     def __reduce__(self) -> tuple[Any, ...]:
-        """Pickle an element by its parent, index and sign."""
+        """Pickle an element by its parent, index, and sign."""
 
         return (LoopElement, (self.loop, self.index, self.sign))
 
@@ -915,7 +915,7 @@ class LoopElement:
         return name if self.sign > 0 else "-" + name
 
     def __hash__(self) -> int:
-        """Hash the parent, index and sign."""
+        """Hash the parent, index, and sign."""
 
         return hash((self.loop, self.index, self.sign))
 
@@ -966,7 +966,7 @@ class LoopElement:
         return LoopElement(self.loop, self.index, self.sign * self._square_sign())
 
     def order(self) -> int:
-        """Return the order of the element: 1, 2 or 4."""
+        """Return the order of the element: 1, 2, or 4."""
 
         if self.index == 0:
             return 1 if self.sign > 0 else 2

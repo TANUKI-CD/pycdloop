@@ -15,18 +15,18 @@ defined in `src/pycdloop/_version.py`.
   the center, nuclei and commutant, subloop generation, normality and
   cosets, translations and automorphism checks, identity tests, and export
   to GAP.
-- `LoopAlgebra`: loop algebras of both kinds of loop over R, C and finite
+- `LoopAlgebra`: loop algebras of both kinds of loop over R, C, and finite
   fields, with the selectors of pyfastcd. The fields of odd characteristic
   are those of pyfastcd; `char=2` selects F_(2^k) for `k` up to 12.
 - `BinaryField` and `BinaryFieldElement`: the fields F_(2^k) and their
   scalars, with the properties and scalar constructors of
   `pyfastcd.FiniteField` and Conway polynomials as default moduli of the
   extension fields.
-- `Element`, `ElementArray` and `SplitArray`: immutable elements, NumPy-backed
+- `Element`, `ElementArray`, and `SplitArray`: immutable elements, NumPy-backed
   batches in the loop basis, and batches in the split form in which products
   need no transform.
 - The split multiplication algorithm, which uses three Walsh–Hadamard
-  transforms, one coordinatewise product and one product of signed
+  transforms, one coordinatewise product, and one product of signed
   components, and the table algorithm, which evaluates the definition.
 - The lift algorithm for characteristic 2, where the algebra has no
   decomposition: a product over F_(2^k) is computed by the split algorithm
@@ -36,25 +36,25 @@ defined in `src/pycdloop/_version.py`.
   methods: through a field extension for a factor of level 1 (`"native"`),
   row by row (`"rows"`), and by the quasilinear schedule with coefficients in
   the remaining factors (`"schedule"`).
-- The decomposition maps `kappa`, `epsilon` and `spectrum`, the central and
+- The decomposition maps `kappa`, `epsilon`, and `spectrum`, the central and
   primitive idempotents, a basis of the center, inverses, integer powers in
   `O(D + log k)` operations beyond the coordinatewise powers of the
-  spectrum, zero-divisor tests, annihilators, minimal polynomials and
+  spectrum, zero-divisor tests, annihilators, minimal polynomials, and
   multiplication matrices.
 - In characteristic 2, powers, inverses, nilpotency and zero-divisor tests,
   and minimal polynomials for every loop, central products included, from
   the identity `x^4 = aug(x)^4`. The operations that need the decomposition
   raise `TypeError` there.
-- `wht` over R, C and finite fields of odd characteristic, and
+- `wht` over R, C, and finite fields of odd characteristic, and
   `dyadic_convolve` over every supported field.
 - The extension module `pycdloop._core`, with compiled kernels for the
   Walsh–Hadamard transform and for the change of coordinates between the
-  loop basis and the split form, over R, C and finite fields. Their results
+  loop basis and the split form, over R, C, and finite fields. Their results
   are bit-identical to the reference evaluations in `_transform.py` and
   `_field.py`.
-- `pycdloop.linalg` (rank, row reduction and null spaces over the coefficient
+- `pycdloop.linalg` (rank, row reduction, and null spaces over the coefficient
   fields), `pycdloop.codes` (translate matrices, generator matrices of left,
-  right and two-sided ideals, a test for ideals, and export to GAP and
+  right, and two-sided ideals, a test for ideals, and export to GAP and
   SageMath over every finite field) and `pycdloop.testing` (sampled identity
   checks).
 - Benchmark drivers for three protocols and a numerical stability study
