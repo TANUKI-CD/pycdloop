@@ -5,11 +5,19 @@ All notable changes to pycdloop are recorded in this file. The project follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version is
 defined in `src/pycdloop/_version.py`.
 
+## [0.1.1] - 2026-11-22
+
+### Changed
+
+- Rewrote all docs pages for increased flow, clarity, and readability.
+- Reorganized README and rewrote its Convention, Benchmark, and Numerical
+  stability sections.
+
 ## [0.1.0] - 2026-11-15
 
 ### Added
 
-- `CDLoop` and `CentralProduct`: the Cayley–Dickson loops `Q_n` and their
+- `CDLoop` and `CentralProduct`: the Cayley-Dickson loops `Q_n` and their
   central products, with element arithmetic, vectorised sign functions
   (`twist`, `commutator_sign`, `associator_sign`), multiplication tables,
   the center, nuclei and commutant, subloop generation, normality and
@@ -25,7 +33,7 @@ defined in `src/pycdloop/_version.py`.
 - `Element`, `ElementArray`, and `SplitArray`: immutable elements, NumPy-backed
   batches in the loop basis, and batches in the split form in which products
   need no transform.
-- The split multiplication algorithm, which uses three Walsh–Hadamard
+- The split multiplication algorithm, which uses three Walsh-Hadamard
   transforms, one coordinatewise product, and one product of signed
   components, and the table algorithm, which evaluates the definition.
 - The lift algorithm for characteristic 2, where the algebra has no
@@ -48,7 +56,7 @@ defined in `src/pycdloop/_version.py`.
 - `wht` over R, C, and finite fields of odd characteristic, and
   `dyadic_convolve` over every supported field.
 - The extension module `pycdloop._core`, with compiled kernels for the
-  Walsh–Hadamard transform and for the change of coordinates between the
+  Walsh-Hadamard transform and for the change of coordinates between the
   loop basis and the split form, over R, C, and finite fields. Their results
   are bit-identical to the reference evaluations in `_transform.py` and
   `_field.py`.

@@ -4,7 +4,7 @@ pycdloop is a numerical library with no network access, file I/O, or dynamic
 code execution. Security-relevant issues are therefore incorrect results in
 exact arithmetic, and memory-safety defects in its extension module
 `pycdloop._core`: out-of-bounds reads or writes, integer overflow in size
-computations, or reference-counting errors. Defects in the Cayley–Dickson
+computations, or reference-counting errors. Defects in the Cayley-Dickson
 kernels of fastCD should be reported to that project.
 
 The arithmetic is not constant-time: running time and memory access depend

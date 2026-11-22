@@ -24,7 +24,7 @@ run `python -m pip install -e .` again to rebuild it. The tests under
 ## Layout
 
 - `src/pycdloop/_core.c`: the compiled kernels, which are the
-  Walsh–Hadamard transform and the change of coordinates between the loop
+  Walsh-Hadamard transform and the change of coordinates between the loop
   basis and the split form, for doubles and for residues.
 - `src/pycdloop/_field.py`, `_transform.py`, `_kernel.py`: arithmetic on raw
   coefficient arrays. Every routine here is written once and serves
@@ -34,7 +34,7 @@ run `python -m pip install -e .` again to rebuild it. The tests under
   and the products over them that are lifted to a prime field or an
   extension of it.
 - `src/pycdloop/_signed.py`, `_schedule.py`: the product of signed
-  components, delegated to pyfastcd for a Cayley–Dickson loop and evaluated
+  components, delegated to pyfastcd for a Cayley-Dickson loop and evaluated
   by the tensor-product methods for a central product.
 - `src/pycdloop/_structure.py`: zero divisors, annihilators, minimal
   polynomials, the center, and multiplication matrices.
@@ -96,8 +96,9 @@ The automatic choices are `LoopAlgebra.default_algorithm`; for central
 products, `ROWS_MAX_LEVEL` in `src/pycdloop/_signed.py`; and in
 characteristic 2, the thresholds `LIFT_THRESHOLDS` in
 `src/pycdloop/_algebra.py`. All are pinned by tests. Change them only on
-the basis of a new benchmark run (see `docs/benchmark.md`), and update
-`docs/mathematics.md` and `docs/api.md` in the same commit.
+the basis of a new benchmark run, and update the rules in
+[How the results set the defaults](docs/benchmark.md#how-the-results-set-the-defaults)
+and the description of the defaults in `README.md` in the same commit.
 
 ## Benchmark archives
 

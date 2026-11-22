@@ -1,78 +1,65 @@
 # Numerical stability
 
-## Summary
+Over the real and complex numbers, pycdloop computes a loop-algebra product in
+IEEE binary64 arithmetic, where every addition and multiplication rounds its
+result, so its two algorithms return slightly different results for the same
+operands. The split algorithm transforms its operands, multiplies two components
+separately, and recombines them, while the table algorithm evaluates the
+definition of the product directly, and this page investigates whether the split
+algorithm loses accuracy compared with the table algorithm, and whether a chain
+of products kept in split form stays as accurate as the same chain converted
+back to the loop basis after every product. Over finite fields, in odd
+characteristic and in characteristic 2, every result is exact, so the question
+does not arise there.
 
-Over R and C a loop-algebra product is computed in floating point. A study
-measured the accuracy of the `split` and `table` algorithms against an exact
-reference on 4,764 operand pairs, each multiplied by both algorithms from
-the same stored operands, and on 2,076 chains of products evaluated in two
-ways. Errors are in units of `u ||x|| ||y||`, where `u = 2^-53` is the unit
-roundoff of binary64 and the norms are Euclidean (see
-[Error measures](#error-measures)). The results describe the measured
-corpus and do not imply bounds.
-
-- On dense inputs (Gaussian and uniform coefficients), the median error of
-  `split` grows from 0.78 at dimension 4 to 2.73 at dimension 2048 over R,
-  no faster than the logarithm of the dimension.
-- The median error of `table` on the same inputs grows from 0.67 to 9.68.
-  `table` is the more accurate of the two through dimension 64 and `split`
-  from dimension 128 on.
-- The largest error of `split` anywhere in the corpus is 5.8 over R and 4.3
-  over C; the largest errors of `table` are 15.8 and 9.4.
-- Wherever the exact product is zero, both algorithms return exactly zero.
-- A chain of products kept in split form is at least as accurate as the same
-  chain returned to the loop basis after every product in 86% of the chains
-  over R and 85% over C, and its median error is smaller at every length
-  above two.
-
-Over finite fields, in odd characteristic and in characteristic 2, every
-result is exact, and none of this applies.
+The conclusion is that, measured against exact products, the split algorithm
+stays accurate at every dimension tested. On inputs with random coefficients,
+its median error grows only from 0.78 at dimension 4 to 2.73 at dimension 2048
+over R, in the units of [Error measures](#error-measures), no faster than the
+logarithm of the dimension, while that of the table algorithm grows from 0.67 to
+9.68, so that the table algorithm is the more accurate one through dimension 64
+and the split algorithm from dimension 128 on. The sections below explain where
+the split algorithm rounds, describe how accuracy was measured, report the
+results for single products and for chains, and end with what the results mean
+for code that uses pycdloop and with the limitations of the study.
 
 ## Where rounding enters
 
-The `split` algorithm rounds in forming the two components, in the
-Walsh–Hadamard transforms, in the coordinatewise product, in the
-Cayley–Dickson product, and in the recombination;
-[Conventions and results](mathematics.md#floating-point) describes each
-step. Three properties shape the measurements below.
+The split algorithm rounds in five places: in forming the two components, in the
+Walsh-Hadamard transforms, in the coordinatewise product, in the Cayley-Dickson
+product, and in the recombination, while its divisions by the quotient order and
+by 2 are exact unless they underflow (see [The split
+algorithm](mathematics.md#the-split-algorithm)). Three properties of these steps
+predict the measurements below.
 
-**The transform is a balanced sum.** Each output of a Walsh–Hadamard
-transform is a signed sum of `D` terms, formed by butterflies as a balanced
-tree of depth `log2 D`. The number of additions that any one term passes
-through therefore grows logarithmically with the dimension. The compiled
-kernel changes the order of the loops but not of the additions on any
-coordinate, so this holds for it as well. The sums inside the
-Cayley–Dickson product are pyfastcd's, which are balanced too (see
-[fastCD's stability study](https://git.tanuki-cd.com/algebraity/fastCD/src/branch/main/docs/stability.md)).
+**The transform is a balanced sum.** Each output of a Walsh-Hadamard transform
+is a signed sum of `D` terms, formed by butterflies as a balanced tree of depth
+`log2 D`, so the number of additions that any one term passes through grows only
+with the logarithm of the dimension. The compiled kernel changes the order of
+the loops but not of the additions on any coordinate, so this holds for it as
+well, and the sums inside the Cayley-Dickson product are those of pyfastcd,
+which are balanced too (see [fastCD's stability
+study](https://git.tanuki-cd.com/algebraity/fastCD/src/branch/main/docs/stability.md)).
 
-**The table algorithm sums sequentially.** Each coefficient of a `table`
-product is a sum of `2D` products of coefficients, added by NumPy along one
-axis. Its rounding depth grows with the dimension, which is why its error
-overtakes that of `split`.
+**The table algorithm sums sequentially.** Each coefficient of a product by the
+table algorithm is a sum of `2D` products of coefficients, added by NumPy along
+one axis, so its rounding depth grows with the dimension, which is why its error
+overtakes that of the split algorithm.
 
-**The two components are rounded separately.** `split` forms `a + b` and
-`a - b`, multiplies the two components independently, and recombines them.
-When one component is much smaller than the other, its rounding error is
-measured against the larger one. The families `signed_cancel`,
-`group_cancel`, `group_ideal`, and `signed_ideal` below exercise this.
+**The two components are rounded separately.** The split algorithm forms `a + b`
+and `a - b`, multiplies the two components independently, and recombines them,
+so when one component is much smaller than the other, its rounding error is
+measured against the larger one. The families `signed_cancel`, `group_cancel`,
+`group_ideal`, and `signed_ideal` below exercise this case.
 
 ## How accuracy was measured
 
-### Exact reference
-
-`benchmarks/stability.py` computes every reference product exactly, without
-pycdloop or pyfastcd arithmetic. It derives the basis signs from the
-doubling formula in integer arithmetic and checks them against a separate
-rational implementation of the doubling formula on all basis pairs through
-dimension 16. It converts each binary64 coefficient to an integer times a
-power of two, sums the product of the loop algebra from its definition in
-arbitrary-precision integers, and evaluates norms and errors with MPFR at
-256 bits, or 512 bits for selected products as a check. The script needs
-gmpy2, which the package does not use.
-
 ### Error measures
 
-For a computed product `z_hat` with exact value `z`, and `u = 2^-53`,
+The study measures errors with the Euclidean norm `||.||_2` of the loop-basis
+coefficients, which over C is the Euclidean norm of the complex coefficients.
+For operands `x` and `y` with exact product `z` and computed product `z_hat`,
+and with `u = 2^-53`, the unit roundoff of binary64, it records four quantities:
 
 ```text
 E_abs = ||z_hat - z||_2
@@ -81,83 +68,106 @@ eta   = E_abs / (u ||x||_2 ||y||_2)
 chi   = ||x||_2 ||y||_2 / ||z||_2          (z nonzero)
 ```
 
-so that `E_rel = u eta chi`. The norms are Euclidean norms of the
-loop-basis coefficients; over C, of the complex coefficients. For a chain of
-`k` operands, `eta` is `E_abs` divided by `u` times the product of the `k`
-norms.
+The main measure is `eta`, the error in units of `u ||x||_2 ||y||_2`, the scale
+set by the sizes of the operands, so that an `eta` of 1 is an error of one unit
+roundoff times the product of the operand norms; for a chain of `k` operands,
+`eta` divides `E_abs` by `u` times the product of the `k` norms. Unlike the
+relative error, `eta` is defined for every operand pair, which matters because a
+loop algebra has zero divisors at every dimension: the product of an element
+whose signed component is zero with one whose group component is zero vanishes.
 
-A loop algebra has zero divisors at every dimension: the product of an
-element whose signed component is zero with one whose group component is
-zero vanishes. `E_rel` and `chi` are undefined for such products, so `eta`
-is the main measure in the tables.
+The other two measures are related by `E_rel = u eta chi`, where `chi` is large
+when the exact product is much smaller than its operands, as it is near a zero
+divisor, so that there even a small `eta` means a large relative error.
 
-### Methods
+### Exact reference
 
-**Single products.** S is the `split` algorithm and T is the `table`
-algorithm, both applied to loop-basis arrays of one record. The
-Cayley–Dickson product inside S uses pyfastcd's automatic selection, and
-the study records the algorithm at every level:
+`benchmarks/stability.py` computes every reference product exactly, without
+pycdloop or pyfastcd arithmetic, by converting each binary64 coefficient to an
+integer times a power of two and summing the product of the loop algebra from
+its definition in arbitrary-precision integers. The basis signs used in this
+reference come from the doubling formula in integer arithmetic and are checked
+on all basis pairs through dimension 16 against a separate rational
+implementation of the formula. Norms and errors are evaluated with MPFR at 256
+bits, and selected products are repeated at 512 bits as a check. The script
+needs gmpy2, which the package itself does not use.
 
-- Over R it is the single-product choice, which is quasilinear at level 1
-  and from level 5 on and direct at levels 2 through 4.
-- Over C it is the batch choice, which is direct through level 2 and
-  quasilinear above.
+### Computations compared
 
-**Chains.** A left-nested product `((x_1 x_2) x_3) ... x_k` of `k = 2, 4, 8`
-operands is evaluated twice, and both results are compared with the exact
-value of the chain:
+The study compares two algorithms on single products and two ways of evaluating
+chains:
 
-- L multiplies `Element` operands, so that every intermediate result stays
-  in split form and only the final result is converted to the loop basis.
-- R multiplies `ElementArray` operands, so that every intermediate result
-  is converted to the loop basis and back.
+- **S** is the split algorithm and **T** the table algorithm, both applied to
+  loop-basis arrays of one record. The Cayley-Dickson product inside S uses
+  pyfastcd's automatic selection, and the study records the algorithm at every
+  level: over R it is the single-product choice, which is quasilinear at level 1
+  and from level 5 on and direct at levels 2 through 4, and over C it is the
+  batch choice, which is direct through level 2 and quasilinear above.
+- A left-nested chain `((x_1 x_2) x_3) ... x_k` of `k = 2`, `4`, or `8` operands
+  is evaluated twice, and both results are compared with the exact value of the
+  chain. **L** multiplies `Element` operands, so that every intermediate result
+  stays in split form and only the final result is converted to the loop basis,
+  while **R** multiplies `ElementArray` operands, so that every intermediate
+  result is converted to the loop basis and back.
 
-### Corpus
+### Inputs
 
-A case is one operand pair at one dimension, multiplied by S and T. The
-corpus has 4,764 pairs, 2,440 real from 22 families and 2,324 complex from
-20 families:
+A *case* is one operand pair at one dimension, multiplied by S and T. The study
+has 4,764 cases, 2,440 real from 22 families and 2,324 complex from 20 families,
+each family exercising one kind of input:
 
-- **Dense:** unit-norm Gaussian coefficients, uniform coefficients in
-  `[-1, 1)`, and exactly representable Rademacher coefficients. The dense
-  rows of the tables pool the first two.
-- **Sparse:** supports of one, four, and `D/8` loop elements, the last of
-  them at least one.
-- **Correlated:** `y = x`, and `y = ±x + 2^-40 noise`.
-- **Magnitude:** alternating magnitudes over exponents `[-24, 24]`.
-- **Component cancellation:** `signed_cancel`, where `b = a + 2^-40 noise`
-  and the signed component is tiny, and `group_cancel`, where `b` is nearly
-  `-a` and the group component is tiny.
-- **Ideals:** `group_ideal` (`b = a`, signed component zero),
-  `signed_ideal` (`b = -a`, group component zero), and `cross_ideal`, an
-  operand from each, whose exact product is zero.
+- **Dense:** unit-norm Gaussian coefficients, uniform coefficients in `[-1, 1)`,
+  and exactly representable Rademacher coefficients. The dense rows of the
+  tables pool the first two.
+- **Sparse:** supports of one, four, and `D/8` loop elements, the last of them
+  at least one.
+- **Correlated:** `y = x`, and `y = +/-x + 2^-40 noise`.
+- **Magnitude:** alternating magnitudes over the exponents `-24` to `24`.
+- **Component cancellation:** `signed_cancel`, where `b = a + 2^-40 noise` and
+  the signed component is tiny, and `group_cancel`, where `b` is nearly `-a` and
+  the group component is tiny.
+- **Ideals:** `group_ideal` (`b = a`, signed component zero), `signed_ideal`
+  (`b = -a`, group component zero), and `cross_ideal`, one operand from each,
+  whose exact product is zero.
 - **Structure:** `idempotent` (a sum of primitive idempotents times a dense
-  element), `character` (an operand whose spectrum has one nonzero
-  coordinate), and `scalar_only`.
-- **Zero divisors (real, dimension 32 and above):** the sedenion zero
-  divisor `(e1 + e10)(e4 - e15) = 0` lifted to the signed components, and
-  perturbations of it by `2^-20`, `2^-40`, and `2^-52`.
+  element), `character` (an operand whose spectrum has one nonzero coordinate),
+  and `scalar_only`.
+- **Zero divisors (real, dimension 32 and above):** the sedenion zero divisor
+  `(e1 + e10)(e4 - e15) = 0` lifted to the signed components, and perturbations
+  of it by `2^-20`, `2^-40`, and `2^-52`.
 - **Isotropic (complex):** signed components with `Q(d) = 0`, exact and
   perturbed by `2^-40`.
 
-Real dimensions run from 4 to 2048 and complex dimensions from 4 to 512,
-with 256 dense cases per dimension through 64, 64 at dimensions 128 and
-256, and 16 above. The chain experiment has 1,068 chains over R, through
-dimension 512, and 1,008 over C, through dimension 128. Seeds derive from
-`numpy.random.SeedSequence(20261111, ...)`, and every operand is stored
-with the raw results of the study.
+Real dimensions run from 4 to 2048 and complex dimensions from 4 to 512, with
+256 dense cases per dimension through 64, 64 at dimensions 128 and 256, and 16
+above. The chain experiment has 1,068 chains over R, through dimension 512, and
+1,008 over C, through dimension 128. Seeds derive from
+`numpy.random.SeedSequence(20261111, ...)`, and every operand is stored with the
+raw results of the study.
 
 ### Host and software
 
-The study ran on an Intel Xeon Gold 6148 under Linux with Python 3.14.8,
-NumPy 2.5.4, pyfastcd 1.4.0, and pycdloop 0.1.0. The record of the study
-lists the hash of every measured source file.
+The study ran on an Intel Xeon Gold 6148 under Linux with Python 3.14.8, NumPy
+2.5.4, pyfastcd 1.4.0, and pycdloop 0.1.0, and its record lists the hash of
+every measured source file.
 
-## Accuracy
+## Accuracy of products and chains
 
-The tables below are generated from the archived results by
-`benchmarks/stability_report.py`. [Reading the tables](#reading-the-tables)
-interprets them.
+The tables below are generated by `benchmarks/stability_report.py` from the
+archived results of the *full profile* of the study, its complete run, as
+opposed to the short smoke profile that only tests the tooling. They come in a
+real set and a complex set, each with four views: the two algorithms on dense
+inputs at every dimension, the growth of the error of S with the dimension,
+every family at dimension 512, and the chains.
+
+In every table, `N` is the dimension of the loop algebra, which the other pages
+of this documentation write as `2D`, and a cell of the form "S / T" or "L / R"
+gives one statistic for the two computations. The column "pairs" counts cases,
+"p99" is the 99th percentile, "S better / tied" gives the fraction of cases in
+which S has a smaller exact error than T and the fraction in which the two are
+equal, and "L at least as accurate / tied" does the same for the chains, of `k`
+operands each. The growth tables divide the median `eta` by `log2 N`, so that a
+constant ratio means logarithmic growth.
 
 <!-- BEGIN STABILITY ACCURACY -->
 
@@ -329,96 +339,103 @@ The archived CSV summary also gives, for every family and chain length, the coun
 
 ### Reading the tables
 
-**Dense inputs.** The ratio of the median `eta` of S to the logarithm of
-the dimension falls slowly, from 0.39 to 0.25 over R, so the error of S
-grows no faster than `log2 N` on this corpus. The median `eta` of T grows
-by a factor of about 1.4 for each doubling of the dimension at the large
-dimensions. At dimension 2048 the median relative error of S is `3.0e-16`.
+**Dense inputs.** The ratio of the median `eta` of S to `log2 N` falls slowly,
+from 0.39 to 0.25 over R, so the error of S grows no faster than the logarithm
+of the dimension on this corpus, and at dimension 2048 its median relative error
+is `3.0e-16`. The median `eta` of T, by contrast, grows by a factor of about 1.4
+for each doubling of the dimension at the largest dimensions.
 
-**Small dimensions.** Through dimension 64, T is the more accurate
-algorithm on dense inputs: its sums are short, while S always pays for
-forming and recombining the two components. The difference is at most a
-factor of about 1.4 in the median.
+**Small dimensions.** Through dimension 64, T is the more accurate algorithm on
+dense inputs, because its sums are still short, while S always pays for forming
+and recombining the two components, although the difference is at most a factor
+of about 1.4 in the median.
 
-**Sparse and scaled inputs.** T is also more accurate on operands with a few
-nonzero coefficients, except that with a single one the two agree over R,
-and, over R, on operands with alternating magnitudes. T never combines
-coefficients that the product does not combine, whereas the transforms of S
-mix every coefficient of an operand before multiplying.
+**Sparse and scaled inputs.** T is also more accurate on sparse operands, except
+those with a single nonzero coefficient, on which the two agree over R, and over
+R on operands with alternating magnitudes. T never combines coefficients that
+the product does not combine, whereas the transforms of S mix every coefficient
+of an operand before multiplying.
 
-**Component cancellation.** On the four families where one component is
-small or zero, the median `eta` of S at dimension 512 is between 2.9 and
-3.6 over R, against 2.5 on dense inputs, and about half that of T. There,
-rounding one component separately from the other enlarges the error in
-units of `u ||x|| ||y||` by less than a factor of 1.5. The factor is 1.6
-over C at the same dimension and 2.0 over R at dimension 16.
+**Component cancellation.** On the four families where one component is small or
+zero, the median `eta` of S at dimension 512 lies between 2.9 and 3.6 over R,
+against 2.5 on dense inputs and about half that of T, so rounding one component
+separately from the other enlarges the error in units of `u ||x|| ||y||` by less
+than a factor of 1.5. The factor is 1.6 over C at the same dimension and 2.0
+over R at dimension 16.
 
-**Exact zeros.** All 86 real and 50 complex pairs whose exact product is
-zero gave an exactly zero result with both algorithms: the `cross_ideal`
-and `zero_divisor` pairs and, over R, two `rademacher` pairs at dimensions
-4 and 8. For `cross_ideal` this is structural in S: one operand has an
-exactly zero signed component and the other an exactly zero spectrum.
+**Exact zeros.** All 86 real and 50 complex pairs whose exact product is zero
+gave an exactly zero result with both algorithms: the `cross_ideal` and
+`zero_divisor` pairs and, over R, two `rademacher` pairs at dimensions 4 and 8.
+For `cross_ideal` this is structural in S, since one operand has an exactly zero
+signed component and the other an exactly zero spectrum.
 
 **Near zero divisors.** For the perturbed zero divisors the product is small
 compared with the operands, and the relative error of S is correspondingly
-large: at dimension 512 it reaches 0.6 at a perturbation of `2^-52`, while
-the median `eta` stays between 1.8 and 3.0. This is cancellation in the
-exact product, not an instability: the condition measure `chi` is large for
-these inputs. T is more accurate here because the perturbed terms enter its
-sums directly.
+large: at dimension 512 it reaches 0.6 at a perturbation of `2^-52`, while the
+median `eta` stays between 1.8 and 3.0. This is cancellation in the exact
+product, not an instability, since `chi` is large for these inputs, and T is
+more accurate here because the perturbed terms enter its sums directly.
 
-**Chains.** A chain of two operands is one product, and L and R agree bit
-for bit. For four and eight operands the median `eta` of L is smaller than
-that of R at every dimension, by 7% to 45% over R, and L is at least as
-accurate in 64% to 100% of the real chains of a given length and dimension.
-The largest `eta` of a chain is 45 for L and 61 for R, both at dimension 64
-with eight operands over R; errors compound along a chain whichever way it
-is evaluated.
+**Chains.** A chain of two operands is one product, so L and R agree bit for bit
+there. For four and eight operands the median `eta` of L is smaller than that of
+R at every dimension, by 7% to 45% over R, and L is at least as accurate in 64%
+to 100% of the real chains of a given length and dimension. The largest `eta` of
+a chain is 45 for L and 61 for R, both at dimension 64 with eight operands over
+R, because errors compound along a chain whichever way it is evaluated.
 
-## Recommendations
+## What this means for your code
 
-- Use the default `split` algorithm. On this corpus its error grows with
-  the logarithm of the dimension, and from dimension 128 on it is the more
-  accurate algorithm as well as the faster one.
-- Keep chains of products in split form, with `Element` operands or a
+- **Use the default `split` algorithm.** On this corpus its error grows with the
+  logarithm of the dimension, and from dimension 128 on it is the more accurate
+  algorithm as well as the faster one.
+- **Keep chains of products in split form,** with `Element` operands or a
   `SplitArray`: they are faster, and on this corpus usually more accurate.
-- When a product is expected to be small compared with its operands, the
-  relative error can be large even though `eta` is small, as for any
-  floating-point product with cancellation.
-- Scale operands away from the exponent limits: spectral coordinates are
-  sums of `2D` coefficients and can overflow before the result does.
-- Results on operands with integer coefficients are exact while no
-  intermediate value exceeds `2^53`.
+- **Judge products that nearly vanish by `eta`.** When a product is expected to
+  be small compared with its operands, the relative error can be large even
+  though `eta` is small, as for any floating-point product with cancellation.
+- **Scale operands away from the exponent limits,** because spectral coordinates
+  are sums of `2D` coefficients and can overflow before the result does.
+- **Expect exact results on integer coefficients** while no intermediate value
+  exceeds `2^53`.
 
 ## Limitations
 
-- The study is empirical. Its medians and maxima describe this corpus, not
-  all inputs, and no bound on the error of either algorithm is proved.
-  Only the dense rows through dimension 64 have 100 samples or more. Every
-  other group, including every group of chains, is too small to estimate
-  tails.
-- Nothing was measured above real dimension 2048 or complex dimension 512,
-  and the operands have controlled exponent ranges: overflow, underflow,
-  and exceptional values were not studied.
+- The study is empirical: its medians and maxima describe this corpus, not all
+  inputs, and no bound on the error of either algorithm is proved. Only the
+  dense rows through dimension 64 have 100 samples or more, and every other
+  group, every group of chains included, is too small to estimate tails.
+- Nothing was measured above real dimension 2048 or complex dimension 512, and
+  the operands have controlled exponent ranges, so overflow, underflow, and
+  exceptional values were not studied.
 - Only products and left-nested chains in the loop algebras of `Q_n` were
-  measured. Loop algebras of central products were not, and neither were
-  powers, inverses, or other operations built from products.
+  measured: neither the loop algebras of central products nor powers, inverses,
+  or other operations built from products.
 
-## Archive and reproduction
+## Checking and reproducing the results
 
 The study is archived in
-[benchmark-results/stability-20261115/](../benchmark-results/stability-20261115/):
-its record `study.json`, the summary tables and key figures, the charts in
-PNG, SVG, and PDF, and `SHA256SUMS`. The raw per-case results and the
-operand corpus stay on the machine that ran the study and are not
-distributed. `tools/check_archives.py` checks the archive against its
-checksums and the tables on this page against the archive.
+[benchmark-results/stability-20261115/](../benchmark-results/stability-20261115/),
+with its record `study.json`, the summary tables and key figures, the charts in
+PNG, SVG, and PDF, and `SHA256SUMS`, while the raw per-case results and the
+operand corpus are not distributed.
 
-To run the study, install the `benchmark` extras and run:
+To check the study, run from the repository root:
+
+```sh
+python tools/check_archives.py
+```
+
+The checker uses only the Python standard library. It compares every published
+file with `SHA256SUMS` and checks that the tables on this page are the tables of
+the study, and with `--full` it also requires the raw files and regenerates the
+tables from the raw results, which needs NumPy.
+
+To repeat the study, install the `benchmark` extras and run:
 
 ```sh
 python benchmarks/stability_study.py --profile full --jobs 8
 ```
 
-`--profile smoke` runs a few cases at small dimensions in seconds, to test
-the tooling.
+`--profile smoke` runs a few cases at small dimensions in seconds, to test the
+tooling, and `--update-docs` rewrites the tables on this page from the new
+results.

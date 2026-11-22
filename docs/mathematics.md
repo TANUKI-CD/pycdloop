@@ -1,35 +1,38 @@
 # Conventions and results
 
-This page fixes the conventions pycdloop uses for Cayley–Dickson loops,
-their central products, and their loop algebras, and summarizes the
-mathematics behind its algorithms. The decomposition of the loop algebras,
-the split algorithm, and the schedule for central products are those of the
-forthcoming paper *Quasilinear multiplication in Cayley–Dickson loop algebras*
-(H. Lemley). The Cayley–Dickson arithmetic underneath is that of
+This page fixes the conventions in which pycdloop represents Cayley-Dickson
+loops, their central products, and their loop algebras, and it explains how
+products in these loop algebras are computed and what they cost. The
+decomposition of the loop algebras, the split algorithm, and the schedule for
+central products are those of the forthcoming paper *Quasilinear multiplication
+in Cayley-Dickson loop algebras* (H. Lemley), while the Cayley-Dickson
+arithmetic underneath is that of
 [fastCD](https://git.tanuki-cd.com/algebraity/fastCD), whose
 [conventions](https://git.tanuki-cd.com/algebraity/fastCD/src/branch/main/docs/mathematics.md)
-this page follows.
+this page follows. The speed of the algorithms is reported in the
+[benchmark](benchmark.md) and their accuracy in the [stability
+study](stability.md).
 
 Throughout, `F` is the coefficient field: the real numbers R, the complex
-numbers C, or a finite field F_(p^d). The page has four parts:
+numbers C, or a finite field F_(p^k). The page has four parts:
 
-1. **The objects.** Cayley–Dickson loops, their central products, and their
-   loop algebras are defined in the same way over every field.
-2. **Fields in which 2 is invertible.** The loop algebra decomposes into a
-   group algebra and a Cayley–Dickson algebra. The split algorithm
-   multiplies through this decomposition, and powers, inverses, and minimal
-   polynomials are read off from it.
-3. **Characteristic 2.** Over the fields F_(2^k) there is no decomposition.
-   The algebra has a different structure, and products are computed by
-   lifting the coefficients to odd characteristic.
-4. **The implementation.** How elements are represented, what the compiled
-   kernels do, and where floating-point arithmetic rounds.
+1. **The objects.** Cayley-Dickson loops, their central products, and their loop
+   algebras are defined in the same way over every field.
+2. **Fields in which 2 is invertible.** The loop algebra decomposes into a group
+   algebra and a Cayley-Dickson algebra, the split algorithm multiplies through
+   this decomposition, and powers, inverses, and minimal polynomials are read
+   off from it.
+3. **Characteristic 2.** Over the fields F_(2^k) there is no decomposition, the
+   algebra has a different structure, and products are computed by lifting the
+   coefficients to odd characteristic.
+4. **Floating point.** A short section on rounding in real and complex
+   arithmetic, which the stability study and the API reference cover in detail.
 
-## Cayley–Dickson loops
+## Cayley-Dickson loops
 
 ### The algebra and its basis
 
-The Cayley–Dickson algebra `A_n` of dimension `N = 2^n` is built by repeated
+The Cayley-Dickson algebra `A_n` of dimension `N = 2^n` is built by repeated
 doubling with every doubling parameter equal to `-1`:
 
 ```text
@@ -38,51 +41,51 @@ conjugate((a, b)) = (conjugate(a), -b)
 (a, b)(c, d) = (ac - conjugate(d) b,  d a + b conjugate(c))
 ```
 
-On `A_0 = F` conjugation is the identity, so it fixes every coefficient:
-over C no coefficient is conjugated, and over a finite field the Frobenius
-map is not applied. The product is bilinear over `F`.
+Conjugation is the identity on `A_0 = F`, so it fixes every coefficient: over C
+no coefficient is conjugated, and over a finite field the Frobenius map is not
+applied. The product is bilinear over `F`.
 
-The standard basis `e_0 = 1, e_1, ..., e_(N-1)` follows the pairs: the
-coordinates of `(a, b)` are those of `a` followed by those of `b`. The
+The standard basis `e_0 = 1, e_1, ..., e_(N-1)` follows the pairs, so that the
+coordinates of `(a, b)` are those of `a` followed by those of `b`, and the
 product of two basis elements is a signed basis element whose index is the
 bitwise XOR of the two indices:
 
 ```text
-e_p e_q = sigma_n(p, q) e_(p XOR q),     sigma_n(p, q) in {+1, -1}.
+e_i e_j = sigma_n(i, j) e_(i XOR j),     sigma_n(i, j) in {+1, -1}.
 ```
 
-For `M = 2^n` and `i, j < M` the signs satisfy
+For `i, j < N = 2^n` the signs satisfy
 
 ```text
 sigma_(n+1)(i,     j)     =  sigma_n(i, j)
-sigma_(n+1)(i,     M + j) =  sigma_n(j, i)
-sigma_(n+1)(M + i, j)     =  epsilon(j) sigma_n(i, j)
-sigma_(n+1)(M + i, M + j) = -epsilon(j) sigma_n(j, i),
+sigma_(n+1)(i,     N + j) =  sigma_n(j, i)
+sigma_(n+1)(N + i, j)     =  epsilon(j) sigma_n(i, j)
+sigma_(n+1)(N + i, N + j) = -epsilon(j) sigma_n(j, i),
 ```
 
-with `sigma_0(0, 0) = 1`, `epsilon(0) = 1`, and `epsilon(j) = -1` for
-`j > 0`. It follows that `e_0` is the identity, that `e_p^2 = -1` for
-`p > 0`, and that `e_q e_p = -e_p e_q` for distinct nonzero `p` and `q`.
-`CDLoop.twist` evaluates the recurrence, on integers or on whole arrays of
-indices.
+with `sigma_0(0, 0) = 1`, `epsilon(0) = 1`, and `epsilon(j) = -1` for `j > 0`.
+It follows that `e_0` is the identity, that `e_i^2 = -1` for `i > 0`, and that
+`e_j e_i = -e_i e_j` for distinct nonzero `i` and `j`. `CDLoop.twist` evaluates
+this recurrence, on integers or on whole arrays of indices.
 
 ### The loop
 
-The Cayley–Dickson loop `Q_n` is the set of signed basis elements
+The Cayley-Dickson loop `Q_n` is the set of signed basis elements
 
 ```text
-Q_n = { +e_p, -e_p : 0 <= p < N }
+Q_n = { +e_i, -e_i : 0 <= i < N }
 ```
 
-under the multiplication of `A_n`. It has order `2N`. The signs are formal:
-they are those of the Cayley–Dickson algebra over R, so `+e_p` and `-e_p`
-are distinct elements of the loop whatever the coefficient field of a loop
-algebra is, characteristic 2 included.
+under the multiplication of `A_n`, so it has order `2N`. The signs are formal:
+they are those of the Cayley-Dickson algebra over R, so `+e_i` and `-e_i` are
+distinct elements of the loop whatever the coefficient field of a loop algebra
+is, characteristic 2 included. A general element is written `zeta e_i`, with a
+sign `zeta = +1` or `-1`.
 
-The element `-1` is central of order two. The quotient of `Q_n` by
-`{+1, -1}` is the elementary abelian 2-group of order `N`, with the coset
-`{+e_p, -e_p}` corresponding to the index `p` and the group operation to
-XOR.
+The element `-1` is central and has order two, and the quotient of `Q_n` by
+`{+1, -1}` is the elementary abelian 2-group of order `N`, in which the coset
+`{+e_i, -e_i}` corresponds to the index `i` and the group operation to XOR. The
+first loops of the tower are familiar:
 
 | n | Order | `Q_n` |
 | ---: | ---: | --- |
@@ -92,33 +95,28 @@ XOR.
 | 3 | 16 | The octonion loop: Moufang, not associative |
 | 4 and above | `2^(n+1)` | Not Moufang |
 
-Every `Q_n` is diassociative: any two of its elements generate a group.
-`is_diassociative` and `is_moufang` test these identities: exhaustively
-through `n = 11` and `n = 7`, respectively, where there are at most `2^22`
-index tuples, and on random tuples above that.
-
-An element of the loop is written `s e_p` with a sign `s` and an index `p`.
-In the iteration order of a loop, and wherever elements are numbered, `+e_p`
-has position `p` and `-e_p` has position `N + p`. The export to GAP numbers
-the same positions from 1.
+Every `Q_n` is diassociative, which means that any two of its elements generate
+a group, and the loop methods `is_diassociative` and `is_moufang` test these
+identities.
 
 ### Commutators, associators, and the center
 
-Because `-1` is central, any two elements commute up to sign and any three
-associate up to sign. The signs depend only on the indices:
+Because `-1` is central, any two elements of `Q_n` commute up to sign and any
+three associate up to sign, and the signs depend only on the indices:
 
 ```text
-e_s e_t       = c(s, t) e_t e_s,            c(s, t)    = sigma(s, t) sigma(t, s)
-(e_s e_t) e_u = a(s, t, u) e_s (e_t e_u),   a(s, t, u) = sigma(s, t) sigma(s XOR t, u)
-                                                         sigma(t, u) sigma(s, t XOR u).
+e_i e_j       = comm(i, j) e_j e_i,             comm(i, j)     = sigma(i, j) sigma(j, i)
+(e_i e_j) e_l = assoc(i, j, l) e_i (e_j e_l),   assoc(i, j, l) = sigma(i, j) sigma(i XOR j, l)
+                                                                 sigma(j, l) sigma(i, j XOR l),
 ```
 
-`commutator_sign` and `associator_sign` return `c` and `a`.
+and the loop methods `commutator_sign` and `associator_sign` return these signs.
 
-The commutant of a loop is the set of elements that commute with every
-element. A nucleus is the set of elements that associate with every pair of
-elements from a given position (left, middle, or right) of the associator.
-The center is the intersection of the commutant with the three nuclei.
+The *commutant* of a loop is the set of elements that commute with every
+element, and a *nucleus* is the set of elements that associate with every pair
+of elements from a given position, left, middle, or right, of the associator.
+The *center* is the intersection of the commutant with the three nuclei, and in
+`Q_n` these sets are:
 
 | n | Commutant | Nucleus | Center |
 | ---: | --- | --- | --- |
@@ -126,176 +124,160 @@ The center is the intersection of the commutant with the three nuclei.
 | 2 | `{+1, -1}` | `Q_2` | `{+1, -1}` |
 | 3 and above | `{+1, -1}` | `{+1, -1}` | `{+1, -1}` |
 
-The square of every element is `+1` or `-1`. The powers of an element
-therefore do not depend on bracketing, every element has order 1, 2, or 4,
-and the inverse of `s e_p` is `s sigma(p, p) e_p`.
+The square of every element is `+1` or `-1`, so the powers of an element do not
+depend on bracketing, every element has order 1, 2, or 4, and the inverse of
+`zeta e_i` is `zeta sigma(i, i) e_i`.
 
 ## Central products
 
-The central product `Q_n1 * Q_n2 * ... * Q_nk` is the direct product of the
-factors with their central elements `-1` identified: the quotient of the
-direct product by the subgroup of sign vectors with an even number of `-1`
-entries. It is realised as the loop of signed pure tensors of basis
-elements,
+The central product `Q_(n_1) * Q_(n_2) * ... * Q_(n_r)` is the direct product of
+the factors with their central elements `-1` identified, that is, the quotient
+of the direct product by the subgroup of sign vectors with an even number of
+`-1` entries. pycdloop realizes it as the loop of signed pure tensors of basis
+elements inside the tensor product of the algebras `A_(n_1), ..., A_(n_r)`,
 
 ```text
-{ +xi_t, -xi_t },     xi_t = e_p1 (x) e_p2 (x) ... (x) e_pk,
+{ +xi_i, -xi_i },     xi_i = e_(i_1) (x) e_(i_2) (x) ... (x) e_(i_r),
 ```
 
-inside the tensor product of the algebras `A_n1, ..., A_nk`, where
-multiplication is factor by factor:
+where multiplication acts factor by factor:
 
 ```text
-xi_s xi_t = sigma(s, t) xi_(s XOR t),     sigma(s, t) = sigma_n1(p1, q1) ... sigma_nk(pk, qk).
+xi_i xi_j = sigma(i, j) xi_(i XOR j),     sigma(i, j) = sigma_(n_1)(i_1, j_1) ... sigma_(n_r)(i_r, j_r).
 ```
 
-Here `t` is the *flat index* of the tuple `(p1, ..., pk)`: its binary
-digits are those of `p1`, then `p2`, and so on, so that for two factors the
-flat index of `(p, q)` is `p 2^n2 + q`. XOR of flat indices is XOR in every
-factor. The loop has order `2D` with `D = 2^(n1 + ... + nk)`, and its
-quotient by `{+1, -1}` is the elementary abelian 2-group of order `D`.
-
-A central product is therefore the same kind of object as `Q_n`: signed
-basis elements over an elementary abelian 2-group, with a twist `sigma`. All
-the sign functions, tables, and substructure methods apply to both.
+Here `i` is the *flat index* of the tuple `(i_1, ..., i_r)`, whose binary digits
+are those of `i_1`, then `i_2`, and so on, so that for two factors the flat
+index of `(i_1, i_2)` is `i_1 2^(n_2) + i_2`, and XOR of flat indices is XOR in
+every factor. The loop has order `2D`, where `D = 2^(n_1 + ... + n_r)`, and its
+quotient by `{+1, -1}` is the elementary abelian 2-group of order `D`. A central
+product is therefore the same kind of object as `Q_n`, signed basis elements
+over an elementary abelian 2-group with a twist `sigma`, and the sign functions,
+tables, and substructure methods apply to both.
 
 **Commutant, nuclei, and center.** The commutator and associator signs of a
-central product are the products of those of its factors. A basis element
-therefore lies in the commutant or in a nucleus exactly when each of its
-factor indices does in its own factor: if one factor index fails against
-some partners there, the same partners with index 0 in every other factor
-make the product fail. For example, the center of `Q_1 * Q_m` with `m >= 2`
-is `{+1, -1, +e_1 (x) 1, -e_1 (x) 1}`.
+central product are the products of those of its factors, so a basis element
+lies in the commutant or in a nucleus exactly when each of its factor indices
+does in its own factor: if one factor index fails against some partners there,
+the same partners with index 0 in every other factor make the product fail. For
+example, the center of `Q_1 * Q_(n_2)` with `n_2 >= 2` is
+`{+1, -1, +e_1 (x) 1, -e_1 (x) 1}`.
 
-**Squares.** Squares behave differently from `Q_n`. In `Q_1 * Q_1` both
+**Squares.** Squares behave differently from those of `Q_n`. In `Q_1 * Q_1` both
 factors contribute `sigma_1(1, 1) = -1`, so `xi_(1,1)^2 = +1`, whereas
-`e_1^2 = -1` in `Q_1`. `Q_1` is cyclic of order 4, while `Q_1 * Q_1` is the
-direct product of a cyclic group of order 4, generated by `xi_(1,0)`, and
-one of order 2, generated by `xi_(1,1)`.
+`e_1^2 = -1` in `Q_1`, and accordingly `Q_1` is cyclic of order 4, while
+`Q_1 * Q_1` is the direct product of a cyclic group of order 4, generated by
+`xi_(1,0)`, and one of order 2, generated by `xi_(1,1)`.
 
 ## Loop algebras
 
-For a finite loop `L`, the loop algebra `F[L]` is the vector space with one
-basis element `[x]` for each `x` in `L`, with the product `[x][y] = [xy]`
-extended bilinearly. It has dimension `2N` for `L = Q_n` and `2D` for a
-central product. Below, `D` stands for the quotient order in both cases, and
-`u_t` for the positive basis element with flat index `t`: `e_t` or `xi_t`.
-
-An element is
+For a finite loop `L`, the *loop algebra* `F[L]` is the vector space with one
+basis element `[x]` for each element `x` of `L`, with the product
+`[x][y] = [xy]` extended bilinearly. Its dimension is `2D`, where `D` is the
+quotient order: `D = N` for `L = Q_n`, and `D = 2^(n_1 + ... + n_r)` for a
+central product. Below, `e_i` stands for the positive basis element with flat
+index `i`, which is the pure tensor `xi_i` for a central product, so that an
+element of `F[L]` is
 
 ```text
-x = sum over t of ( a_t [u_t] + b_t [-u_t] ).
+x = sum over i of ( a_i [e_i] + b_i [-e_i] ).
 ```
 
-The basis element `[-u_t]` is distinct from `-[u_t]`: the first is a basis
+The basis element `[-e_i]` is distinct from `-[e_i]`: the first is a basis
 vector, the second the negative of another one.
 
-### Coefficient storage
-
-pycdloop stores the coefficients of an element as an array of shape
-`(2, D)`: row 0 holds the `a_t` and row 1 the `b_t`. Over an extension field
-the polynomial axis of each coefficient follows.
-
-Coefficients are stored as in pyfastcd. Real coefficients are binary64
-values and complex coefficients are pairs of them (`complex128` in NumPy).
-An element of F_(p^d) is a polynomial `c_0 + c_1 t + ... + c_(d-1) t^(d-1)`
-with coefficients in `0, ..., p-1`, reduced modulo a monic irreducible
-polynomial of degree `d`, the `modulus` of the field, and is stored as `d`
-canonical `uint32` residues.
-
-The fields of odd characteristic are those of pyfastcd, `p` an odd prime
-below `2^31` and `d` at most 12, and the selectors `char`, `deg`, and `field`
-of `LoopAlgebra` choose among them exactly as they do for
-`pyfastcd.Algebra`. pyfastcd has no fields of characteristic 2, so pycdloop
-provides them: `BinaryField` is F_(2^k) for `k` from 1 to 12, with the same
-storage, each residue being 0 or 1. Its default modulus for `k >= 2` is the
-Conway polynomial, the default of GAP and SageMath, so that stored residues
-denote the same field elements there. `char=2` selects these fields.
+pycdloop stores these coefficients as an array of shape `(2, D)`, with the `a_i`
+in row 0 and the `b_i` in row 1, followed over an extension field by the axis of
+polynomial coordinates. The finite fields of odd characteristic are those of
+pyfastcd, while pycdloop provides the fields F_(2^k) itself, and the [API
+reference](api.md) describes how all of them are selected and stored.
 
 ## The decomposition
 
-This section and the three that follow it concern the fields in which 2 is
-invertible. [Characteristic 2](#characteristic-2) describes the loop
+This section and the three that follow concern the fields in which 2 is
+invertible, while [Characteristic 2](#characteristic-2) describes the loop
 algebras over the fields F_(2^k), where it is not.
 
 ### Group and signed components
 
-Define two linear maps on `F[L]`:
+Let `G` be the quotient of `L` by `{+1, -1}`, the elementary abelian 2-group of
+order `D`, whose group algebra `F[G]` has one basis element `[i]` for each index
+`i`, and define two linear maps on `F[L]`:
 
 ```text
-kappa(x)   = sum over t of (a_t + b_t) [t]     in F[C],
-epsilon(x) = sum over t of (a_t - b_t) u_t     in S.
+kappa(x)   = sum over i of (a_i + b_i) [i]     in F[G],
+epsilon(x) = sum over i of (a_i - b_i) e_i     in S.
 ```
 
-`F[C]` is the group algebra of the quotient group `C` of order `D`, in which
-products are dyadic convolutions,
+Here products in `F[G]` are dyadic convolutions,
 
 ```text
-(c * c')_k = sum over s XOR t = k of c_s c'_t.
+(c * c')_l = sum over i XOR j = l of c_i c'_j,
 ```
 
-`S` is the algebra spanned by the `u_t` themselves: the Cayley–Dickson
-algebra `A_n` for `L = Q_n`, and the tensor product of `A_n1, ..., A_nk` for
-a central product. The values `kappa(x)` and `epsilon(x)` are the *group
+and `S` is the algebra spanned by the `e_i` themselves: the Cayley-Dickson
+algebra `A_n` for `L = Q_n`, and the tensor product of `A_(n_1), ..., A_(n_r)`
+for a central product. The values `kappa(x)` and `epsilon(x)` are the *group
 component* and the *signed component* of `x`.
 
-Both maps preserve products: on basis elements `kappa` sends `[s u_t]` to
-`[t]` and `epsilon` sends it to `s u_t`, and `(s u_p)(s' u_q) = s s'
-sigma(p, q) u_(p XOR q)`. Together they are an isomorphism of algebras
+Both maps preserve products, since on basis elements `kappa` sends `[zeta e_i]`
+to `[i]` and `epsilon` sends it to `zeta e_i`, and together they are an
+isomorphism of algebras
 
 ```text
-F[L]  ->  F[C] (+) S,
+F[L]  ->  F[G] (+) S,
 ```
 
-with componentwise operations on the right, whose inverse sends group
-component `c` and signed component `d` to
+with componentwise operations on the right, whose inverse sends a group
+component `c` and a signed component `d` to the coefficients
 
 ```text
-a_t = (c_t + d_t) / 2,     b_t = (c_t - d_t) / 2.
+a_i = (c_i + d_i) / 2,     b_i = (c_i - d_i) / 2.
 ```
 
-### The Walsh–Hadamard transform
+### The Walsh-Hadamard transform
 
-Let `H` be the `D x D` matrix with entries `H[i, j] = (-1)^popcount(i AND j)`.
-It turns dyadic convolution into coordinatewise multiplication,
+The group algebra `F[G]` becomes coordinatewise arithmetic under the
+Walsh-Hadamard transform, the `D x D` matrix `H` with entries
+`H[i, j] = (-1)^popcount(i AND j)`, which satisfies
 
 ```text
-H (c * c') = (H c) . (H c'),
+H (c * c') = (H c) . (H c'),     H H = D I,
 ```
 
-and `H H = D I`, so `H` is an isomorphism of `F[C]` onto `F^D` with
-coordinatewise operations, with inverse `H / D`. It is evaluated in place in
-`log2 D` stages of `D / 2` butterflies `(u, v) -> (u + v, u - v)`, using
-`D log2 D` additions and subtractions. `wht` and `dyadic_convolve` expose
-the transform and the convolution.
+where `.` is the coordinatewise product, so that `H` is an isomorphism of `F[G]`
+onto `F^D` with coordinatewise operations and inverse `H / D`. It is evaluated
+in place in `log2 D` stages of `D / 2` butterflies `(u, v) -> (u + v, u - v)`,
+with `D log2 D` additions and subtractions, and the functions `wht` and
+`dyadic_convolve` expose the transform and the convolution.
 
-The vector `H kappa(x)` is the *spectrum* of `x`. Its coordinate `a` is the
+The vector `H kappa(x)` is the *spectrum* of `x`. Its coordinate `i` is the
 value at `x` of the linear extension of the character
-`s u_t -> (-1)^popcount(a AND t)` of `L`, which does not depend on the sign
-`s`. Coordinate 0 is the *augmentation*, the sum of all coefficients.
+`zeta e_j -> (-1)^popcount(i AND j)` of `L`, which does not depend on the sign
+`zeta`, and coordinate 0 is the *augmentation*, the sum of all coefficients.
 
 ### Split form
 
 The *split form* of `x` is the pair
 
 ```text
-( H kappa(x),  epsilon(x) )     in F^D (+) S.
+( H kappa(x),  epsilon(x) )     in F^D (+) S,
 ```
 
-Every operation acts on the two parts separately:
+on which every operation acts on the two parts separately:
 
 | Operation | Spectral part | Signed part |
 | --- | --- | --- |
 | `x + y`, `r x` | coordinatewise | coordinatewise |
 | `x y` | coordinatewise product | product in `S` |
-| identity | all ones | `u_0` |
+| identity | all ones | `e_0` |
 | `[x] -> [x^-1]` extended linearly | unchanged | conjugation |
 | `x y - y x`, `(x y) z - x (y z)` | zero | commutator, associator in `S` |
 
-The involution in the fourth row is `conjugate()`. It fixes the spectral
-part because every element of `C` is its own inverse. On the signed part it
-is the Cayley–Dickson conjugation for `Q_n`, and the tensor product of the
-conjugations of the factors for a central product. As in pyfastcd, it does
+The involution in the fourth row is the method `conjugate()`. It fixes the
+spectral part because every element of `G` is its own inverse, and on the signed
+part it is the Cayley-Dickson conjugation for `Q_n` and the tensor product of
+the conjugations of the factors for a central product. As in pyfastcd, it does
 not apply complex conjugation or the Frobenius map to coefficients.
 
 ### Idempotents and ideals
@@ -303,196 +285,194 @@ not apply complex conjugation or the Frobenius map to coefficients.
 The elements
 
 ```text
-e_+ = (1 + [-1]) / 2,     e_- = (1 - [-1]) / 2
+pi_+ = (1 + [-1]) / 2,     pi_- = (1 - [-1]) / 2
 ```
 
-are central orthogonal idempotents with sum 1. In split form `e_+` is
-`(1, 0)` and `e_-` is `(0, 1)`, so multiplying by them projects onto the
-two summands. `lift_group` and `lift_signed` embed `F[C]` and `S` as the two
-ideals `e_+ F[L]` and `e_- F[L]`.
+are central orthogonal idempotents with sum 1, whose split forms are `(1, 0)`
+and `(0, 1)`, so multiplying by them projects onto the two summands, and the
+methods `lift_group` and `lift_signed` embed `F[G]` and `S` as the two ideals
+`pi_+ F[L]` and `pi_- F[L]`.
 
-For each index `a`, the element
+The group summand splits further into one-dimensional pieces: for each index
+`i`, the element
 
 ```text
-E_a = (1 / 2D) sum over t of (-1)^popcount(a AND t) ( [u_t] + [-u_t] )
+pi_i = (1 / 2D) sum over j of (-1)^popcount(i AND j) ( [e_j] + [-e_j] )
 ```
 
-has spectrum 1 at coordinate `a` and 0 elsewhere, and zero signed component.
-The `E_a` are the primitive idempotents of the group summand: they are
-orthogonal and sum to `e_+`.
+has spectrum 1 at coordinate `i` and 0 elsewhere, and zero signed component.
+These `pi_i` are the primitive idempotents of the group summand: they are
+orthogonal and sum to `pi_+`.
 
 ### The center of the loop algebra
 
-The center of `F[L]` consists of the elements that commute with every
-element and associate with every two elements, in each of the three
-positions. The algebra is graded by `C` with one-dimensional components in
-`S`, and basis elements commute and associate up to sign. An element is
-therefore central exactly when every basis element in the support of its
-signed component is central in the loop. The center is spanned by the `E_a`
-and by the elements `([u_t] - [-u_t]) / 2` for the central `u_t`, and has
-dimension `D` plus the number of central `u_t`.
+The center of `F[L]` consists of the elements that commute with every element
+and associate with every two elements, in each of the three positions. The
+algebra is graded by `G` with one-dimensional components in `S`, and basis
+elements commute and associate up to sign, so an element is central exactly when
+every basis element in the support of its signed component is central in the
+loop. The center is therefore spanned by the `pi_i` and by the elements
+`([e_i] - [-e_i]) / 2` for the central `e_i`, and its dimension is `D` plus the
+number of central `e_i`.
 
-In loop-basis coefficients the condition reads: `a_t = b_t` for every `u_t`
-that is not central in the loop. In this form it holds in every
-characteristic. Conjugating a basis element by a loop element, or
-reassociating it with two of them, either fixes it or exchanges `[u_t]` with
-`[-u_t]`, and some choice exchanges them exactly when `u_t` is not central.
+In loop-basis coefficients the same condition reads `a_i = b_i` for every `e_i`
+that is not central in the loop, and in this form it holds in every
+characteristic: conjugating a basis element by a loop element, or reassociating
+it with two of them, either fixes it or exchanges `[e_i]` with `[-e_i]`, and
+some choice exchanges them exactly when `e_i` is not central.
 
 ## Multiplication algorithms
 
-pycdloop multiplies with three algorithms:
+pycdloop multiplies with three algorithms, each suited to different fields:
 
 - **`"split"`** works through the decomposition, so it applies when the
   characteristic is not 2.
-- **`"table"`** evaluates the definition. It applies to every field, for
+- **`"table"`** evaluates the definition, and it applies to every field, for
   loops with `D` up to 4096.
-- **`"lift"`** is the algorithm for characteristic 2. It reduces a product
-  over F_(2^k) to products by the split algorithm over a large prime field
-  or an extension of it, and is described under
-  [Multiplication by lifting](#multiplication-by-lifting).
+- **`"lift"`** is the algorithm for characteristic 2: it reduces a product over
+  F_(2^k) to products by the split algorithm over a large prime field or an
+  extension of it, as described under [Multiplication by
+  lifting](#multiplication-by-lifting).
 
 ### The split algorithm
 
-A product in `F[L]` is computed through the decomposition. For operands in
-the loop basis:
+The split algorithm computes a product in `F[L]` through the decomposition. For
+operands with loop-basis coefficients `(a, b)` and `(a', b')`, it forms the
+components, multiplies each in its own summand, and recombines them:
 
 ```text
-c  = a + b,    d  = a - b            (and c', d' for the second operand)
-f  = H ( (H c) . (H c') ) / D        group component of the product
-g  = d d'                            product in S
-a'' = (f + g) / 2,    b'' = (f - g) / 2.
+c   = a + b,              d   = a - b             (and c', d' for the second operand)
+c'' = H ( (H c) . (H c') ) / D                    group component of the product
+d'' = d d'                                        product in S
+a'' = (c'' + d'') / 2,    b'' = (c'' - d'') / 2
 ```
 
 This takes two forward transforms, `D` coordinatewise products, one inverse
-transform, and one product in `S`. For operands already in split form only
+transform, and one product in `S`, while for operands already in split form only
 the `D` coordinatewise products and the product in `S` remain.
 
 ### The product of signed components
 
-**In `Q_n`.** The product in `S = A_n` is delegated to pyfastcd, which
-offers direct multiplication, the algorithm of Cariow and Cariowa over R
-through `N = 1024`, and quasilinear multiplication with `O(N log N)`
-operations; `"auto"` follows pyfastcd's own selection. With the quasilinear
-product, the split algorithm uses `O(N log N)` operations in all.
+The product in `S` depends on the loop. For `L = Q_n`, `S` is the Cayley-Dickson
+algebra `A_n`, and its product is delegated to pyfastcd, which offers direct
+multiplication, the algorithm of Cariow and Cariowa over R through `N = 1024`,
+and quasilinear multiplication with `O(N log N)` operations. With the
+quasilinear product, the split algorithm uses `O(N log N)` operations in all.
 
-**In a central product.** `S` is a tensor product. pycdloop treats the
-factor of smallest level `n` as an outer Cayley–Dickson algebra whose
-coefficients lie in the tensor product `B` of the remaining factors, so that
-an element is an array of `N = 2^n` rows, each an element of `B`, and
+For a central product, `S` is a tensor product, and pycdloop treats the factor
+of smallest level `n` as an outer Cayley-Dickson algebra whose coefficients lie
+in the tensor product `B` of the remaining factors. An element is then an array
+of `N = 2^n` rows `U_i`, each an element of `B`, and
 
 ```text
-U V = sum over p, r of sigma_n(p, r) e_(p XOR r) (x) (U_p V_r).
+U V = sum over i, j of sigma_n(i, j) e_(i XOR j) (x) (U_i V_j).
 ```
 
 Three methods evaluate this product:
 
-- **`"native"`** applies to an outer factor of level 1. `e_1` is central in
-  the tensor product and squares to `-1`, so `A_1 (x) B` is `B` with
-  coefficients in the extension of `F` by a square root of `-1`, and the
-  product is a single product of `B` over that extension. The method needs
-  the extension to be a field that pyfastcd provides: C over R, and F_(p^2)
-  with modulus `t^2 + 1` over a prime field F_p in which `-1` is not a
-  square, that is, with `p = 3 (mod 4)`. Over C, over prime fields with
-  `p = 1 (mod 4)`, and over extension fields the method is not offered.
-- **`"rows"`** forms all `N^2` products `U_p V_r` as one batch and collects
-  the terms of each output row.
-- **`"schedule"`** runs the quasilinear recursion for `A_n` on rows instead
-  of scalars, as described next. It uses `(9n - 15) 2^(n-1) + 10` products
-  in `B`.
+- **`"native"`** applies to an outer factor of level 1. There `e_1` is central
+  in the tensor product and squares to `-1`, so `A_1 (x) B` is `B` with
+  coefficients in the extension of `F` by a square root of `-1`, and the product
+  is a single product of `B` over that extension. The method needs the extension
+  to be a field that pyfastcd provides: C over R, and F_(p^2) with modulus
+  `z^2 + 1` over a prime field F_p in which `-1` is not a square, that is, with
+  `p = 3 (mod 4)`. It is not offered over C, over prime fields with
+  `p = 1 (mod 4)`, or over extension fields.
+- **`"rows"`** forms all `N^2` products `U_i V_j` as one batch and collects the
+  terms of each output row.
+- **`"schedule"`** runs the quasilinear recursion for `A_n` on rows instead of
+  scalars, as the next section describes.
 
-Products in `B` are evaluated the same way, recursively, down to a single
-Cayley–Dickson algebra, which is multiplied by pyfastcd. `"auto"` selects
-`"native"` where it applies, and otherwise `"rows"` for an outer level up to
-4 and `"schedule"` above.
+Products in `B` are evaluated in the same way, recursively, down to a single
+Cayley-Dickson algebra, which pyfastcd multiplies. Which method `"auto"` selects
+is part of [How the results set the
+defaults](benchmark.md#how-the-results-set-the-defaults).
 
 ### The schedule
 
-Write an element of `A_n (x) B` as `x = alpha + X`, where `alpha` is its
-row 0 and `X` the remaining, imaginary rows. With `<X, Y> = sum of X_p Y_p`
-and `X x Y` the part of `X Y` on the imaginary rows,
+The schedule is the quasilinear recursion of fastCD, written for coefficients in
+`B`. An element of `A_n (x) B` is written `x = alpha + X`, where `alpha` is its
+row 0 and `X` the remaining, imaginary rows, and with `<X, Y> = sum of X_i Y_i`
+and `X x Y` the part of `X Y` on the imaginary rows, every product splits as
 
 ```text
 x y = (alpha beta - <X, Y>) + alpha Y + X beta + X x Y.                 (1)
 ```
 
-Split the imaginary rows as `X = (u, gamma + s)` and `Y = (v, delta + t)`,
-where `u`, `s`, `v`, `t` are imaginary of half the dimension and `gamma`,
-`delta` are single rows. Then
+Splitting the imaginary rows as `X = (u, gamma + s)` and `Y = (v, delta + t)`,
+where `u`, `s`, `v`, and `t` are imaginary of half the dimension and `gamma` and
+`delta` are single rows, gives
 
 ```text
-X x Y = (D + f,  lambda + g - H),
-D = u x v - s x t,     H = u x t + s x v,
+X x Y = (Phi + f,  lambda + g - Psi),
+Phi = u x v - s x t,     Psi = u x t + s x v,
 f = gamma t - s delta,   lambda = <s, v> - <u, t>,   g = u delta - gamma v.
 ```
 
-For scalar coefficients `X x Y` is an alternating product. With
-coefficients in `B` it is the bilinear extension of that product, and
-`X x X` need not vanish.
+For scalar coefficients `X x Y` is an alternating product, while with
+coefficients in `B` it is the bilinear extension of that product, and `X x X`
+need not vanish.
 
-**Two half-size calls.** Let `iota` be a central scalar with `iota^2 = -1`,
-and write `C_k` for the product `X x Y` at level `k` with coefficients
-`a + iota b`. Bilinearity gives
-`C_(n-1)(u +- iota s, v +- iota t) = D +- iota H`, so two half-size calls
-determine `D` and `H`. At the top level, where the operands have no `iota`
-part, the single call `C_(n-1)(u + iota s, v + iota t)` returns `D` and `H`
-as its two parts. The maps `(f, lambda, g)` with coefficients `a + iota b`
-are evaluated by the three-product formula, on the parts `a`, on the parts
-`b`, and on their sums.
+**Two half-size calls.** Let `iota` be a central scalar with `iota^2 = -1`, and
+write `C_k` for the product `X x Y` at level `k` with coefficients of the form
+`a + iota b`. Bilinearity gives `C_(n-1)(u +/- iota s, v +/- iota t) = Phi +/-
+iota Psi`, so two half-size calls determine `Phi` and `Psi`, and at the top
+level, where the operands have no `iota` part, the single call
+`C_(n-1)(u + iota s, v + iota t)` returns `Phi` and `Psi` as its two parts. The
+maps `(f, lambda, g)` with coefficients `a + iota b` are evaluated by the
+three-product formula, on the parts `a`, on the parts `b`, and on their sums.
 
-**Coefficients in `B`.** Every step is linear in each operand. The recursion
-is therefore valid for coefficients in any module `B` with a bilinear
-product, commutative and associative or not, over a ring in which 2 is
-invertible, provided each product keeps the factor that comes from the first
-operand on the left; the formulas above are written in that order. This is
-the recursion of fastCD's quasilinear kernel (see
-[its description](https://git.tanuki-cd.com/algebraity/fastCD/src/branch/main/docs/mathematics.md#how-quasilinear-multiplication-works))
-without the specialised octonion leaf, continued down to level 1, where
-`X x Y` vanishes.
+**Coefficients in `B`.** Every step is linear in each operand, so the recursion
+is valid for coefficients in any module `B` with a bilinear product, commutative
+and associative or not, over a ring in which 2 is invertible, provided each
+product keeps the factor that comes from the first operand on the left; the
+formulas above are written in that order. This is the recursion of fastCD's
+quasilinear kernel (see [its
+description](https://git.tanuki-cd.com/algebraity/fastCD/src/branch/main/docs/mathematics.md#how-quasilinear-multiplication-works))
+without its specialized octonion leaf, continued down to level 1, where `X x Y`
+vanishes.
 
-**Number of products.** A call to `C_k` with `K = 2^k` and `m = K/2 - 1`
-uses `18m` products in `B` outside its recursive calls, so with
-`M_0 = M_1 = 0` and `M_k = 2 M_(k-1) + 18m` for `k >= 2` the complete
-product uses
+**Number of products.** A call to `C_k` with `K = 2^k` and `h = K/2 - 1` uses
+`18h` products in `B` outside its recursive calls, so with `M_0 = M_1 = 0` and
+`M_k = 2 M_(k-1) + 18h` for `k >= 2`, the complete product uses
 
 ```text
-p_n = M_(n-1) + 6N - 8 = (9n - 15) 2^(n-1) + 10      (n >= 1),      p_0 = 1
+P_n = M_(n-1) + 6N - 8 = (9n - 15) 2^(n-1) + 10      (n >= 1),      P_0 = 1
 ```
 
-products in `B`. All products of one level of the recursion are passed to
+products in `B`, and all products of one level of the recursion are passed to
 `B` as a single batch.
 
 ### The table algorithm
 
-`algorithm="table"` evaluates the definition directly, in the loop basis.
-The coefficient of `[u_k]` in `x y` collects, over all `p` and with
-`q = p XOR k`, the products `a_p a'_q + b_p b'_q` where `sigma(p, q) = 1`
-and `a_p b'_q + b_p a'_q` where `sigma(p, q) = -1`; the coefficient of
-`[-u_k]` collects the others. This takes `4 D^2` multiplications.
-
-The table algorithm serves as an independent check of the other algorithms
-and as the baseline of the [benchmark](benchmark.md). In characteristic 2 it
-is also the faster algorithm for small loops over some of the fields; see
-[Choosing between the algorithms](#choosing-between-the-algorithms).
+The table algorithm evaluates the definition directly, in the loop basis. The
+coefficient of `[e_l]` in `x y` collects, over all `i` and with `j = i XOR l`,
+the products `a_i a'_j + b_i b'_j` where `sigma(i, j) = 1` and
+`a_i b'_j + b_i a'_j` where `sigma(i, j) = -1`, and the coefficient of `[-e_l]`
+collects the others, so a product takes `4 D^2` multiplications. The table
+algorithm serves as an independent check of the other algorithms and as the
+baseline of the [benchmark](benchmark.md), and in characteristic 2 it is also
+the faster algorithm for small loops over some of the fields.
 
 ### Operation counts
 
-`M` counts multiplications of two input-dependent values, `A` additions and
-subtractions, and `E` multiplications by fixed scalars other than `0` and
-`±1`; `T = M + A + E`. Reading, copying, and changing signs are free. The
-counts are those of the split algorithm when the product of signed
-components is evaluated by the schedule above with scalar coefficients,
-whose own total is `tau_n`.
+The counts below are those of the split algorithm when the product of signed
+components is evaluated by the schedule with scalar coefficients, whose own
+total for `A_n` is written `tau_n`. `M` counts multiplications of two
+input-dependent values, `A` additions and subtractions, and `E` multiplications
+by fixed scalars other than `0` and `+/-1`, with `T = M + A + E`, and reading,
+copying, and changing signs are free.
 
 **Loop algebra of `Q_n`.** A product uses
 
 ```text
-M = N + p_n,     T = tau_n + 3nN + 10N
+M = N + P_n,     T = tau_n + 3nN + 10N
 ```
 
-operations: `3nN` additions in the three transforms, `6N` to form the
-components and recombine them, `2N` halvings, `N` scalings by `1/N`, and `N`
-coordinatewise products. At `N = 1` the scalings by `1/N` are trivial and
-`T` is smaller by one.
+operations: `3nN` additions in the three transforms, `6N` to form the components
+and recombine them, `2N` halvings, `N` scalings by `1/N`, and `N` coordinatewise
+products. At `N = 1` the scalings by `1/N` are trivial, and `T` is smaller by
+one.
 
 | n | Dimension `2N` | M | A | E | T | `tau_n` |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -508,15 +488,16 @@ coordinatewise products. At `N = 1` the scalings by `1/N` are trivial and
 | 9 | 1024 | 17418 | 48410 | 4356 | 70184 | 51240 |
 | 10 | 2048 | 39434 | 109594 | 9732 | 158760 | 117800 |
 
-**Loop algebra of a central product.** For levels `(n, m)` with
-`D = N_n N_m`, evaluating the outer schedule on rows of `N_m` coefficients
-and each of its products by the inner schedule gives
+**Loop algebra of a central product.** For two factors of levels `n_1` and
+`n_2`, with `N_1 = 2^(n_1)`, `N_2 = 2^(n_2)`, and `D = N_1 N_2`, evaluating the
+outer schedule on rows of `N_2` coefficients and each of its products by the
+inner schedule gives
 
 ```text
-M = D + p_n p_m,     T = N_m l_n + p_n tau_m + 3(n + m) D + 10 D,     l_n = tau_n - p_n.
+M = D + P_(n_1) P_(n_2),     T = N_2 (tau_(n_1) - P_(n_1)) + P_(n_1) tau_(n_2) + 3(n_1 + n_2) D + 10 D.
 ```
 
-| (n, m) | Dimension `2D` | M | A | E | T |
+| (n_1, n_2) | Dimension `2D` | M | A | E | T |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | (1, 1) | 8 | 20 | 60 | 12 | 92 |
 | (1, 2) | 16 | 72 | 176 | 24 | 272 |
@@ -529,38 +510,36 @@ M = D + p_n p_m,     T = N_m l_n + p_n tau_m + 3(n + m) D + 10 D,     l_n = tau_
 | (3, 4) | 256 | 10452 | 18948 | 1080 | 30480 |
 | (4, 4) | 512 | 31940 | 56180 | 3096 | 91216 |
 
-Since `p_n` and `tau_n` grow as `n N`, the totals are `O(N log N)` for `Q_n`
-and `O(D log N_n log N_m)` for a central product of two factors.
+Since `P_n` and `tau_n` grow like `n N`, the totals are `O(N log N)` for `Q_n`
+and `O(D log N_1 log N_2)` for a central product of two factors.
 
-**What the counts describe.** These counts describe the arithmetic schedule.
-They are not machine instruction counts and do not predict running time:
-pycdloop multiplies signed components of `Q_n` with pyfastcd, whose
-quasilinear kernel has a specialised leaf and, from `N = 16` on, slightly
-smaller counts (see
-[fastCD's operation counts](https://git.tanuki-cd.com/algebraity/fastCD/src/branch/main/docs/mathematics.md#operation-counts)).
-
+**What the counts describe.** These counts describe the arithmetic schedule, not
+machine instructions, and they do not predict running time, which the
+[benchmark](benchmark.md) measures. pycdloop multiplies the signed components of
+`Q_n` with pyfastcd, whose quasilinear kernel has a specialized leaf and, from
+`N = 16` on, slightly smaller counts (see [fastCD's operation
+counts](https://git.tanuki-cd.com/algebraity/fastCD/src/branch/main/docs/mathematics.md#operation-counts)).
 `tools/check_operation_counts.py` runs the schedule and the reference
 evaluations of the transform and of the change of coordinates on counting
-scalars. It checks the columns `M` and `T` of both tables against the
-formulas for `p_n`, `M`, and `T`, and prints the tables, columns `A` and `E`
-included, as they are shown here. The compiled kernels perform the
-operations of those reference evaluations, as the tests verify bit for bit.
+scalars, checks the columns `M` and `T` of both tables against the formulas, and
+prints the tables, columns `A` and `E` included, as they appear here, and the
+tests verify bit for bit that the compiled kernels perform the operations of
+those reference evaluations.
 
 ## Elements of the loop algebra of `Q_n`
 
-For `L = Q_n` the signed component `d` lies in `A_n`, where every element
-satisfies the quadratic relation
+The signed component of an element is what decides most of its structure. For
+`L = Q_n` the signed component `d` lies in `A_n`, where every element satisfies
+the quadratic relation
 
 ```text
 d^2 - 2 d_0 d + Q(d) = 0,     Q(d) = sum over i of d_i^2,
 ```
 
-with `d_0` the coefficient of `e_0`. `Q` is the same sum over every field
-and involves no complex conjugation.
-
-`A_n` is flexible and power-associative for every `n`, alternative through
-`n = 3`, and associative through `n = 2`, and the loop algebra inherits
-these identities from its two summands:
+with `d_0` the coefficient of `e_0` and `Q` the same sum over every field,
+without complex conjugation. `A_n` is flexible and power-associative for every
+`n`, alternative through `n = 3`, and associative through `n = 2`, and the loop
+algebra inherits these identities from its two summands:
 
 | n | Commutative | Associative | Alternative | Flexible | Power-associative |
 | ---: | :---: | :---: | :---: | :---: | :---: |
@@ -569,70 +548,66 @@ these identities from its two summands:
 | 3 | no | no | yes | yes | yes |
 | 4 and above | no | no | no | yes | yes |
 
-**Powers.** Powers of `x` do not depend on bracketing, and the two parts of
-the split form are raised separately. The spectral part is raised
-coordinatewise. For the signed part, write `d = d_0 + w`, with `w` the part
-of `d` without the identity. Then `w^2 = -Q(w)` is a scalar, so `z -> w`
-maps the commutative ring `F[z] / (z^2 + Q(w))` onto the span of 1 and `w`,
-which holds every power of `d`. Binary exponentiation of `d_0 + z` in that
-ring gives `d^k = a + b w` with `O(log k)` field operations; for a scalar
-`d` the power is that of `d_0`. A power therefore costs `O(D + log k)` field
+**Powers.** Powers of `x` do not depend on bracketing, and the two parts of the
+split form are raised separately, the spectral part coordinatewise. For the
+signed part, write `d = d_0 + d'`, with `d'` the part of `d` without the
+identity. Then `d'^2 = -Q(d')` is a scalar, so `z -> d'` maps the commutative
+ring `F[z] / (z^2 + Q(d'))` onto the span of 1 and `d'`, which holds every power
+of `d`, and binary exponentiation of `d_0 + z` in that ring gives `d^m` as a
+combination of 1 and `d'` with `O(log m)` field operations, while for a scalar
+`d` the power is that of `d_0`. A power therefore costs `O(D + log m)` field
 operations beyond the coordinatewise powers of the spectrum.
-[Powers in floating point](#powers-in-floating-point) describes their
-evaluation over R and C.
 
-**Inverses.** The inverse of `x` is the pair of the coordinatewise
-reciprocal of the spectral part and `conjugate(d) / Q(d)`. It exists exactly
-when every spectral coordinate is nonzero and `Q(d) != 0`. It is a two-sided
-inverse and a polynomial in `x`, and negative powers of `x` are its powers.
-It is the only inverse that pycdloop computes.
-
-Whether `Q(d) != 0` excludes more than `d = 0` depends on the field:
+**Inverses.** The inverse of `x` is the pair of the coordinatewise reciprocal of
+the spectral part and `conjugate(d) / Q(d)`, so it exists exactly when every
+spectral coordinate is nonzero and `Q(d) != 0`. It is a two-sided inverse and a
+polynomial in `x`, negative powers of `x` are its powers, and it is the only
+inverse that pycdloop computes. Whether `Q(d) != 0` excludes more than `d = 0`
+depends on the field:
 
 - Over R, `Q(d) = 0` only for `d = 0`.
 - Over C, there are nonzero `d` with `Q(d) = 0` for `n >= 1`.
-- Over a finite field, there are nonzero `d` with `Q(d) = 0` for `n >= 2`,
-  and for `n = 1` when `-1` is a square in the field.
+- Over a finite field, there are nonzero `d` with `Q(d) = 0` for `n >= 2`, and
+  for `n = 1` when `-1` is a square in the field.
 
-Whether an element can have a two-sided inverse other than this one depends
-on the level:
+Whether an element can have a two-sided inverse other than this one depends on
+the level:
 
-- Through `n = 3`, an element without this inverse has no two-sided
-  inverse.
-- From `n = 4` on, over every field, an element with this inverse can still
-  be a zero divisor, and its two-sided inverses need not be unique. Over C
-  and finite fields an element with `Q(d) = 0` can then have a two-sided
-  inverse. Over R an element without this inverse has none at any level.
+- Through `n = 3`, an element without this inverse has no two-sided inverse.
+- From `n = 4` on, over every field, an element with this inverse can still be a
+  zero divisor, and its two-sided inverses need not be unique. Over C and finite
+  fields an element with `Q(d) = 0` can then have a two-sided inverse, while
+  over R an element without this inverse has none at any level.
 
-**Zero divisors.** `x` multiplies with a nonzero element to zero exactly
-when a spectral coordinate vanishes, or `d` is zero, or `d` divides zero in
-`A_n`. Through `n = 3` the last condition is `Q(d) = 0`. From `n = 4` on it
-is decided from the rank of the matrix of left or right multiplication by
-`d`, at a cost of `O(N^3)` operations.
+**Zero divisors.** `x` multiplies with a nonzero element to zero exactly when a
+spectral coordinate vanishes, `d` is zero, or `d` divides zero in `A_n`. Through
+`n = 3` the last condition is `Q(d) = 0`, and from `n = 4` on it is decided from
+the rank of the matrix of left or right multiplication by `d`, at a cost of
+`O(N^3)` operations.
 
-**Idempotents and nilpotents.** `x` is idempotent when its spectrum has
-entries 0 and 1 only and `d d = d`. `x` is nilpotent when its spectrum is
-zero, `d_0 = 0`, and `Q(d) = 0`; then `d d = 0`. Over R the only nilpotent
-element is zero.
+**Idempotents and nilpotents.** `x` is idempotent when its spectrum has entries
+0 and 1 only and `d d = d`, and nilpotent when its spectrum is zero, `d_0 = 0`,
+and `Q(d) = 0`, in which case `d d = 0`. Over R the only nilpotent element is
+zero.
 
 **Minimal polynomial.** The powers of `x` span a commutative, associative
-subalgebra isomorphic to `F[t] / (m(t))`, where `m` is the minimal
-polynomial of `x`. The minimal polynomial `q` of `d` is `t - d_0` when `d`
-is a scalar and `t^2 - 2 d_0 t + Q(d)` otherwise, and
+subalgebra isomorphic to `F[z] / (mu(z))`, where `mu` is the minimal polynomial
+of `x`. The minimal polynomial `q` of `d` is `z - d_0` when `d` is a scalar and
+`z^2 - 2 d_0 z + Q(d)` otherwise, and
 
 ```text
-m(t) = q(t) * product of (t - v) over the distinct spectral values v with q(v) != 0.
+mu(z) = q(z) * product of (z - v) over the distinct spectral values v with q(v) != 0.
 ```
 
-In particular the powers of `x` generate a product of copies of `F` and at
-most one factor of dimension two, a quadratic extension of `F` or
-`F[t] / (t^2)`, whatever the dimension of the loop algebra.
+In particular, the powers of `x` generate a product of copies of `F` and at most
+one factor of dimension two, a quadratic extension of `F` or `F[z] / (z^2)`,
+whatever the dimension of the loop algebra.
 
 ## Elements of the loop algebra of a central product
 
 For a central product the signed component lies in a tensor product of
-Cayley–Dickson algebras, which has no quadratic relation and, in general,
-none of the identities above:
+Cayley-Dickson algebras, which has no quadratic relation and, in general, none
+of the identities above:
 
 | Levels | Associative | Alternative | Flexible | Power-associative |
 | --- | :---: | :---: | :---: | :---: |
@@ -641,133 +616,127 @@ none of the identities above:
 | one level 4 or more, the others 1 | no | no | yes | yes |
 | two levels at least 2, one of them at least 3 | no | no | no | no |
 
-**Why the table holds.** In the first row every factor is associative, and
-so is their tensor product: `A_2 (x) A_2` over R is the algebra of real
-`4 x 4` matrices. In the second and third rows every factor but one is
-`A_1`, which is commutative and associative: `A_1 (x) A_m` is `A_m` with
-coefficients in the commutative ring `F[t] / (t^2 + 1)`, which is a field
-when `-1` is not a square in `F`. In the last row, powers of an element
-depend on bracketing: already `(x x) x` and `x (x x)` differ.
+**Why the table holds.** In the first row every factor is associative, and so is
+their tensor product: `A_2 (x) A_2` over R is the algebra of real `4 x 4`
+matrices. In the second and third rows every factor but one is `A_1`, which is
+commutative and associative, and `A_1 (x) A_m` is `A_m` with coefficients in the
+commutative ring `F[z] / (z^2 + 1)`, which is a field when `-1` is not a square
+in `F`. In the last row the powers of an element depend on bracketing, since
+already `(x x) x` and `x (x x)` differ.
 
-The table is established by identity checks on random elements for every
-pair of levels from 1 to 4 and for the triples `(1,1,1)`, `(1,1,2)`,
-`(1,2,2)`, `(2,2,2)`, and `(1,2,3)`. A failed identity is a counterexample, and it persists in every
-larger tensor product, which contains the smaller one as a subalgebra. The
-entries "yes" of the first three rows also follow from the structure just
-described.
+**How the table is established.** The table rests on identity checks on random
+elements for every pair of levels from 1 to 4 and for the triples `(1,1,1)`,
+`(1,1,2)`, `(1,2,2)`, `(2,2,2)`, and `(1,2,3)`. A failed identity is a
+counterexample, and it persists in every larger tensor product, which contains
+the smaller one as a subalgebra, while the entries "yes" of the first three rows
+also follow from the structure just described.
 
-**What the package provides.** In the loop algebra of a central product:
-
-- `x ** k` raises `TypeError`. `left_power` and `right_power` evaluate
-  `x (x (... (x x)))` and `(((x x) x) ...) x` with `k - 1` products.
-- `inverse()`, `has_inverse()`, `is_nilpotent()`, and `minimal_polynomial()`
-  are not defined and raise `TypeError`.
-- Zero divisors of the signed component are always decided from the rank of
-  a multiplication matrix.
-
-Everything that does not rely on the quadratic relation is available: the
-ring operations, commutators and associators, the decomposition, the
-idempotents, the center, the annihilators, and the multiplication matrices.
-
-These restrictions belong to the fields in which 2 is invertible. In
-characteristic 2 the powers of an element are well defined for every loop,
-central products included; see [Squares and powers](#squares-and-powers).
+Because powers depend on bracketing in general, the operations that rely on the
+quadratic relation, such as powers, inverses, and minimal polynomials, are not
+defined in the loop algebra of a central product, and the [API
+reference](api.md#where-powers-are-defined) lists the operations concerned and
+those available instead. These restrictions belong to the fields in which 2 is
+invertible: in characteristic 2 the powers of an element are well defined for
+every loop, central products included (see [Squares and
+powers](#squares-and-powers)).
 
 ## Characteristic 2
 
-Let `F = F_(2^k)`. The loop algebra `F[L]` has the same basis, the same
-product, and the same storage as over any other field, but its structure is
-different, because `2 = 0` in `F`.
+Let `F = F_(2^k)`. The loop algebra `F[L]` has the same basis, the same product,
+and the same storage as over any other field, but its structure is different,
+because `2 = 0` in `F`.
 
 ### What replaces the decomposition
 
 Each piece of the decomposition degenerates:
 
-- The map `kappa` is still a homomorphism onto the group algebra `F[C]`.
-  The map `epsilon` coincides with it, since `a_t - b_t = a_t + b_t`, and so
-  carries no further information.
-- The idempotents `e_+` and `e_-` do not exist, and the loop algebra is not
-  a direct sum.
+- The map `kappa` is still a homomorphism onto the group algebra `F[G]`, but the
+  map `epsilon` coincides with it, since `a_i - b_i = a_i + b_i`, and so carries
+  no further information.
+- The idempotents `pi_+` and `pi_-` do not exist, and the loop algebra is not a
+  direct sum.
 - Every entry of `H` is 1 modulo 2, so for `D >= 2` the transform is not
-  invertible, and there is no spectrum. For `D = 1` it is the identity, and
+  invertible and there is no spectrum, while for `D = 1` it is the identity and
   `kappa` alone does not determine an element.
 
 The structure is governed instead by the element
 
 ```text
-z = [1] + [-1],     z [u_t] = [u_t] + [-u_t],     z z = 2 z = 0,
+nu = [1] + [-1],     nu [e_i] = [e_i] + [-e_i],     nu nu = 2 nu = 0,
 ```
 
-which is central. The multiples of `z` are the elements with `a_t = b_t` for
-every `t`. They form the kernel `I` of `kappa`, an ideal of dimension `D`
-in which every product vanishes, since `(z x)(z y) = (z z)(x y)`. So `F[L]`
-is an extension of the group algebra by an ideal of square zero,
+which is central. The multiples of `nu` are the elements with `a_i = b_i` for
+every `i`, and they form the kernel `I` of `kappa`, an ideal of dimension `D` in
+which every product vanishes, since `(nu x)(nu y) = (nu nu)(x y)`. So `F[L]` is
+an extension of the group algebra by an ideal of square zero,
 
 ```text
-0  ->  I  ->  F[L]  ->  F[C]  ->  0,
+0  ->  I  ->  F[L]  ->  F[G]  ->  0,
 ```
 
-and multiplication by `x` acts on `I`, as on the quotient, through
-`kappa(x)`: `x (z [u_t]) = z (x [u_t])` depends only on the indices of the
-loop elements in `x`.
-
-In `F[C]` every element `c` satisfies `c * c = aug(c)^2`, where `aug` is
-the sum of the coefficients: each element of `C` is its own inverse, and the
-mixed terms occur twice.
+and multiplication by `x` acts on `I`, as on the quotient, through `kappa(x)`,
+since `x (nu [e_i]) = nu (x [e_i])` depends only on the indices of the loop
+elements in `x`. In `F[G]` every element `c` satisfies `c * c = aug(c)^2`, where
+`aug` is the sum of the coefficients, because each element of `G` is its own
+inverse and the mixed terms occur twice.
 
 ### Squares and powers
 
-Write `x` as a sum of `x_g [g]` over the loop elements `g`. Then
+The square of an element shows how this structure constrains the algebra. Write
+`x` as a sum of terms `x_g [g]` over the loop elements `g`; then
 
 ```text
-x x = sum over g of x_g^2 [g g]  +  sum over pairs {g, h} of x_g x_h ( [g h] + [h g] ).
+x x = sum over g of x_g^2 [g g]  +  sum over pairs {g, g'} of x_g x_g' ( [g g'] + [g' g] ).
 ```
 
-Every `g g` is `1` or `-1`. Two loop elements commute or anticommute, and
-`[g h] + [h g]` is zero in the first case and `z [g h]` in the second. Hence
+Every `g g` is `1` or `-1`, and two loop elements commute or anticommute, so
+`[g g'] + [g' g]` is zero in the first case and `nu [g g']` in the second. Hence
 
 ```text
-x x = alpha + beta [-1] + z w,     alpha + beta = aug(x)^2,
+x x = rho + rho' [-1] + nu x',     rho + rho' = aug(x)^2,
 ```
 
-for scalars `alpha` and `beta` and some element `w`. Each of the three terms
-is central: a product with `z` does not see the signs by which loop elements
-fail to commute and to associate, because `z [-g] = z [g]`. The following
-therefore hold for every loop `L`, a central product as well as `Q_n`, and
-every element `x`.
+for scalars `rho` and `rho'` and some element `x'`. Each of the three terms is
+central, because a product with `nu` does not see the signs by which loop
+elements fail to commute and to associate, `nu [-g] = nu [g]`, and the following
+therefore hold for every loop `L`, a central product as well as `Q_n`, and every
+element `x`.
 
-**Powers.** `x x` is central, so every product of `k` copies of `x`,
-however it is bracketed, equals `(x x)^(k div 2) x^(k mod 2)`. Powers do
-not depend on bracketing.
+**Powers.** `x x` is central, so every product of `m` copies of `x`, however it
+is bracketed, equals `(x x)^(m div 2) x^(m mod 2)`, and powers do not depend on
+bracketing.
 
-**Fourth powers.** `x^4 = aug(x)^4`. Indeed `(x x)^2 = alpha^2 + beta^2 +
-(z z) w^2 = (alpha + beta)^2`: the three terms commute and associate, and
-the mixed terms occur twice. A power is therefore
-`x^(4q + r) = aug(x)^(4q) x^r` with `0 <= r < 4`, which takes at most two
-products; when `aug(x) != 0` this holds for negative `q` as well.
+**Fourth powers.** `x^4 = aug(x)^4`, because `(x x)^2 = rho^2 + rho'^2 + (nu nu)
+x'^2 = (rho + rho')^2`: the three terms commute and associate, and the mixed
+terms occur twice. A power is therefore `x^m = aug(x)^(4 (m div 4)) x^(m mod
+4)`, which takes at most two products, and when `aug(x) != 0` this holds for
+negative `m` as well.
 
 **Inverses and nilpotents.** If `aug(x) != 0`, then `x` has the two-sided
-inverse `x^3 / aug(x)^4`. If `aug(x) = 0`, then `x^4 = 0`. Every element is
-of one kind or the other.
+inverse `x^3 / aug(x)^4`, and if `aug(x) = 0`, then `x^4 = 0`, so every element
+is of one kind or the other.
 
-**Zero divisors.** Left multiplication by `x` maps the ideal `I` to itself
-and acts on `I` and on `F[L] / I` as multiplication by `kappa(x)` in `F[C]`,
-which is invertible exactly when `aug(x) != 0`; right multiplication
-likewise. So the zero divisors, on either side, are the elements of
-augmentation zero.
+**Zero divisors.** Left multiplication by `x` maps the ideal `I` to itself and
+acts on `I` and on `F[L] / I` as multiplication by `kappa(x)` in `F[G]`, which
+is invertible exactly when `aug(x) != 0`, and right multiplication behaves
+alike, so the zero divisors, on either side, are the elements of augmentation
+zero.
 
-**Idempotents.** If `x x = x` then `x = x^4 = aug(x)^4` is a scalar, so the
+**Idempotents.** If `x x = x`, then `x = x^4 = aug(x)^4` is a scalar, so the
 only idempotents are 0 and 1.
 
-**Minimal polynomial.** With `a = aug(x)`, the element `x - a` has
-augmentation zero, so the minimal polynomial of `x` is `(t - a)^j` for some
-`j` from 1 to 4, and the powers of `x` span a copy of `F[t] / ((t - a)^j)`.
+**Minimal polynomial.** The element `x - aug(x)` has augmentation zero, so the
+minimal polynomial of `x` is `(z - aug(x))^m` for some `m` from 1 to 4, and the
+powers of `x` span a copy of `F[z] / ((z - aug(x))^m)`.
 
-Accordingly `x ** k`, `inverse()`, `has_inverse()`, `is_nilpotent()`,
-`minimal_polynomial()`, and `subalgebra_generated_by()` are defined in
-characteristic 2 for every loop.
+Accordingly, powers, inverses, minimal polynomials, and the generated subalgebra
+are defined in characteristic 2 for every loop.
 
 ### Identities
+
+The identities that the loop algebra satisfies are decided by the commutator and
+associator signs of the loop, and over F_(2^k) they depend on the levels in a
+different way than over the other fields:
 
 | Identity | Holds exactly when |
 | --- | --- |
@@ -778,275 +747,107 @@ characteristic 2 for every loop.
 | Power-associative | always |
 
 The first two rows are the cases in which the loop itself is commutative or
-associative. For the others, the associator of three elements is a sum of
-terms `x_g y_h w_k ( [(g h) k] + [g (h k)] )`, and each bracket is zero or
-`z [(g h) k]` according to the associator sign `a(g, h, k)` of the loop.
+associative. For the others, the associator of three elements `x_1`, `x_2`, and
+`x_3` is a sum of terms `x_1,g x_2,g' x_3,g'' ( [(g g') g''] + [g (g' g'')] )`,
+where `x_1,g` is the coefficient of `[g]` in `x_1`, and each bracket is zero or
+`nu [(g g') g'']` according to the associator sign of the loop.
 
-In `(x y) x + x (y x)` the terms with `g = k` vanish, because two loop
-elements generate a group, and the terms of `(g, h, k)` and `(k, h, g)`
-cancel because `a(g, h, k) = a(k, h, g)`. That symmetry is the flexible law
-of `A_n` read on basis elements, and it passes to central products, whose
-associator signs are products of those of the factors. The alternative laws
-reduce in the same way to the symmetry of `a` in its first two and in its
-last two arguments, which holds through level 3 and fails in `Q_4`.
+In the flexible identity `(x y) x + x (y x)`, the terms with `g = g''` vanish,
+because two loop elements generate a group, and the terms of `(g, g', g'')` and
+`(g'', g', g)` cancel, because `assoc(g, g', g'') = assoc(g'', g', g)`. That
+symmetry is the flexible law of `A_n` read on basis elements, and it passes to
+central products, whose associator signs are products of those of the factors.
+The alternative laws reduce in the same way to the symmetry of the associator
+sign in its first two and in its last two arguments, which holds through level 3
+and fails in `Q_4`.
 
-In particular a central product such as `Q_2 * Q_3`, whose loop algebra is
+In particular, a central product such as `Q_2 * Q_3`, whose loop algebra is
 neither flexible nor power-associative over R, has a flexible and
 power-associative loop algebra over F_(2^k).
 
 ### The center
 
-The rule of
-[The center of the loop algebra](#the-center-of-the-loop-algebra) holds as
-stated: an element is central exactly when `a_t = b_t` for every `u_t` that
-is not central in the loop. A basis of the center consists of `[u_t]` and
-`[-u_t]` for the central `u_t`, and of `z [u_t]` for the others. Its
-dimension is `D` plus the number of central `u_t`, as over the other fields.
+The rule of [The center of the loop algebra](#the-center-of-the-loop-algebra)
+holds as stated: an element is central exactly when `a_i = b_i` for every `e_i`
+that is not central in the loop. A basis of the center consists of `[e_i]` and
+`[-e_i]` for the central `e_i`, and of `nu [e_i]` for the others, so its
+dimension is `D` plus the number of central `e_i`, as over the other fields.
 
 ### Multiplication by lifting
 
-The structure constants of a loop algebra are 0 and 1 whatever the field:
-`F_2[L]` is the reduction modulo 2 of the loop ring `Z[L]` over the
-integers. A product over F_(2^k) can therefore be computed in a field where
-the split algorithm applies.
+The structure constants of a loop algebra are 0 and 1 whatever the field, since
+`F_2[L]` is the reduction modulo 2 of the loop ring `Z[L]` over the integers, so
+a product over F_(2^k) can be computed in a field where the split algorithm
+applies and then reduced.
 
 **Over F_2.** Read the coefficients 0 and 1 of `x` and `y` as integers. The
-coefficient of a basis element `[g]` in their product over the integers
-counts pairs of loop elements with product `g`, so it lies between 0 and
-`2D`. For a prime `p > 2D`, the product over F_p determines these integers,
-and their residues modulo 2 are the coefficients of the product over F_2.
-pycdloop uses `p = 2^31 - 1`, the largest characteristic of pyfastcd, and
-computes the product over F_p by the split algorithm.
+coefficient of a basis element `[g]` in their product over the integers counts
+pairs of loop elements with product `g`, so it lies between 0 and `2D`, and for
+a prime `p > 2D` the product over F_p determines these integers, whose residues
+modulo 2 are the coefficients of the product over F_2. pycdloop uses
+`p = 2^31 - 1`, the largest characteristic of pyfastcd, and computes the product
+over F_p by the split algorithm.
 
-**Over F_(2^k), `k <= 6`.** A coefficient is a polynomial of degree below
-`k` over F_2, and lifts to a polynomial with integer coefficients 0 and 1.
-The product of two elements with such coefficients has coefficients of
-degree at most `2k - 2`, with integer coordinates between 0 and `2kD`. In
-the extension of F_p of degree `2k - 1` polynomials of that degree are not
-reduced, so one product in the loop algebra over that extension gives all
-of them. Reducing the coordinates modulo 2, and the polynomials modulo the
-modulus of F_(2^k), finishes the product.
+**Over F_(2^k), `k <= 6`.** A coefficient is a polynomial of degree below `k`
+over F_2 and lifts to a polynomial with integer coefficients 0 and 1. The
+product of two elements with such coefficients has coefficients of degree at
+most `2k - 2`, with integer coordinates between 0 and `2kD`, and in the
+extension of F_p of degree `2k - 1` polynomials of that degree are not reduced,
+so one product in the loop algebra over that extension gives all of them.
+Reducing the coordinates modulo 2, and the polynomials modulo the modulus of
+F_(2^k), finishes the product.
 
-**Over F_(2^k), `7 <= k <= 12`.** pyfastcd provides extensions up to
-degree 12. With `h = ceil(k / 2)`, each coefficient is cut into a low part
-of `h` coordinates and a high part of the other `k - h`,
-`x = x_0 + t^h x_1`, and
+**Over F_(2^k), `7 <= k <= 12`.** pyfastcd provides extensions up to degree 12,
+so the coefficients are first cut in half: with `k_0 = ceil(k / 2)`, each
+coefficient `a` is written `a = a_0 + z^(k_0) a_1`, with a low part of `k_0`
+coordinates and a high part of the other `k - k_0`, and a product of
+coefficients is
 
 ```text
-x y = x_0 y_0 + t^h ( (x_0 + x_1)(y_0 + y_1) + x_0 y_0 + x_1 y_1 ) + t^(2h) x_1 y_1
+a b = a_0 b_0 + z^(k_0) ( (a_0 + a_1)(b_0 + b_1) + a_0 b_0 + a_1 b_1 ) + z^(2 k_0) a_1 b_1
 ```
 
-over F_2. The three products of parts are lifted as above, to an extension
-of degree `2h - 1`.
+over F_2, so the three products of parts are lifted as above, to an extension of
+degree `2 k_0 - 1`.
 
-**Cost and limits.** A lifted product costs one product by the split
-algorithm for `k <= 6` and three for larger `k`, and the number of
-operations is quasilinear in `D` whenever that of the split algorithm is.
-The operations are those of F_p or of its extension, not of F_(2^k): the
-[operation counts](#operation-counts) apply to each product over the larger
-field. The integer coordinates must stay below `p`, which requires
-`2hD < p`, with `h = k` for `k <= 6`; pycdloop raises `ValueError` for a
-loop beyond this bound.
+**Cost and limits.** A lifted product costs one product by the split algorithm
+for `k <= 6` and three for larger `k`, so its number of operations is
+quasilinear in `D` whenever that of the split algorithm is. The operations are
+those of F_p or of its extension, not of F_(2^k), so the [operation
+counts](#operation-counts) apply to each product over the larger field. The
+integer coordinates must stay below `p`, which requires `2 k_0 D < p`, with
+`k_0 = k` for `k <= 6`, and pycdloop raises `ValueError` for a loop beyond this
+bound.
 
-`signed_algorithm` selects the method for the signed components of the
-products over the larger field. A lifted product over F_2 runs over F_p with
-`p = 2^31 - 1`, which is `3 (mod 4)`, so `"native"` applies to it. Lifted
-products over F_(2^k) with `k > 1` run over an extension field, where it
-does not.
-
-`dyadic_convolve` over a `BinaryField` is computed in the same way, from
-the group algebra `Z[C]`.
+**Signed-component methods.** `signed_algorithm` selects the method for the
+signed components of the products over the larger field. A lifted product over
+F_2 runs over F_p with `p = 2^31 - 1`, which is `3 (mod 4)`, so `"native"`
+applies to it, while lifted products over F_(2^k) with `k > 1` run over an
+extension field, where it does not. `dyadic_convolve` over a `BinaryField` is
+computed in the same way, from the group algebra `Z[G]`.
 
 ### Choosing between the algorithms
 
-Both `"lift"` and `"table"` are exact, so the choice between them affects
-only the running time, and `"auto"` makes it from the size of the loop and
-the number `R` of products in the call. The table algorithm uses
-`4 R D^2` field multiplications. The lifted product grows as `R D log D` but
-costs more for each coefficient, and the fixed cost of a call differs
-between the two. `"auto"` selects `"lift"` when
-
-```text
-D >= D_0     and     R D^2 >= W,
-```
-
-and `"table"` otherwise, where `D_0` and `W` depend on how the field is
-lifted:
-
-| Field | Lifted to | `D_0` | `W` | One product is lifted from | A large batch is lifted from |
-| --- | --- | ---: | ---: | --- | --- |
-| F_2 | F_p | 2 | `2^8` | `D = 16` | `D = 2` |
-| F_(2^k), `2 <= k <= 6` | one extension of F_p, one product | 2 | 0 | `D = 2` | `D = 2` |
-| F_(2^k), `7 <= k <= 12` | one extension of F_p, three products | 16 | `2^10` | `D = 32` | `D = 16` |
-
-For the degrees 2 through 6 the second condition always holds, so every
-product is lifted when `D >= 2`. `default_algorithm` and
-`default_batch_algorithm` report the choice for one product and for a large
-batch. The [benchmark](benchmark.md) measures both algorithms.
-
-## Implementation
-
-### Representations
-
-The loop basis is the public representation of an element: coefficients are
-read and written in it. Where the characteristic is not 2, the split form is
-the representation in which arithmetic is cheapest, and the three value
-types differ in how they hold the two.
-
-- An `Element` is immutable. It holds its loop-basis coefficients, its split
-  form, or both. Whichever it was created with is never replaced; the other
-  is derived from it on first use and kept. A product is evaluated in split
-  form and its result is created in split form, so a chain such as
-  `((x * y) * z) * w` performs one forward transform for each operand that
-  does not have its split form yet and one inverse transform when the
-  coefficients of the result are first read.
-- An `ElementArray` is a writable batch in the loop basis. Its storage can
-  be shared with NumPy arrays, so nothing derived from it is kept: every
-  product transforms its array operands and the result.
-- A `SplitArray` is a writable batch in split form. Its arithmetic needs no
-  transform. `ElementArray.split()` and `SplitArray.to_loop()` convert
-  between the two, and combining the two types raises `TypeError`, so that
-  every transform is visible in the calling code.
-
-The coordinates in which an `Element` operation is evaluated depend only on
-how its operands were created: sums, scalings, and `conjugate()` of elements
-created in the loop basis are evaluated there, and every other arithmetic
-operation in split form. A derived form is a function of the form the
-element was created with, so an operation returns the same result, bit for
-bit, whether or not its operands have derived forms already.
-
-In characteristic 2 there is no split form and no `SplitArray`: elements and
-arrays hold loop-basis coefficients, and every operation is evaluated there.
-An `Element` keeps one derived form of its own. Its first lifted product
-transforms its lifted coefficients over the larger field, and the element
-keeps the result, so that later lifted products do not transform it again.
-An `ElementArray` keeps nothing, as elsewhere.
-
-### Compiled kernels
-
-The transform and the change of coordinates between the loop basis and the
-split form run in a small C extension, `pycdloop._core`. Everything else is
-NumPy and pyfastcd.
-
-**The transform.** The kernel applies the butterflies in stages of
-increasing length. For coefficients of one storage word, it fuses the first
-three stages over tiles of eight coefficients held in registers, and it
-takes later stages two at a time over four blocks, which halves the passes
-over a record. Both change the order of the loops and leave every
-arithmetic operation, and so every rounding, unchanged: the results are
-identical, bit for bit, to the stage-by-stage evaluation, which the package
-keeps as a reference.
-
-A coefficient may occupy several adjacent storage words, called lanes: two
-for a complex coefficient and `d` for an element of F_(p^d). A stage then
-combines blocks of words, so one routine serves every field. In
-characteristic 2 the kernels run on the lifted operands of a product, over
-F_p or its extension.
-
-**The change of coordinates.** The kernel makes one pass over each record:
-it forms `a + b` and `a - b`, transforms the sums in place, and for the
-inverse transforms, divides by `D` and recombines. A record that fits in the
-first-level cache stays there throughout.
-
-**Temporaries.** A product of two `ElementArray` operands needs six
-temporaries, each of the size of one of the two parts of a batch of split
-forms; over a finite field the product of the spectra is not one of them.
-Each thread keeps these between products and reuses them while the shapes
-stay the same. The temporaries never leave the product, and a temporary
-above 8 MiB is not kept.
-
-### Finite-field arithmetic
-
-Over a finite field every operation is exact.
-
-**Odd characteristic.** The transform is evaluated on 64-bit integers:
-residues are below `2^31`, each stage at most doubles the magnitude of an
-entry, and entries are reduced modulo `p` after every 30 stages and at the
-end. Coordinatewise products over a prime field are 64-bit integer products
-reduced modulo `p`. Products over extension fields, reciprocals and powers
-of field elements, and all Cayley–Dickson products, are computed by
-pyfastcd. Division by `D` and by 2 is multiplication by their inverses
-modulo `p`.
-
-**Characteristic 2.** A sum is the XOR of the stored residues. A product
-over F_2 is a bitwise AND. On arrays over F_(2^k) with `k >= 2`, products,
-reciprocals, and powers are computed from tables of discrete logarithms,
-which a `BinaryField` builds once. Lifted products run in odd
-characteristic, as described under
-[Multiplication by lifting](#multiplication-by-lifting).
+Both `"lift"` and `"table"` are exact, so the choice between them affects only
+the running time. The table algorithm uses `4 D^2` field multiplications per
+product, while the lifted product grows like `D log D` but costs more for each
+coefficient and has a different fixed cost per call, so which is faster depends
+on the size of the loop, the number of products in a call, and the degree of the
+field. [How the results set the
+defaults](benchmark.md#how-the-results-set-the-defaults) gives the rule by which
+`"auto"` chooses and the measurements behind it.
 
 ## Floating point
 
-Real coefficients, and the real and imaginary parts of complex coefficients,
-are IEEE binary64 values. A product is computed by a sequence of rounded
-operations and is not correctly rounded as a whole. Over C the formulas are
-those over R with complex arithmetic. The compiled kernels are built without
-floating-point contraction or value-changing optimizations, and perform
-exactly the additions, subtractions, divisions, and halvings described here.
-[Numerical stability](stability.md) measures the accuracy of the split and
-table algorithms and of chains against an exact reference.
+Real coefficients, and the real and imaginary parts of complex coefficients, are
+IEEE binary64 values, so a product is computed by a sequence of rounded
+operations and is not correctly rounded as a whole. The compiled kernels are
+built without floating-point contraction or value-changing optimizations and
+perform exactly the operations described on this page, and finite-field
+arithmetic is exact.
 
-### Where the split algorithm rounds
-
-The split algorithm rounds in four places:
-
-1. forming `a + b` and `a - b`;
-2. the butterflies of the three transforms;
-3. the coordinatewise products and the product of signed components;
-4. the recombination `(f +- g) / 2`.
-
-Divisions by `D` and by 2 are exact unless they underflow.
-
-Each output of a transform is a signed sum of `D` terms formed by a balanced
-tree of depth `log2 D`, so the transforms need no separate summation order
-to keep error growth logarithmic in `D`. The sums inside the Cayley–Dickson
-product are those of pyfastcd: its quasilinear product adds the terms of
-each long sum in blocks and combines the blocks by a balanced tree, and its
-direct product, which `"auto"` uses at small dimensions, adds them in
-sequence. In a central product the sums over the index of the outer factor
-are added in sequence.
-
-### Consequences
-
-**Small components.** When `a_t` and `b_t` are nearly equal, or nearly
-opposite, one component is small compared with the coefficients. It is
-formed without rounding, but in the recombination `(f +- g) / 2` its product
-is rounded at the size of the product of the other component. The error
-relative to `||x|| ||y||` stays small, and the error relative to the product
-can be large when the product of the larger components is small as well.
-
-**Integer operands.** On operands with integer coefficients of moderate size
-every intermediate value is an integer or half-integer and the result is
-exact, as long as no intermediate value exceeds `2^53`. Intermediate values
-grow with `D`: a spectral coordinate is a sum of `2D` coefficients.
-
-**Chains.** Staying in split form across a chain of products skips the
-intermediate conversions to the loop basis and back, and with them their
-rounding.
-
-### Powers in floating point
-
-A power in the loop algebra of `Q_n` raises the spectral part and the signed
-part separately, by the recurrence described with the elements of that
-algebra above.
-
-**Spectral part.** Each coordinate is raised by binary exponentiation, with
-`O(log k)` multiplications. Over R its power is then exact whenever it is
-representable; over C each part of a product is rounded, and it need not be.
-
-**Signed part.** Over R with `w != 0`, the ring `F[z] / (z^2 + Q(w))` is a
-copy of C, where the modulus of a product is the product of the moduli, so a
-product is accurate relative to its modulus.
-
-**Range.** Over R and C the values of the recurrence can be far larger or
-smaller than the power itself. Outside the ordinary range it is therefore
-evaluated on numbers whose exponents are kept apart as integers, and a
-coefficient of the power is lost only where it is itself out of the range of
-the floats.
-
-### Overflow and special values
-
-Intermediate values such as spectral coordinates and their products can
-overflow even when the final result would not, so operands should be scaled
-away from the exponent limits. A NaN or infinite coefficient propagates
-through the transforms to every coefficient of the result.
+The [stability study](stability.md) explains where the split algorithm rounds
+and measures the accuracy of both algorithms, and of chains of products, against
+an exact reference, while the [API reference](api.md#floating-point) describes
+how powers, inverses, and other operations keep their results in range and when
+sums can overflow.
